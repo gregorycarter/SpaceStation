@@ -178,8 +178,14 @@ struct MenuBarView: View {
 
     private var actionButtons: some View {
         HStack {
-            Button(action: openSettings) {
-                Label("Settings", systemImage: "gear")
+            if #available(macOS 14.0, *) {
+                SettingsLink {
+                    Label("Settings", systemImage: "gear")
+                }
+            } else {
+                Button(action: openSettings) {
+                    Label("Settings", systemImage: "gear")
+                }
             }
 
             Spacer()
@@ -241,11 +247,7 @@ struct MenuBarView: View {
     }
 
     private func openSettings() {
-        if #available(macOS 14.0, *) {
-            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-        } else {
-            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-        }
+        NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
     }
 
     private func quitApp() {
