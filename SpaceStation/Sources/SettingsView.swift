@@ -164,9 +164,9 @@ struct SpaceNamesSettingsView: View {
 struct AboutView: View {
     var body: some View {
         VStack(spacing: 16) {
-            Image(systemName: "square.grid.2x2")
-                .font(.system(size: 64))
-                .foregroundColor(.accentColor)
+            Image(nsImage: NSApp.applicationIconImage)
+                .resizable()
+                .frame(width: 64, height: 64)
 
             Text("SpaceStation")
                 .font(.title)
@@ -181,6 +181,15 @@ struct AboutView: View {
                 .foregroundColor(.secondary)
 
             Spacer()
+
+            VStack(spacing: 4) {
+                Text("Developed by Gregory Carter")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Link("www.gregorycarter.net", destination: URL(string: "https://www.gregorycarter.net")!)
+                    .font(.caption)
+            }
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
