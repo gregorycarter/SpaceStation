@@ -299,8 +299,8 @@ struct PermissionHelpView: View {
                 icon: "keyboard.fill",
                 iconColor: .purple,
                 title: "Enable Keyboard Shortcuts",
-                description: "Turn on \"Switch to Desktop 1-9\" shortcuts",
-                buttonTitle: "Open Keyboard Settings",
+                description: "Select Mission Control → Enable \"Switch to Desktop 1-9\"",
+                buttonTitle: "Open Keyboard Shortcuts",
                 isComplete: false // Can't detect this programmatically
             ) {
                 openKeyboardShortcutsSettings()
@@ -321,8 +321,9 @@ struct PermissionHelpView: View {
     }
 
     private func openKeyboardShortcutsSettings() {
-        // Open directly to Keyboard Shortcuts pane
-        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.keyboard?Shortcuts") {
+        // Open System Settings to Keyboard Shortcuts
+        // User then selects "Mission Control" from the left sidebar
+        if let url = URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension") {
             NSWorkspace.shared.open(url)
         }
     }
