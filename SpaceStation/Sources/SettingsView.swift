@@ -35,7 +35,7 @@ struct GeneralSettingsView: View {
         Form {
             Section {
                 Toggle("Launch at Login", isOn: $launchAtLogin)
-                    .onChange(of: launchAtLogin) { _, newValue in
+                    .onChange(of: launchAtLogin) { newValue in
                         setLaunchAtLogin(newValue)
                     }
 
@@ -108,7 +108,7 @@ struct SpaceNamesSettingsView: View {
                             .foregroundColor(.secondary)
 
                         Image(systemName: "arrow.right")
-                            .foregroundColor(.tertiary)
+                            .foregroundColor(.gray.opacity(0.5))
 
                         TextField(
                             "Desktop \(index)",

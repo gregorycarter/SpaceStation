@@ -97,7 +97,7 @@ struct MenuBarView: View {
             // Keyboard shortcut hint
             Text("⌃\(index)")
                 .font(.caption)
-                .foregroundColor(.tertiary)
+                .foregroundColor(.gray.opacity(0.5))
 
             // Rename button
             if !isRenaming {
