@@ -42,6 +42,12 @@ class SpaceTracker: ObservableObject {
 
     func openAccessibilitySettings() {
         logger.info("Opening Accessibility settings")
+
+        // First trigger the system prompt which adds us to the list
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+        _ = AXIsProcessTrustedWithOptions(options)
+
+        // Also open settings so user can toggle if needed
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
             NSWorkspace.shared.open(url)
         }

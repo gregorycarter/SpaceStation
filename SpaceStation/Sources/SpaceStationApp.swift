@@ -107,7 +107,9 @@ struct SetupWindowView: View {
                 icon: "hand.raised.fill",
                 iconColor: .orange,
                 title: "Accessibility Permission",
-                description: "Allow SpaceStation to control your Mac",
+                description: spaceTracker.hasAccessibilityPermission
+                    ? "Permission granted"
+                    : "Allow SpaceStation to control your Mac\n(You may need to restart the app after enabling)",
                 buttonTitle: "Open Accessibility Settings",
                 isComplete: spaceTracker.hasAccessibilityPermission
             ) {
