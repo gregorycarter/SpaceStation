@@ -121,39 +121,46 @@ struct MenuBarView: View {
         let isCurrentSpace = index == spaceTracker.currentSpaceIndex
 
         return HStack {
-            // Active indicator
-            Image(systemName: isCurrentSpace ? "circle.fill" : "circle")
-                .font(.system(size: 6))
-                .foregroundColor(isCurrentSpace ? .blue : .secondary)
+            // Main tappable area - switches to this space
+            Button(action: { handleSpaceTap(index: index) }) {
+                HStack {
+                    // Active indicator
+                    Image(systemName: isCurrentSpace ? "circle.fill" : "circle")
+                        .font(.system(size: 6))
+                        .foregroundColor(isCurrentSpace ? .blue : .secondary)
 
-            // Name (editable if renaming)
-            if isRenaming && renamingSpaceIndex == index {
-                TextField("Space name", text: $renameText)
-                    .textFieldStyle(.roundedBorder)
-                    .font(.system(.body, design: .rounded))
-                    .focused($isTextFieldFocused)
-                    .onSubmit {
-                        commitRename()
+                    // Name (editable if renaming)
+                    if isRenaming && renamingSpaceIndex == index {
+                        TextField("Space name", text: $renameText)
+                            .textFieldStyle(.roundedBorder)
+                            .font(.system(.body, design: .rounded))
+                            .focused($isTextFieldFocused)
+                            .onSubmit {
+                                commitRename()
+                            }
+                            .onExitCommand {
+                                cancelRename()
+                            }
+                    } else {
+                        Text(nameManager.name(for: index))
+                            .font(.system(.body, design: .rounded))
+                            .foregroundColor(isCurrentSpace ? .primary : .secondary)
                     }
-                    .onExitCommand {
-                        cancelRename()
+
+                    Spacer()
+
+                    // Keyboard shortcut hint
+                    if index <= 9 {
+                        Text("⌃\(index)")
+                            .font(.caption)
+                            .foregroundColor(.gray.opacity(0.5))
                     }
-            } else {
-                Text(nameManager.name(for: index))
-                    .font(.system(.body, design: .rounded))
-                    .foregroundColor(isCurrentSpace ? .primary : .secondary)
+                }
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
 
-            Spacer()
-
-            // Keyboard shortcut hint
-            if index <= 9 {
-                Text("⌃\(index)")
-                    .font(.caption)
-                    .foregroundColor(.gray.opacity(0.5))
-            }
-
-            // Rename button
+            // Rename button (separate from main tap area)
             if !isRenaming {
                 Button(action: { startRenaming(index) }) {
                     Image(systemName: "pencil")
@@ -170,10 +177,6 @@ struct MenuBarView: View {
             RoundedRectangle(cornerRadius: 6)
                 .fill(isCurrentSpace ? Color.blue.opacity(0.1) : Color.clear)
         )
-        .contentShape(Rectangle())
-        .onTapGesture {
-            handleSpaceTap(index: index)
-        }
     }
 
     private var actionButtons: some View {
