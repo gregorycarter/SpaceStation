@@ -181,9 +181,6 @@ struct AboutView: View {
                 .foregroundColor(.secondary)
 
             Spacer()
-
-            Link("View on GitHub", destination: URL(string: "https://github.com/gregorycarter/SpaceStation")!)
-                .font(.caption)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
