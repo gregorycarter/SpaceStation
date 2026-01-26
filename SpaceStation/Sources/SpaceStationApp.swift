@@ -79,6 +79,9 @@ struct SetupWindowView: View {
     @ObservedObject var spaceTracker: SpaceTracker
     let onDone: () -> Void
 
+    // Timer to poll permission status
+    let permissionTimer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
+
     var body: some View {
         VStack(spacing: 20) {
             // Header
@@ -87,11 +90,13 @@ struct SetupWindowView: View {
                     .resizable()
                     .frame(width: 64, height: 64)
 
-                Text("Setup Required")
+                Text(spaceTracker.hasAccessibilityPermission ? "Almost Ready!" : "Setup Required")
                     .font(.title2)
                     .fontWeight(.bold)
 
-                Text("Two quick steps to enable space switching")
+                Text(spaceTracker.hasAccessibilityPermission
+                    ? "Just one more step to enable space switching"
+                    : "Two quick steps to enable space switching")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -138,6 +143,10 @@ struct SetupWindowView: View {
         .frame(width: 480)
         .onAppear {
             // Refresh permission status when view appears
+            spaceTracker.checkAccessibilityPermission()
+        }
+        .onReceive(permissionTimer) { _ in
+            // Poll permission status every second
             spaceTracker.checkAccessibilityPermission()
         }
     }
