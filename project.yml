@@ -1,0 +1,39 @@
+name: SpaceStation
+options:
+  bundleIdPrefix: com.gregorycarter
+  deploymentTarget:
+    macOS: "13.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_VERSION: "5.9"
+
+targets:
+  SpaceStation:
+    type: application
+    platform: macOS
+    sources:
+      - path: SpaceStation/Sources
+        type: group
+    settings:
+      base:
+        INFOPLIST_FILE: SpaceStation/Info.plist
+        CODE_SIGN_ENTITLEMENTS: SpaceStation/SpaceStation.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: com.gregorycarter.SpaceStation
+        PRODUCT_NAME: SpaceStation
+        LD_RUNPATH_SEARCH_PATHS:
+          - "@executable_path/../Frameworks"
+        ENABLE_HARDENED_RUNTIME: false
+        COMBINE_HIDPI_IMAGES: true
+    info:
+      path: SpaceStation/Info.plist
+      properties:
+        LSUIElement: true
+        CFBundleDisplayName: SpaceStation
+        NSHumanReadableCopyright: "Copyright © 2025 Greg Carter"
