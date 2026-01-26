@@ -83,9 +83,9 @@ struct SetupWindowView: View {
         VStack(spacing: 20) {
             // Header
             VStack(spacing: 8) {
-                Image(systemName: "gearshape.2.fill")
-                    .font(.system(size: 40))
-                    .foregroundColor(.blue)
+                Image(nsImage: NSApp.applicationIconImage)
+                    .resizable()
+                    .frame(width: 64, height: 64)
 
                 Text("Setup Required")
                     .font(.title2)
