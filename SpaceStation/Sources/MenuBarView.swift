@@ -6,10 +6,18 @@ struct MenuBarView: View {
     @State private var isRenaming = false
     @State private var renameText = ""
     @State private var renamingSpaceIndex: Int?
+    @State private var showPermissionHelp = false
     @FocusState private var isTextFieldFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            // Permission warning banner
+            if !spaceTracker.hasAccessibilityPermission {
+                permissionBanner
+                Divider()
+                    .padding(.vertical, 4)
+            }
+
             // Header showing current space
             currentSpaceHeader
 
@@ -26,7 +34,42 @@ struct MenuBarView: View {
             actionButtons
         }
         .padding()
-        .frame(width: 280)
+        .frame(width: 300)
+        .onAppear {
+            spaceTracker.checkAccessibilityPermission()
+        }
+        .sheet(isPresented: $showPermissionHelp) {
+            PermissionHelpView(spaceTracker: spaceTracker, isPresented: $showPermissionHelp)
+        }
+    }
+
+    // MARK: - Permission Banner
+
+    private var permissionBanner: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.orange)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Accessibility Permission Required")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                Text("Click to enable space switching")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            Button("Enable") {
+                showPermissionHelp = true
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.small)
+        }
+        .padding(8)
+        .background(Color.orange.opacity(0.1))
+        .cornerRadius(8)
     }
 
     // MARK: - Subviews
@@ -79,17 +122,13 @@ struct MenuBarView: View {
     }
 
     private func spaceRow(for index: Int) -> some View {
-        HStack {
+        let isCurrentSpace = index == spaceTracker.currentSpaceIndex
+
+        return HStack {
             // Active indicator
-            if index == spaceTracker.currentSpaceIndex {
-                Image(systemName: "circle.fill")
-                    .font(.system(size: 6))
-                    .foregroundColor(.blue)
-            } else {
-                Image(systemName: "circle")
-                    .font(.system(size: 6))
-                    .foregroundColor(.secondary)
-            }
+            Image(systemName: isCurrentSpace ? "circle.fill" : "circle")
+                .font(.system(size: 6))
+                .foregroundColor(isCurrentSpace ? .blue : .secondary)
 
             // Name (editable if renaming)
             if isRenaming && renamingSpaceIndex == index {
@@ -106,7 +145,7 @@ struct MenuBarView: View {
             } else {
                 Text(nameManager.name(for: index))
                     .font(.system(.body, design: .rounded))
-                    .foregroundColor(index == spaceTracker.currentSpaceIndex ? .primary : .secondary)
+                    .foregroundColor(isCurrentSpace ? .primary : .secondary)
             }
 
             Spacer()
@@ -133,13 +172,11 @@ struct MenuBarView: View {
         .padding(.horizontal, 8)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill(index == spaceTracker.currentSpaceIndex ? Color.blue.opacity(0.1) : Color.clear)
+                .fill(isCurrentSpace ? Color.blue.opacity(0.1) : Color.clear)
         )
         .contentShape(Rectangle())
         .onTapGesture {
-            if !isRenaming && index != spaceTracker.currentSpaceIndex {
-                spaceTracker.switchToSpace(index)
-            }
+            handleSpaceTap(index: index)
         }
     }
 
@@ -169,11 +206,22 @@ struct MenuBarView: View {
 
     // MARK: - Actions
 
+    private func handleSpaceTap(index: Int) {
+        guard !isRenaming else { return }
+        guard index != spaceTracker.currentSpaceIndex else { return }
+
+        if !spaceTracker.hasAccessibilityPermission {
+            showPermissionHelp = true
+            return
+        }
+
+        spaceTracker.switchToSpace(index)
+    }
+
     private func startRenaming(_ index: Int) {
         renamingSpaceIndex = index
         renameText = nameManager.hasCustomName(for: index) ? nameManager.name(for: index) : ""
         isRenaming = true
-        // Delay focus to allow view to update
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             isTextFieldFocused = true
         }
@@ -197,7 +245,6 @@ struct MenuBarView: View {
     }
 
     private func openSettings() {
-        // Use the modern approach for opening settings
         if #available(macOS 14.0, *) {
             NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
         } else {
@@ -207,6 +254,76 @@ struct MenuBarView: View {
 
     private func quitApp() {
         NSApplication.shared.terminate(nil)
+    }
+}
+
+// MARK: - Permission Help View
+
+struct PermissionHelpView: View {
+    @ObservedObject var spaceTracker: SpaceTracker
+    @Binding var isPresented: Bool
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "hand.raised.circle.fill")
+                .font(.system(size: 48))
+                .foregroundColor(.blue)
+
+            Text("Accessibility Permission Required")
+                .font(.headline)
+
+            Text("SpaceStation needs Accessibility permission to switch between Spaces using keyboard shortcuts.")
+                .multilineTextAlignment(.center)
+                .foregroundColor(.secondary)
+                .padding(.horizontal)
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Setup Steps:")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+
+                HStack(alignment: .top, spacing: 8) {
+                    Text("1.")
+                        .fontWeight(.bold)
+                    Text("Click 'Open Settings' below")
+                }
+                .font(.caption)
+
+                HStack(alignment: .top, spacing: 8) {
+                    Text("2.")
+                        .fontWeight(.bold)
+                    Text("Find 'SpaceStation' in the list and enable it")
+                }
+                .font(.caption)
+
+                HStack(alignment: .top, spacing: 8) {
+                    Text("3.")
+                        .fontWeight(.bold)
+                    Text("Also enable keyboard shortcuts:\nSystem Settings → Keyboard → Keyboard Shortcuts → Mission Control → Enable 'Switch to Desktop 1-9'")
+                }
+                .font(.caption)
+            }
+            .padding()
+            .background(Color.secondary.opacity(0.1))
+            .cornerRadius(8)
+
+            HStack(spacing: 12) {
+                Button("Cancel") {
+                    isPresented = false
+                }
+                .buttonStyle(.bordered)
+
+                Button("Open Settings") {
+                    spaceTracker.openAccessibilitySettings()
+                    isPresented = false
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(24)
+        .frame(width: 380)
     }
 }
 
