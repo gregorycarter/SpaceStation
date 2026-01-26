@@ -11,6 +11,7 @@ class SpaceTracker: ObservableObject {
     @Published private(set) var totalSpaces: Int = 1
     @Published private(set) var isTrackingAvailable: Bool = true
     @Published private(set) var hasAccessibilityPermission: Bool = false
+    @Published private(set) var hasKeyboardShortcutsEnabled: Bool = false
 
     private var spaceChangeObserver: NSObjectProtocol?
     private let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "SpaceTracker")
@@ -18,6 +19,7 @@ class SpaceTracker: ObservableObject {
     init() {
         logger.info("SpaceTracker initializing")
         checkAccessibilityPermission()
+        checkKeyboardShortcuts()
         setupSpaceChangeObserver()
         updateCurrentSpace()
     }
@@ -79,6 +81,33 @@ class SpaceTracker: ObservableObject {
                 NSWorkspace.shared.open(url)
             }
         }
+    }
+
+    // MARK: - Keyboard Shortcuts Check
+
+    func checkKeyboardShortcuts() {
+        // Check if "Switch to Desktop N" shortcuts are enabled in System Preferences
+        // These are stored in com.apple.symbolichotkeys, keys 118-126 (Desktop 1-9)
+        guard let hotkeys = UserDefaults.standard.persistentDomain(forName: "com.apple.symbolichotkeys"),
+              let symbolicHotkeys = hotkeys["AppleSymbolicHotKeys"] as? [String: Any] else {
+            logger.info("Could not read symbolic hotkeys")
+            hasKeyboardShortcutsEnabled = false
+            return
+        }
+
+        // Check if at least Desktop 1 shortcut (key 118) is enabled
+        // Key 118 = Switch to Desktop 1, 119 = Desktop 2, etc.
+        var enabledCount = 0
+        for key in 118...126 {
+            if let shortcut = symbolicHotkeys[String(key)] as? [String: Any],
+               let enabled = shortcut["enabled"] as? Int,
+               enabled == 1 {
+                enabledCount += 1
+            }
+        }
+
+        hasKeyboardShortcutsEnabled = enabledCount >= 1
+        logger.info("Keyboard shortcuts enabled: \(self.hasKeyboardShortcutsEnabled) (\(enabledCount)/9 shortcuts)")
     }
 
     // MARK: - Space Change Observer

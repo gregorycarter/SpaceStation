@@ -90,13 +90,19 @@ struct SetupWindowView: View {
                     .resizable()
                     .frame(width: 64, height: 64)
 
-                Text(spaceTracker.hasAccessibilityPermission ? "Almost Ready!" : "Setup Required")
+                Text(spaceTracker.hasAccessibilityPermission && spaceTracker.hasKeyboardShortcutsEnabled
+                    ? "Ready!"
+                    : spaceTracker.hasAccessibilityPermission
+                        ? "Almost Ready!"
+                        : "Setup Required")
                     .font(.title2)
                     .fontWeight(.bold)
 
-                Text(spaceTracker.hasAccessibilityPermission
-                    ? "Just one more step to enable space switching"
-                    : "Two quick steps to enable space switching")
+                Text(spaceTracker.hasAccessibilityPermission && spaceTracker.hasKeyboardShortcutsEnabled
+                    ? "You're all set to use SpaceStation"
+                    : spaceTracker.hasAccessibilityPermission
+                        ? "Just one more step to enable space switching"
+                        : "Two quick steps to enable space switching")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -136,9 +142,11 @@ struct SetupWindowView: View {
                 icon: "keyboard.fill",
                 iconColor: .purple,
                 title: "Enable Keyboard Shortcuts",
-                description: "Select Mission Control → Enable \"Switch to Desktop 1-9\"",
+                description: spaceTracker.hasKeyboardShortcutsEnabled
+                    ? "Keyboard shortcuts enabled"
+                    : "Select Mission Control → Enable \"Switch to Desktop 1-9\"",
                 buttonTitle: "Open Keyboard Shortcuts",
-                isComplete: false
+                isComplete: spaceTracker.hasKeyboardShortcutsEnabled
             ) {
                 if let url = URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension") {
                     NSWorkspace.shared.open(url)
@@ -162,9 +170,12 @@ struct SetupWindowView: View {
             spaceTracker.checkAccessibilityPermission()
         }
         .onReceive(permissionTimer) { _ in
-            // Only poll while permission is not yet granted
+            // Poll while either permission is not yet granted
             if !spaceTracker.hasAccessibilityPermission {
                 spaceTracker.checkAccessibilityPermission()
+            }
+            if !spaceTracker.hasKeyboardShortcutsEnabled {
+                spaceTracker.checkKeyboardShortcuts()
             }
         }
     }
