@@ -40,6 +40,7 @@ struct MenuBarView: View {
         }
         .sheet(isPresented: $showPermissionHelp) {
             PermissionHelpView(spaceTracker: spaceTracker, isPresented: $showPermissionHelp)
+                .interactiveDismissDisabled()
         }
     }
 
@@ -317,7 +318,7 @@ struct PermissionHelpView: View {
             .controlSize(.large)
         }
         .padding(24)
-        .frame(width: 400)
+        .frame(width: 480)
     }
 
     private func openKeyboardShortcutsSettings() {
@@ -341,60 +342,74 @@ struct SetupStepCard: View {
     let isComplete: Bool
     let action: () -> Void
 
+    @State private var isPressed = false
+
     var body: some View {
-        HStack(spacing: 12) {
-            // Step number / checkmark
-            ZStack {
-                Circle()
-                    .fill(isComplete ? Color.green : Color.blue)
-                    .frame(width: 28, height: 28)
+        VStack(alignment: .leading, spacing: 12) {
+            // Header row with step number, icon, and title
+            HStack(spacing: 10) {
+                // Step number / checkmark
+                ZStack {
+                    Circle()
+                        .fill(isComplete ? Color.green : Color.blue)
+                        .frame(width: 28, height: 28)
 
-                if isComplete {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
-                } else {
-                    Text("\(stepNumber)")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
+                    if isComplete {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+                    } else {
+                        Text("\(stepNumber)")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+                    }
                 }
-            }
 
-            // Icon
-            Image(systemName: icon)
-                .font(.system(size: 24))
-                .foregroundColor(iconColor)
-                .frame(width: 32)
+                // Icon
+                Image(systemName: icon)
+                    .font(.system(size: 20))
+                    .foregroundColor(iconColor)
 
-            // Text
-            VStack(alignment: .leading, spacing: 2) {
+                // Title
                 Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
+                    .font(.headline)
 
-                Text(description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Spacer()
             }
 
-            Spacer()
+            // Description text - full width, can wrap
+            Text(description)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.leading, 38)
 
-            // Action button
+            // Action button - prominent with press feedback
             Button(action: action) {
                 Text(buttonTitle)
-                    .font(.caption)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
             }
             .buttonStyle(.bordered)
-            .controlSize(.small)
+            .tint(isComplete ? .green : .blue)
+            .scaleEffect(isPressed ? 0.97 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: isPressed)
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in isPressed = true }
+                    .onEnded { _ in isPressed = false }
+            )
         }
-        .padding(12)
+        .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(isComplete ? Color.green.opacity(0.1) : Color.secondary.opacity(0.1))
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isComplete ? Color.green.opacity(0.08) : Color.secondary.opacity(0.08))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(isComplete ? Color.green.opacity(0.3) : Color.clear, lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isComplete ? Color.green.opacity(0.3) : Color.secondary.opacity(0.2), lineWidth: 1)
         )
     }
 }
