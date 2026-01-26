@@ -148,8 +148,10 @@ struct SetupWindowView: View {
             spaceTracker.checkAccessibilityPermission()
         }
         .onReceive(permissionTimer) { _ in
-            // Poll permission status every second
-            spaceTracker.checkAccessibilityPermission()
+            // Only poll while permission is not yet granted
+            if !spaceTracker.hasAccessibilityPermission {
+                spaceTracker.checkAccessibilityPermission()
+            }
         }
     }
 }
