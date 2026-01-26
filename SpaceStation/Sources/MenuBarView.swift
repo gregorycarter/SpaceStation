@@ -178,8 +178,17 @@ struct MenuBarView: View {
 
     private var actionButtons: some View {
         HStack {
-            Button(action: openSettings) {
-                Label("Settings", systemImage: "gear")
+            if #available(macOS 14.0, *) {
+                SettingsLink {
+                    Label("Settings", systemImage: "gear")
+                }
+                .simultaneousGesture(TapGesture().onEnded {
+                    NSApp.activate(ignoringOtherApps: true)
+                })
+            } else {
+                Button(action: openSettings) {
+                    Label("Settings", systemImage: "gear")
+                }
             }
 
             Spacer()
@@ -241,13 +250,9 @@ struct MenuBarView: View {
     }
 
     private func openSettings() {
-        // Bring app to front and open settings
+        // Bring app to front and open settings (macOS 13 fallback)
         NSApp.activate(ignoringOtherApps: true)
-        if #available(macOS 14.0, *) {
-            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-        } else {
-            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-        }
+        NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
     }
 
     private func quitApp() {
