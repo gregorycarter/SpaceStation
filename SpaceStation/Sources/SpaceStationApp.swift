@@ -102,18 +102,32 @@ struct SetupWindowView: View {
             }
 
             // Step 1: Accessibility
-            SetupStepCardStandalone(
-                stepNumber: 1,
-                icon: "hand.raised.fill",
-                iconColor: .orange,
-                title: "Accessibility Permission",
-                description: spaceTracker.hasAccessibilityPermission
-                    ? "Permission granted"
-                    : "Allow SpaceStation to control your Mac\n(You may need to restart the app after enabling)",
-                buttonTitle: "Open Accessibility Settings",
-                isComplete: spaceTracker.hasAccessibilityPermission
-            ) {
-                spaceTracker.openAccessibilitySettings()
+            VStack(spacing: 8) {
+                SetupStepCardStandalone(
+                    stepNumber: 1,
+                    icon: "hand.raised.fill",
+                    iconColor: .orange,
+                    title: "Accessibility Permission",
+                    description: spaceTracker.hasAccessibilityPermission
+                        ? "Permission granted"
+                        : "Allow SpaceStation to control your Mac",
+                    buttonTitle: "Open Accessibility Settings",
+                    isComplete: spaceTracker.hasAccessibilityPermission
+                ) {
+                    spaceTracker.openAccessibilitySettings()
+                }
+
+                // Show reset option if permission appears stuck
+                if !spaceTracker.hasAccessibilityPermission {
+                    Button(action: {
+                        spaceTracker.resetAndRequestPermission()
+                    }) {
+                        Text("Permission not detected? Reset & try again")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
 
             // Step 2: Keyboard Shortcuts

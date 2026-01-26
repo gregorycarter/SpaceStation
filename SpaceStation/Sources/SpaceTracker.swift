@@ -25,8 +25,11 @@ class SpaceTracker: ObservableObject {
     // MARK: - Accessibility Permission
 
     func checkAccessibilityPermission() {
-        hasAccessibilityPermission = AXIsProcessTrusted()
-        logger.info("Accessibility permission: \(self.hasAccessibilityPermission)")
+        // Use AXIsProcessTrustedWithOptions for a fresh check (not cached)
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: false] as CFDictionary
+        let trusted = AXIsProcessTrustedWithOptions(options)
+        hasAccessibilityPermission = trusted
+        logger.info("Accessibility permission check: \(trusted)")
     }
 
     func requestAccessibilityPermission() {
@@ -50,6 +53,31 @@ class SpaceTracker: ObservableObject {
         // Also open settings so user can toggle if needed
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
             NSWorkspace.shared.open(url)
+        }
+    }
+
+    func resetAndRequestPermission() {
+        logger.info("Resetting and requesting accessibility permission")
+
+        // Reset TCC entry for this app (requires the app to be re-added)
+        let task = Process()
+        task.launchPath = "/usr/bin/tccutil"
+        task.arguments = ["reset", "Accessibility", "com.gregorycarter.SpaceStation"]
+        try? task.run()
+        task.waitUntilExit()
+
+        // Small delay to let TCC process the reset
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            // Now request permission fresh
+            let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+            let trusted = AXIsProcessTrustedWithOptions(options)
+            self?.hasAccessibilityPermission = trusted
+            self?.logger.info("Permission after reset: \(trusted)")
+
+            // Open settings
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                NSWorkspace.shared.open(url)
+            }
         }
     }
 
