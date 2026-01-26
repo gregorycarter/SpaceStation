@@ -21,6 +21,7 @@ targets:
     sources:
       - path: SpaceStation/Sources
         type: group
+      - path: SpaceStation/Assets.xcassets
     settings:
       base:
         INFOPLIST_FILE: SpaceStation/Info.plist
