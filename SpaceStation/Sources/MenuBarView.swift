@@ -264,66 +264,137 @@ struct PermissionHelpView: View {
     @Binding var isPresented: Bool
 
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "hand.raised.circle.fill")
-                .font(.system(size: 48))
-                .foregroundColor(.blue)
+        VStack(spacing: 20) {
+            // Header
+            VStack(spacing: 8) {
+                Image(systemName: "gearshape.2.fill")
+                    .font(.system(size: 40))
+                    .foregroundColor(.blue)
 
-            Text("Accessibility Permission Required")
-                .font(.headline)
+                Text("Setup Required")
+                    .font(.title2)
+                    .fontWeight(.bold)
 
-            Text("SpaceStation needs Accessibility permission to switch between Spaces using keyboard shortcuts.")
-                .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
-                .padding(.horizontal)
+                Text("Two quick steps to enable space switching")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+
+            // Step 1: Accessibility
+            SetupStepCard(
+                stepNumber: 1,
+                icon: "hand.raised.fill",
+                iconColor: .orange,
+                title: "Accessibility Permission",
+                description: "Allow SpaceStation to control your Mac",
+                buttonTitle: "Open Accessibility Settings",
+                isComplete: spaceTracker.hasAccessibilityPermission
+            ) {
+                spaceTracker.openAccessibilitySettings()
+            }
+
+            // Step 2: Keyboard Shortcuts
+            SetupStepCard(
+                stepNumber: 2,
+                icon: "keyboard.fill",
+                iconColor: .purple,
+                title: "Enable Keyboard Shortcuts",
+                description: "Turn on \"Switch to Desktop 1-9\" shortcuts",
+                buttonTitle: "Open Keyboard Settings",
+                isComplete: false // Can't detect this programmatically
+            ) {
+                openKeyboardShortcutsSettings()
+            }
 
             Divider()
 
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Setup Steps:")
+            // Done button
+            Button("Done") {
+                spaceTracker.checkAccessibilityPermission()
+                isPresented = false
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+        }
+        .padding(24)
+        .frame(width: 400)
+    }
+
+    private func openKeyboardShortcutsSettings() {
+        // Open directly to Keyboard Shortcuts pane
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.keyboard?Shortcuts") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+}
+
+// MARK: - Setup Step Card
+
+struct SetupStepCard: View {
+    let stepNumber: Int
+    let icon: String
+    let iconColor: Color
+    let title: String
+    let description: String
+    let buttonTitle: String
+    let isComplete: Bool
+    let action: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Step number / checkmark
+            ZStack {
+                Circle()
+                    .fill(isComplete ? Color.green : Color.blue)
+                    .frame(width: 28, height: 28)
+
+                if isComplete {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.white)
+                } else {
+                    Text("\(stepNumber)")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.white)
+                }
+            }
+
+            // Icon
+            Image(systemName: icon)
+                .font(.system(size: 24))
+                .foregroundColor(iconColor)
+                .frame(width: 32)
+
+            // Text
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
                     .font(.subheadline)
                     .fontWeight(.semibold)
 
-                HStack(alignment: .top, spacing: 8) {
-                    Text("1.")
-                        .fontWeight(.bold)
-                    Text("Click 'Open Settings' below")
-                }
-                .font(.caption)
-
-                HStack(alignment: .top, spacing: 8) {
-                    Text("2.")
-                        .fontWeight(.bold)
-                    Text("Find 'SpaceStation' in the list and enable it")
-                }
-                .font(.caption)
-
-                HStack(alignment: .top, spacing: 8) {
-                    Text("3.")
-                        .fontWeight(.bold)
-                    Text("Also enable keyboard shortcuts:\nSystem Settings → Keyboard → Keyboard Shortcuts → Mission Control → Enable 'Switch to Desktop 1-9'")
-                }
-                .font(.caption)
+                Text(description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
-            .padding()
-            .background(Color.secondary.opacity(0.1))
-            .cornerRadius(8)
 
-            HStack(spacing: 12) {
-                Button("Cancel") {
-                    isPresented = false
-                }
-                .buttonStyle(.bordered)
+            Spacer()
 
-                Button("Open Settings") {
-                    spaceTracker.openAccessibilitySettings()
-                    isPresented = false
-                }
-                .buttonStyle(.borderedProminent)
+            // Action button
+            Button(action: action) {
+                Text(buttonTitle)
+                    .font(.caption)
             }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
         }
-        .padding(24)
-        .frame(width: 380)
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(isComplete ? Color.green.opacity(0.1) : Color.secondary.opacity(0.1))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(isComplete ? Color.green.opacity(0.3) : Color.clear, lineWidth: 1)
+        )
     }
 }
 
