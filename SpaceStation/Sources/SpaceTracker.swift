@@ -1,24 +1,22 @@
 import Foundation
 import Cocoa
 import Combine
+import os.log
 
 /// Tracks the current Space (virtual desktop) and notifies observers of changes
 @MainActor
 class SpaceTracker: ObservableObject {
     @Published private(set) var currentSpaceIndex: Int = 1
     @Published private(set) var totalSpaces: Int = 1
+    @Published private(set) var isTrackingAvailable: Bool = true
 
     private var spaceChangeObserver: NSObjectProtocol?
+    private let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "SpaceTracker")
 
     init() {
+        logger.info("SpaceTracker initializing")
         setupSpaceChangeObserver()
         updateCurrentSpace()
-    }
-
-    deinit {
-        if let observer = spaceChangeObserver {
-            NSWorkspace.shared.notificationCenter.removeObserver(observer)
-        }
     }
 
     private func setupSpaceChangeObserver() {
@@ -32,52 +30,77 @@ class SpaceTracker: ObservableObject {
                 self?.updateCurrentSpace()
             }
         }
+        logger.debug("Space change observer registered")
     }
 
     private func updateCurrentSpace() {
-        // Get current space information using Core Graphics private APIs
-        // We use the CGSConnection to query space information
         let spaceInfo = getCurrentSpaceInfo()
+
+        if spaceInfo.index != currentSpaceIndex || spaceInfo.total != totalSpaces {
+            logger.info("Space changed: index=\(spaceInfo.index), total=\(spaceInfo.total)")
+        }
+
         currentSpaceIndex = spaceInfo.index
         totalSpaces = spaceInfo.total
     }
 
     private func getCurrentSpaceInfo() -> (index: Int, total: Int) {
-        // Use CGWindowListCopyWindowInfo to determine current space
-        // This is a workaround since direct Space APIs are private
-
-        guard let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] else {
-            return (1, 1)
-        }
-
         // Get the display spaces using the managed display spaces
         let conn = CGSMainConnectionID()
 
-        if let spaces = CGSCopyManagedDisplaySpaces(conn) as? [[String: Any]] {
-            for display in spaces {
-                if let currentSpace = display["Current Space"] as? [String: Any],
-                   let spaceID = currentSpace["ManagedSpaceID"] as? Int,
-                   let allSpaces = display["Spaces"] as? [[String: Any]] {
+        guard conn != 0 else {
+            logger.warning("Failed to get CGS connection ID")
+            isTrackingAvailable = false
+            return (1, 1)
+        }
 
-                    // Find index of current space
-                    for (index, space) in allSpaces.enumerated() {
-                        if let id = space["ManagedSpaceID"] as? Int, id == spaceID {
-                            // Filter out fullscreen spaces (type 4)
-                            let desktopSpaces = allSpaces.filter { ($0["type"] as? Int) != 4 }
-                            let desktopIndex = desktopSpaces.firstIndex { ($0["ManagedSpaceID"] as? Int) == spaceID }
-                            return (index: (desktopIndex ?? 0) + 1, total: desktopSpaces.count)
-                        }
-                    }
+        guard let spacesRef = CGSCopyManagedDisplaySpaces(conn),
+              let spaces = spacesRef as? [[String: Any]] else {
+            logger.warning("Failed to get managed display spaces")
+            isTrackingAvailable = false
+            return (1, 1)
+        }
+
+        isTrackingAvailable = true
+
+        for display in spaces {
+            guard let currentSpace = display["Current Space"] as? [String: Any],
+                  let spaceID = currentSpace["ManagedSpaceID"] as? Int,
+                  let allSpaces = display["Spaces"] as? [[String: Any]] else {
+                continue
+            }
+
+            // Filter out fullscreen spaces (type 4) and dashboard (type 2)
+            let desktopSpaces = allSpaces.filter { space in
+                guard let type = space["type"] as? Int else { return true }
+                return type == 0 // Type 0 is regular desktop
+            }
+
+            // Find index of current space in filtered list
+            for (index, space) in desktopSpaces.enumerated() {
+                if let id = space["ManagedSpaceID"] as? Int, id == spaceID {
+                    return (index: index + 1, total: max(desktopSpaces.count, 1))
                 }
+            }
+
+            // Current space might be fullscreen - still return desktop count
+            if !desktopSpaces.isEmpty {
+                return (index: 1, total: desktopSpaces.count)
             }
         }
 
+        logger.debug("No spaces found, returning defaults")
         return (1, 1)
     }
 
     /// Switch to a specific space by index
     func switchToSpace(_ index: Int) {
-        guard index >= 1 && index <= totalSpaces else { return }
+        guard index >= 1 && index <= 9 else {
+            logger.warning("Invalid space index: \(index)")
+            return
+        }
+
+        logger.info("Switching to space \(index)")
 
         // Use keyboard shortcut simulation to switch spaces
         // Control + [number] is the default macOS shortcut
@@ -91,6 +114,9 @@ class SpaceTracker: ObservableObject {
             keyDown.post(tap: .cghidEventTap)
         }
 
+        // Small delay between key down and up
+        usleep(10000) // 10ms
+
         // Key up
         if let keyUp = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false) {
             keyUp.flags = .maskControl
@@ -99,10 +125,18 @@ class SpaceTracker: ObservableObject {
     }
 
     private func keyCodeForNumber(_ number: Int) -> CGKeyCode {
-        // Key codes for number keys 1-9
+        // Key codes for number keys 1-9 on US keyboard
         let keyCodes: [CGKeyCode] = [18, 19, 20, 21, 23, 22, 26, 28, 25] // 1-9
         guard number >= 1 && number <= 9 else { return 18 }
         return keyCodes[number - 1]
+    }
+
+    func cleanup() {
+        if let observer = spaceChangeObserver {
+            NSWorkspace.shared.notificationCenter.removeObserver(observer)
+            spaceChangeObserver = nil
+            logger.debug("Space change observer removed")
+        }
     }
 }
 

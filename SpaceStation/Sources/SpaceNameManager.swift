@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import os.log
 
 /// Manages custom names for Spaces with persistent storage
 @MainActor
@@ -8,9 +9,11 @@ class SpaceNameManager: ObservableObject {
 
     private let storageKey = "SpaceStationNames"
     private let defaults = UserDefaults.standard
+    private let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "SpaceNameManager")
 
     init() {
         loadNames()
+        logger.info("SpaceNameManager initialized with \(self.spaceNames.count) custom names")
     }
 
     /// Get the name for a space, or default to "Desktop N"
@@ -29,9 +32,12 @@ class SpaceNameManager: ObservableObject {
 
         if trimmed.isEmpty || trimmed == "Desktop \(spaceIndex)" {
             // Remove custom name if empty or matches default
-            spaceNames.removeValue(forKey: spaceIndex)
+            if spaceNames.removeValue(forKey: spaceIndex) != nil {
+                logger.info("Removed custom name for space \(spaceIndex)")
+            }
         } else {
             spaceNames[spaceIndex] = trimmed
+            logger.info("Set name for space \(spaceIndex): \(trimmed)")
         }
 
         saveNames()
@@ -39,8 +45,10 @@ class SpaceNameManager: ObservableObject {
 
     /// Remove custom name for a space (revert to default)
     func removeName(for spaceIndex: Int) {
-        spaceNames.removeValue(forKey: spaceIndex)
-        saveNames()
+        if spaceNames.removeValue(forKey: spaceIndex) != nil {
+            logger.info("Removed custom name for space \(spaceIndex)")
+            saveNames()
+        }
     }
 
     /// Get all custom names
@@ -51,15 +59,27 @@ class SpaceNameManager: ObservableObject {
     // MARK: - Persistence
 
     private func loadNames() {
-        guard let data = defaults.data(forKey: storageKey),
-              let decoded = try? JSONDecoder().decode([Int: String].self, from: data) else {
+        guard let data = defaults.data(forKey: storageKey) else {
+            logger.debug("No saved names found")
             return
         }
-        spaceNames = decoded
+
+        do {
+            let decoded = try JSONDecoder().decode([Int: String].self, from: data)
+            spaceNames = decoded
+            logger.debug("Loaded \(decoded.count) saved names")
+        } catch {
+            logger.error("Failed to decode saved names: \(error.localizedDescription)")
+        }
     }
 
     private func saveNames() {
-        guard let data = try? JSONEncoder().encode(spaceNames) else { return }
-        defaults.set(data, forKey: storageKey)
+        do {
+            let data = try JSONEncoder().encode(spaceNames)
+            defaults.set(data, forKey: storageKey)
+            logger.debug("Saved \(self.spaceNames.count) names")
+        } catch {
+            logger.error("Failed to encode names for saving: \(error.localizedDescription)")
+        }
     }
 }

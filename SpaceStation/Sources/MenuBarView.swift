@@ -6,6 +6,7 @@ struct MenuBarView: View {
     @State private var isRenaming = false
     @State private var renameText = ""
     @State private var renamingSpaceIndex: Int?
+    @FocusState private var isTextFieldFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -32,9 +33,18 @@ struct MenuBarView: View {
 
     private var currentSpaceHeader: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Current Space")
-                .font(.caption)
-                .foregroundColor(.secondary)
+            HStack {
+                Text("Current Space")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                if !spaceTracker.isTrackingAvailable {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                        .help("Space tracking unavailable")
+                }
+            }
 
             HStack {
                 Image(systemName: "checkmark.circle.fill")
@@ -83,9 +93,16 @@ struct MenuBarView: View {
 
             // Name (editable if renaming)
             if isRenaming && renamingSpaceIndex == index {
-                TextField("Space name", text: $renameText, onCommit: commitRename)
+                TextField("Space name", text: $renameText)
                     .textFieldStyle(.roundedBorder)
                     .font(.system(.body, design: .rounded))
+                    .focused($isTextFieldFocused)
+                    .onSubmit {
+                        commitRename()
+                    }
+                    .onExitCommand {
+                        cancelRename()
+                    }
             } else {
                 Text(nameManager.name(for: index))
                     .font(.system(.body, design: .rounded))
@@ -95,9 +112,11 @@ struct MenuBarView: View {
             Spacer()
 
             // Keyboard shortcut hint
-            Text("⌃\(index)")
-                .font(.caption)
-                .foregroundColor(.gray.opacity(0.5))
+            if index <= 9 {
+                Text("⌃\(index)")
+                    .font(.caption)
+                    .foregroundColor(.gray.opacity(0.5))
+            }
 
             // Rename button
             if !isRenaming {
@@ -118,7 +137,7 @@ struct MenuBarView: View {
         )
         .contentShape(Rectangle())
         .onTapGesture {
-            if !isRenaming {
+            if !isRenaming && index != spaceTracker.currentSpaceIndex {
                 spaceTracker.switchToSpace(index)
             }
         }
@@ -132,8 +151,16 @@ struct MenuBarView: View {
 
             Spacer()
 
-            Button(action: quitApp) {
-                Label("Quit", systemImage: "power")
+            if isRenaming {
+                Button("Done") {
+                    commitRename()
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+            } else {
+                Button(action: quitApp) {
+                    Label("Quit", systemImage: "power")
+                }
             }
         }
         .buttonStyle(.plain)
@@ -146,6 +173,10 @@ struct MenuBarView: View {
         renamingSpaceIndex = index
         renameText = nameManager.hasCustomName(for: index) ? nameManager.name(for: index) : ""
         isRenaming = true
+        // Delay focus to allow view to update
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            isTextFieldFocused = true
+        }
     }
 
     private func commitRename() {
@@ -155,10 +186,23 @@ struct MenuBarView: View {
         isRenaming = false
         renamingSpaceIndex = nil
         renameText = ""
+        isTextFieldFocused = false
+    }
+
+    private func cancelRename() {
+        isRenaming = false
+        renamingSpaceIndex = nil
+        renameText = ""
+        isTextFieldFocused = false
     }
 
     private func openSettings() {
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        // Use the modern approach for opening settings
+        if #available(macOS 14.0, *) {
+            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        } else {
+            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+        }
     }
 
     private func quitApp() {
