@@ -14,10 +14,12 @@
 		4FD5C5BEBDC7C2F0E884DA9C /* SpaceNameManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B039E90847D2400FB43C42C2 /* SpaceNameManagerTests.swift */; };
 		5F0EE27AD81E2C71D688B25E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A99BC02601C17385D1E67C55 /* SettingsView.swift */; };
 		6F7074807A22B301B656EE15 /* SwitcherController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DE1B73231E0FEB09DC325DF /* SwitcherController.swift */; };
+		7FB5AB242EF8FFEF12BED21D /* SpaceIconTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFCE4D9166BEF62F7532376 /* SpaceIconTests.swift */; };
 		8148C0735E170A45D37DD6C0 /* SpaceStationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F03E1B76F5A93E6D4409834 /* SpaceStationApp.swift */; };
 		A88D18CEFCB56E7A6D4262D4 /* SpaceParsingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A508B5DD8A2A268C79B708B /* SpaceParsingTests.swift */; };
 		CBFCEDCFC3C75769C5886D6A /* DesktopShortcutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2531D4116D2A49DDC1B5BF /* DesktopShortcutTests.swift */; };
 		CC156022CCE824F6DA9CFE0F /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105A3D97C7705DF3BA9BEEC /* MenuBarView.swift */; };
+		D7E6BFA3088EFA8C3A664AF1 /* SpaceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F4C93E36308B4444C858C9 /* SpaceIcon.swift */; };
 		DB7CD01B14FC22D17BE4BC9E /* SpaceNameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -33,8 +35,10 @@
 
 /* Begin PBXFileReference section */
 		1DE1B73231E0FEB09DC325DF /* SwitcherController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherController.swift; sourceTree = "<group>"; };
+		20F4C93E36308B4444C858C9 /* SpaceIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceIcon.swift; sourceTree = "<group>"; };
 		3105A3D97C7705DF3BA9BEEC /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		4D2531D4116D2A49DDC1B5BF /* DesktopShortcutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopShortcutTests.swift; sourceTree = "<group>"; };
+		4FFCE4D9166BEF62F7532376 /* SpaceIconTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceIconTests.swift; sourceTree = "<group>"; };
 		6E2618FA4824B1965303C957 /* GlobalHotKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKey.swift; sourceTree = "<group>"; };
 		6F03E1B76F5A93E6D4409834 /* SpaceStationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceStationApp.swift; sourceTree = "<group>"; };
 		8A508B5DD8A2A268C79B708B /* SpaceParsingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceParsingTests.swift; sourceTree = "<group>"; };
@@ -70,6 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				4D2531D4116D2A49DDC1B5BF /* DesktopShortcutTests.swift */,
+				4FFCE4D9166BEF62F7532376 /* SpaceIconTests.swift */,
 				B039E90847D2400FB43C42C2 /* SpaceNameManagerTests.swift */,
 				8A508B5DD8A2A268C79B708B /* SpaceParsingTests.swift */,
 			);
@@ -82,6 +87,7 @@
 				6E2618FA4824B1965303C957 /* GlobalHotKey.swift */,
 				3105A3D97C7705DF3BA9BEEC /* MenuBarView.swift */,
 				A99BC02601C17385D1E67C55 /* SettingsView.swift */,
+				20F4C93E36308B4444C858C9 /* SpaceIcon.swift */,
 				E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */,
 				6F03E1B76F5A93E6D4409834 /* SpaceStationApp.swift */,
 				D75349D15412B5C5E40B1A88 /* SpaceTracker.swift */,
@@ -206,6 +212,7 @@
 				2B7385E9D78105E74A578646 /* GlobalHotKey.swift in Sources */,
 				CC156022CCE824F6DA9CFE0F /* MenuBarView.swift in Sources */,
 				5F0EE27AD81E2C71D688B25E /* SettingsView.swift in Sources */,
+				D7E6BFA3088EFA8C3A664AF1 /* SpaceIcon.swift in Sources */,
 				DB7CD01B14FC22D17BE4BC9E /* SpaceNameManager.swift in Sources */,
 				8148C0735E170A45D37DD6C0 /* SpaceStationApp.swift in Sources */,
 				4C88780C91B8B6D411D368AD /* SpaceTracker.swift in Sources */,
@@ -219,6 +226,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CBFCEDCFC3C75769C5886D6A /* DesktopShortcutTests.swift in Sources */,
+				7FB5AB242EF8FFEF12BED21D /* SpaceIconTests.swift in Sources */,
 				4FD5C5BEBDC7C2F0E884DA9C /* SpaceNameManagerTests.swift in Sources */,
 				A88D18CEFCB56E7A6D4262D4 /* SpaceParsingTests.swift in Sources */,
 			);

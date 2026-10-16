@@ -9,11 +9,13 @@ import os.log
 @MainActor
 class SpaceNameManager: ObservableObject {
     @Published private var spaceNames: [String: String] = [:]
+    @Published private var spaceIcons: [String: String] = [:]
 
     /// Keeps the menu bar item (which shows the name) from growing without bound.
     static let maxNameLength = 40
 
     private let storageKey = "SpaceStationNamesByID"
+    private let iconStorageKey = "SpaceStationIconsByID"
     /// Pre-1.1 storage: names keyed by Space position.
     private let legacyStorageKey = "SpaceStationNames"
     private let defaults: UserDefaults
@@ -60,6 +62,35 @@ class SpaceNameManager: ObservableObject {
         }
     }
 
+    // MARK: - Icons
+
+    /// The icon chosen for a space, or the generic desktop icon.
+    func icon(for space: SpaceInfo) -> SpaceIcon {
+        spaceIcons[space.id].flatMap(SpaceIcon.init(storageValue:)) ?? .default
+    }
+
+    func hasCustomIcon(for space: SpaceInfo) -> Bool {
+        spaceIcons[space.id] != nil
+    }
+
+    /// Set a space's icon. Passing nil, or the default icon, reverts to the default.
+    func setIcon(_ icon: SpaceIcon?, for space: SpaceInfo) {
+        if let icon, icon != .default {
+            spaceIcons[space.id] = icon.storageValue
+        } else {
+            spaceIcons.removeValue(forKey: space.id)
+        }
+        saveIcons()
+    }
+
+    private func saveIcons() {
+        do {
+            defaults.set(try JSONEncoder().encode(spaceIcons), forKey: iconStorageKey)
+        } catch {
+            logger.error("Failed to encode icons for saving: \(error.localizedDescription)")
+        }
+    }
+
     private func defaultName(for space: SpaceInfo) -> String {
         "Desktop \(space.index)"
     }
@@ -88,6 +119,11 @@ class SpaceNameManager: ObservableObject {
     }
 
     private func loadNames() {
+        if let data = defaults.data(forKey: iconStorageKey),
+           let decoded = try? JSONDecoder().decode([String: String].self, from: data) {
+            spaceIcons = decoded
+        }
+
         guard let data = defaults.data(forKey: storageKey) else {
             logger.debug("No saved names found")
             return
