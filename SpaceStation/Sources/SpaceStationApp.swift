@@ -11,7 +11,7 @@ struct SpaceStationApp: App {
         } label: {
             HStack(spacing: 4) {
                 Image(systemName: "square.grid.2x2")
-                Text(nameManager.name(for: spaceTracker.currentSpace))
+                Text(spaceTracker.isInFullscreenSpace ? "Full Screen" : nameManager.name(for: spaceTracker.currentSpace))
                     .font(.system(.body, design: .rounded))
             }
             .onReceive(spaceTracker.$spaces) { spaces in

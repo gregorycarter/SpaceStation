@@ -90,17 +90,24 @@ struct MenuBarView: View {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
 
-                Text(nameManager.name(for: spaceTracker.currentSpace))
-                    .font(.headline)
+                if spaceTracker.isInFullscreenSpace {
+                    Text("Full Screen")
+                        .font(.headline)
 
-                Spacer()
+                    Spacer()
+                } else {
+                    Text(nameManager.name(for: spaceTracker.currentSpace))
+                        .font(.headline)
 
-                Button(action: { startRenaming(spaceTracker.currentSpace) }) {
-                    Image(systemName: "pencil")
-                        .foregroundColor(.secondary)
+                    Spacer()
+
+                    Button(action: { startRenaming(spaceTracker.currentSpace) }) {
+                        Image(systemName: "pencil")
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Rename this space")
                 }
-                .buttonStyle(.plain)
-                .help("Rename this space")
             }
         }
     }
@@ -120,7 +127,7 @@ struct MenuBarView: View {
 
     private func spaceRow(for space: SpaceInfo) -> some View {
         let index = space.index
-        let isCurrentSpace = index == spaceTracker.currentSpaceIndex
+        let isCurrentSpace = !spaceTracker.isInFullscreenSpace && index == spaceTracker.currentSpaceIndex
 
         return HStack {
             // Main tappable area - switches to this space
@@ -219,7 +226,7 @@ struct MenuBarView: View {
     private func handleSpaceTap(_ space: SpaceInfo) {
         let index = space.index
         guard !isRenaming else { return }
-        guard index != spaceTracker.currentSpaceIndex else { return }
+        guard spaceTracker.isInFullscreenSpace || index != spaceTracker.currentSpaceIndex else { return }
 
         if !spaceTracker.hasAccessibilityPermission {
             SetupWindowController.shared.showSetupWindow(spaceTracker: spaceTracker)

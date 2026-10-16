@@ -19,6 +19,8 @@ struct SpaceInfo: Identifiable, Equatable {
 class SpaceTracker: ObservableObject {
     @Published private(set) var currentSpaceIndex: Int = 1
     @Published private(set) var spaces: [SpaceInfo] = [.placeholder]
+    /// True while the active Space is a fullscreen app rather than a desktop.
+    @Published private(set) var isInFullscreenSpace: Bool = false
     @Published private(set) var isTrackingAvailable: Bool = true
     @Published private(set) var hasAccessibilityPermission: Bool = false
     @Published private(set) var hasKeyboardShortcutsEnabled: Bool = false
@@ -158,17 +160,22 @@ class SpaceTracker: ObservableObject {
 
     private func updateCurrentSpace() {
         let snapshot = readSpaces()
+        let isFullscreen = snapshot.currentIndex == nil
+        // In a fullscreen Space there is no desktop index; keep the last known one.
+        let newIndex = snapshot.currentIndex ?? currentSpaceIndex
 
-        if snapshot.spaces != spaces || snapshot.currentIndex != currentSpaceIndex {
-            logger.info("Space changed: index=\(snapshot.currentIndex), total=\(snapshot.spaces.count)")
+        if snapshot.spaces != spaces || newIndex != currentSpaceIndex || isFullscreen != isInFullscreenSpace {
+            logger.info("Space changed: index=\(newIndex), total=\(snapshot.spaces.count), fullscreen=\(isFullscreen)")
         }
 
         spaces = snapshot.spaces
-        currentSpaceIndex = snapshot.currentIndex
+        currentSpaceIndex = newIndex
+        isInFullscreenSpace = isFullscreen
     }
 
-    private func readSpaces() -> (spaces: [SpaceInfo], currentIndex: Int) {
-        let fallback = (spaces: [SpaceInfo.placeholder], currentIndex: 1)
+    /// `currentIndex` is nil when the active Space is not a desktop (e.g. a fullscreen app).
+    private func readSpaces() -> (spaces: [SpaceInfo], currentIndex: Int?) {
+        let fallback: (spaces: [SpaceInfo], currentIndex: Int?) = ([.placeholder], 1)
         let conn = CGSMainConnectionID()
 
         guard conn != 0 else {
@@ -186,27 +193,42 @@ class SpaceTracker: ObservableObject {
 
         isTrackingAvailable = true
 
-        for display in displays {
-            guard let currentSpace = display["Current Space"] as? [String: Any],
-                  let currentID = currentSpace["ManagedSpaceID"] as? Int,
-                  let allSpaces = display["Spaces"] as? [[String: Any]] else {
-                continue
-            }
-
-            // Only desktop Spaces (type 0); fullscreen apps (type 4) are excluded.
-            let desktops = allSpaces.filter { ($0["type"] as? Int ?? 0) == 0 }
-            let infos = desktops.enumerated().map { offset, space in
-                SpaceInfo(id: Self.stableID(for: space), index: offset + 1)
-            }
-            guard !infos.isEmpty else { continue }
-
-            let currentIndex = desktops.firstIndex { ($0["ManagedSpaceID"] as? Int) == currentID }
-                .map { $0 + 1 } ?? 1
-            return (infos, currentIndex)
+        guard let display = activeDisplay(in: displays),
+              let currentSpace = display["Current Space"] as? [String: Any],
+              let currentID = currentSpace["ManagedSpaceID"] as? Int,
+              let allSpaces = display["Spaces"] as? [[String: Any]] else {
+            logger.debug("No spaces found, returning defaults")
+            return fallback
         }
 
-        logger.debug("No spaces found, returning defaults")
-        return fallback
+        // Only desktop Spaces (type 0); fullscreen apps (type 4) are excluded.
+        let desktops = allSpaces.filter { ($0["type"] as? Int ?? 0) == 0 }
+        guard !desktops.isEmpty else { return fallback }
+
+        let infos = desktops.enumerated().map { offset, space in
+            SpaceInfo(id: Self.stableID(for: space), index: offset + 1)
+        }
+        let currentIndex = desktops.firstIndex { ($0["ManagedSpaceID"] as? Int) == currentID }
+            .map { $0 + 1 }
+        return (infos, currentIndex)
+    }
+
+    /// With "Displays have separate Spaces" each display has its own Spaces. Use the
+    /// one the user is working on (the screen with keyboard focus), not just the first.
+    private func activeDisplay(in displays: [[String: Any]]) -> [String: Any]? {
+        guard displays.count > 1 else { return displays.first }
+
+        if let screen = NSScreen.main,
+           let number = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID,
+           let uuid = CGDisplayCreateUUIDFromDisplayID(number)?.takeRetainedValue(),
+           let uuidString = CFUUIDCreateString(nil, uuid) as String?,
+           let match = displays.first(where: {
+               ($0["Display Identifier"] as? String)?.caseInsensitiveCompare(uuidString) == .orderedSame
+           }) {
+            return match
+        }
+
+        return displays.first { ($0["Display Identifier"] as? String) == "Main" } ?? displays.first
     }
 
     /// Prefer the Space's uuid; some Spaces report an empty one, so fall back to
