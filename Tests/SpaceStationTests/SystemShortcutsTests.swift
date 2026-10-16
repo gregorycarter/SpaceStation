@@ -110,3 +110,19 @@ final class DockHotCornersTests: XCTestCase {
         XCTAssertTrue(DockHotCorners.inUse(in: nil).isEmpty)
     }
 }
+
+final class CarbonModifierTests: XCTestCase {
+    func testModifiersMapToCarbonBits() {
+        XCTAssertEqual(KeyBinding(keyCode: 1, flags: .maskControl).carbonModifiers, 4096)       // controlKey
+        XCTAssertEqual(KeyBinding(keyCode: 1, flags: .maskAlternate).carbonModifiers, 2048)     // optionKey
+        XCTAssertEqual(KeyBinding(keyCode: 1, flags: .maskShift).carbonModifiers, 512)          // shiftKey
+        XCTAssertEqual(KeyBinding(keyCode: 1, flags: .maskCommand).carbonModifiers, 256)        // cmdKey
+        XCTAssertEqual(AppPreferences.defaultShortcut.carbonModifiers, 4096 | 2048)
+        XCTAssertEqual(KeyBinding(keyCode: 1, flags: []).carbonModifiers, 0)
+    }
+
+    func testTheFnBitIsIgnored() {
+        let flags = CGEventFlags(rawValue: CGEventFlags.maskControl.rawValue | CGEventFlags.maskSecondaryFn.rawValue)
+        XCTAssertEqual(KeyBinding(keyCode: 126, flags: flags).carbonModifiers, 4096)
+    }
+}

@@ -25,7 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             preferences: preferences,
             actions: StatusItemController.Actions(
                 rename: { [unowned self] _ in showSettings() },   // replaced by the rename popover
-                showSwitcher: { SwitcherController.shared.show() },
+                showSwitcher: { SwitcherController.shared.show(trigger: .menu) },
                 showSettings: { [unowned self] in showSettings() },
                 showAbout: { [unowned self] in showSettings() },
                 allowAccessibility: { [unowned self] in
@@ -34,7 +34,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 handleSwitchOutcome: { [unowned self] outcome in handle(outcome) }
             )
         )
-        SwitcherController.shared.configure(spaceTracker: spaceTracker, nameManager: nameManager)
+        SwitcherController.shared.configure(spaceTracker: spaceTracker, nameManager: nameManager, preferences: preferences,
+                                            handleOutcome: { [unowned self] outcome in handle(outcome) })
 
         #if DEBUG
         // Test hook (Debug builds only): SPACESTATION_DEBUG_SWITCH=<n> switches to desktop n shortly

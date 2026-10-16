@@ -1,5 +1,18 @@
 import Carbon.HIToolbox
+import CoreGraphics
 import os.log
+
+extension KeyBinding {
+    /// The modifier bits Carbon's RegisterEventHotKey expects.
+    var carbonModifiers: Int {
+        var result = 0
+        if flags.contains(.maskControl) { result |= controlKey }
+        if flags.contains(.maskAlternate) { result |= optionKey }
+        if flags.contains(.maskShift) { result |= shiftKey }
+        if flags.contains(.maskCommand) { result |= cmdKey }
+        return result
+    }
+}
 
 /// Registers a single system-wide hotkey using the public Carbon API.
 /// This needs no Accessibility or Input Monitoring permission.

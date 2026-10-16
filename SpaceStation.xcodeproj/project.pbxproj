@@ -46,6 +46,7 @@
 		E5C962BB8479F1D50B4975AE /* SpaceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F4C93E36308B4444C858C9 /* SpaceIcon.swift */; };
 		E6AFEC6220EFA0BE9CEC910B /* SpaceIconImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F3D6D6FE01364223980D1E5 /* SpaceIconImage.swift */; };
 		E9941B91AD7BA5A2A0AF371C /* SpaceIconImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F3D6D6FE01364223980D1E5 /* SpaceIconImage.swift */; };
+		EAB20EFA94D0A8DF65B21C6D /* GlobalHotKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E2618FA4824B1965303C957 /* GlobalHotKey.swift */; };
 		EB33641CC11BAD63C4859138 /* CodeSigning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175450945A925AE639332BBD /* CodeSigning.swift */; };
 		F057B2BA50E4BD28A95DD3BF /* HotCorner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067A0142533E62D423C1F86D /* HotCorner.swift */; };
 /* End PBXBuildFile section */
@@ -294,6 +295,7 @@
 				A1C4A0E144A01EB7D6329C5A /* CodeSigning.swift in Sources */,
 				4697AC837EB4D910B915DFDE /* CodeSigningTests.swift in Sources */,
 				CBFCEDCFC3C75769C5886D6A /* DesktopShortcutTests.swift in Sources */,
+				EAB20EFA94D0A8DF65B21C6D /* GlobalHotKey.swift in Sources */,
 				F057B2BA50E4BD28A95DD3BF /* HotCorner.swift in Sources */,
 				A96DA97912EF64BE62A9FF60 /* HotCornerTests.swift in Sources */,
 				77F46CDE081FD19E75C52FB5 /* MenuBarFormat.swift in Sources */,

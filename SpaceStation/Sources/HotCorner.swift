@@ -144,8 +144,8 @@ final class HotCornerMonitor {
 
     private static let interval: TimeInterval = 0.02
 
-    init(corner: HotCorner, onTrigger: @escaping () -> Void) {
-        self.trigger = HotCornerTrigger(corner: corner)
+    init(corner: HotCorner, dwell: TimeInterval = HotCornerTrigger.defaultDwell, onTrigger: @escaping () -> Void) {
+        self.trigger = HotCornerTrigger(corner: corner, dwell: dwell)
         self.onTrigger = onTrigger
         let timer = Timer(timeInterval: Self.interval, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
