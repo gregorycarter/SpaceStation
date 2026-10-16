@@ -41,9 +41,10 @@ final class SwitcherController {
 
     /// Whether the global hotkey is registered. Stored under this key by Settings.
     static let hotKeyEnabledKey = "switcherHotKeyEnabled"
-    /// Control + Option + S
+    /// Control + S. Note this shadows ⌃S in every other app (terminals, Emacs-style editors)
+    /// while the hotkey is enabled; users can turn it off in Settings.
     private static let hotKeyCode = kVK_ANSI_S
-    private static let hotKeyModifiers = controlKey | optionKey
+    private static let hotKeyModifiers = controlKey
 
     private let model = SwitcherModel()
     private let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "Switcher")

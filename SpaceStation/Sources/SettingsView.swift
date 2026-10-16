@@ -59,7 +59,7 @@ struct GeneralSettingsView: View {
             }
 
             Section {
-                Toggle("Show Space switcher with ⌃⌥S", isOn: Binding(
+                Toggle("Show Space switcher with ⌃S", isOn: Binding(
                     get: { switcherHotKeyEnabled },
                     set: { newValue in
                         switcherHotKeyEnabled = newValue

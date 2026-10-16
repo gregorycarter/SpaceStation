@@ -206,7 +206,7 @@ struct MenuBarView: View {
             Button(action: showSwitcher) {
                 Label("Switcher", systemImage: "rectangle.split.3x1")
             }
-            .help("Show the Space switcher (⌃⌥S)")
+            .help("Show the Space switcher (⌃S)")
 
             Spacer()
 
