@@ -70,6 +70,7 @@ targets:
       - path: SpaceStation/Sources/SpaceIcon.swift
       - path: SpaceStation/Sources/CodeSigning.swift
       - path: SpaceStation/Sources/HotCorner.swift
+      - path: SpaceStation/Sources/SystemShortcuts.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: true

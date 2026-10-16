@@ -14,12 +14,6 @@ struct SpaceInfo: Identifiable, Equatable {
     static let placeholder = SpaceInfo(id: "placeholder", index: 1)
 }
 
-/// A "Switch to Desktop N" keyboard shortcut.
-struct DesktopShortcut: Equatable {
-    let keyCode: CGKeyCode
-    let flags: CGEventFlags
-}
-
 /// Tracks the current Space (virtual desktop) and notifies observers of changes
 @MainActor
 class SpaceTracker: ObservableObject {
@@ -209,21 +203,7 @@ class SpaceTracker: ObservableObject {
 
     /// Pure parser for the `com.apple.symbolichotkeys` domain (testable).
     nonisolated static func desktopShortcut(for index: Int, in hotkeys: [String: Any]?) -> DesktopShortcut? {
-        guard (1...maxSwitchableSpace).contains(index),
-              let symbolicHotkeys = hotkeys?["AppleSymbolicHotKeys"] as? [String: Any],
-              let entry = symbolicHotkeys[String(117 + index)] as? [String: Any],
-              (entry["enabled"] as? Int) == 1,
-              let value = entry["value"] as? [String: Any],
-              let parameters = value["parameters"] as? [Int],
-              parameters.count >= 3,
-              // 65535 means "no key assigned"
-              (0..<65535).contains(parameters[1]),
-              parameters[2] >= 0 else {
-            return nil
-        }
-        // The stored modifier mask uses the same bit layout as CGEventFlags.
-        return DesktopShortcut(keyCode: CGKeyCode(parameters[1]),
-                               flags: CGEventFlags(rawValue: UInt64(parameters[2])))
+        SystemShortcuts.switchToDesktop(index, in: hotkeys)
     }
 
     // MARK: - Space Change Observer
