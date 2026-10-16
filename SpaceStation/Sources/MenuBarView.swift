@@ -3,9 +3,9 @@ import SwiftUI
 struct MenuBarView: View {
     @ObservedObject var spaceTracker: SpaceTracker
     @ObservedObject var nameManager: SpaceNameManager
-    @State private var isRenaming = false
     @State private var renameText = ""
     @State private var renamingSpace: SpaceInfo?
+    private var isRenaming: Bool { renamingSpace != nil }
     @FocusState private var isTextFieldFocused: Bool
 
     var body: some View {
@@ -248,7 +248,6 @@ struct MenuBarView: View {
     private func startRenaming(_ space: SpaceInfo) {
         renamingSpace = space
         renameText = nameManager.hasCustomName(for: space) ? nameManager.name(for: space) : ""
-        isRenaming = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             isTextFieldFocused = true
         }
@@ -258,14 +257,12 @@ struct MenuBarView: View {
         if let space = renamingSpace {
             nameManager.setName(renameText, for: space)
         }
-        isRenaming = false
         renamingSpace = nil
         renameText = ""
         isTextFieldFocused = false
     }
 
     private func cancelRename() {
-        isRenaming = false
         renamingSpace = nil
         renameText = ""
         isTextFieldFocused = false
