@@ -3,6 +3,7 @@ import ServiceManagement
 
 struct SettingsView: View {
     @ObservedObject var nameManager: SpaceNameManager
+    @ObservedObject var spaceTracker: SpaceTracker
     @AppStorage("launchAtLogin") private var launchAtLogin = false
 
     var body: some View {
@@ -12,7 +13,7 @@ struct SettingsView: View {
                     Label("General", systemImage: "gear")
                 }
 
-            SpaceNamesSettingsView(nameManager: nameManager)
+            SpaceNamesSettingsView(nameManager: nameManager, spaceTracker: spaceTracker)
                 .tabItem {
                     Label("Space Names", systemImage: "square.grid.2x2")
                 }
@@ -90,7 +91,8 @@ struct GeneralSettingsView: View {
 
 struct SpaceNamesSettingsView: View {
     @ObservedObject var nameManager: SpaceNameManager
-    @State private var editingNames: [Int: String] = [:]
+    @ObservedObject var spaceTracker: SpaceTracker
+    @State private var editingNames: [String: String] = [:]
 
     var body: some View {
         Form {
@@ -101,9 +103,9 @@ struct SpaceNamesSettingsView: View {
             }
 
             Section("Space Names") {
-                ForEach(1...9, id: \.self) { index in
+                ForEach(spaceTracker.spaces) { space in
                     HStack {
-                        Text("Desktop \(index)")
+                        Text("Desktop \(space.index)")
                             .frame(width: 80, alignment: .leading)
                             .foregroundColor(.secondary)
 
@@ -111,13 +113,13 @@ struct SpaceNamesSettingsView: View {
                             .foregroundColor(.gray.opacity(0.5))
 
                         TextField(
-                            "Desktop \(index)",
-                            text: binding(for: index)
+                            "Desktop \(space.index)",
+                            text: binding(for: space)
                         )
                         .textFieldStyle(.roundedBorder)
 
-                        if nameManager.hasCustomName(for: index) {
-                            Button(action: { clearName(index) }) {
+                        if nameManager.hasCustomName(for: space) {
+                            Button(action: { clearName(space) }) {
                                 Image(systemName: "xmark.circle.fill")
                                     .foregroundColor(.secondary)
                             }
@@ -131,31 +133,30 @@ struct SpaceNamesSettingsView: View {
         .formStyle(.grouped)
         .padding()
         .onAppear {
+            nameManager.migrateLegacyNames(using: spaceTracker.spaces)
             loadCurrentNames()
         }
     }
 
-    private func binding(for index: Int) -> Binding<String> {
+    private func binding(for space: SpaceInfo) -> Binding<String> {
         Binding(
-            get: { editingNames[index] ?? nameManager.name(for: index) },
+            get: { editingNames[space.id] ?? nameManager.name(for: space) },
             set: { newValue in
-                editingNames[index] = newValue
-                nameManager.setName(newValue, for: index)
+                editingNames[space.id] = newValue
+                nameManager.setName(newValue, for: space)
             }
         )
     }
 
     private func loadCurrentNames() {
-        for index in 1...9 {
-            if nameManager.hasCustomName(for: index) {
-                editingNames[index] = nameManager.name(for: index)
-            }
+        for space in spaceTracker.spaces where nameManager.hasCustomName(for: space) {
+            editingNames[space.id] = nameManager.name(for: space)
         }
     }
 
-    private func clearName(_ index: Int) {
-        editingNames.removeValue(forKey: index)
-        nameManager.removeName(for: index)
+    private func clearName(_ space: SpaceInfo) {
+        editingNames.removeValue(forKey: space.id)
+        nameManager.removeName(for: space)
     }
 }
 
@@ -197,5 +198,5 @@ struct AboutView: View {
 }
 
 #Preview {
-    SettingsView(nameManager: SpaceNameManager())
+    SettingsView(nameManager: SpaceNameManager(), spaceTracker: SpaceTracker())
 }

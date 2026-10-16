@@ -11,14 +11,17 @@ struct SpaceStationApp: App {
         } label: {
             HStack(spacing: 4) {
                 Image(systemName: "square.grid.2x2")
-                Text(nameManager.name(for: spaceTracker.currentSpaceIndex))
+                Text(nameManager.name(for: spaceTracker.currentSpace))
                     .font(.system(.body, design: .rounded))
+            }
+            .onReceive(spaceTracker.$spaces) { spaces in
+                nameManager.migrateLegacyNames(using: spaces)
             }
         }
         .menuBarExtraStyle(.window)
 
         Settings {
-            SettingsView(nameManager: nameManager)
+            SettingsView(nameManager: nameManager, spaceTracker: spaceTracker)
         }
     }
 }

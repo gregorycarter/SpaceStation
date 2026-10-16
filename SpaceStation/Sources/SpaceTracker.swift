@@ -4,14 +4,31 @@ import Combine
 import os.log
 import ApplicationServices
 
+/// A desktop Space. `id` is stable across reordering, so names are keyed on it;
+/// `index` is the 1-based position in Mission Control and can change.
+struct SpaceInfo: Identifiable, Equatable {
+    let id: String
+    let index: Int
+
+    /// Used when Space detection fails, so the UI always has something to show.
+    static let placeholder = SpaceInfo(id: "placeholder", index: 1)
+}
+
 /// Tracks the current Space (virtual desktop) and notifies observers of changes
 @MainActor
 class SpaceTracker: ObservableObject {
     @Published private(set) var currentSpaceIndex: Int = 1
-    @Published private(set) var totalSpaces: Int = 1
+    @Published private(set) var spaces: [SpaceInfo] = [.placeholder]
     @Published private(set) var isTrackingAvailable: Bool = true
     @Published private(set) var hasAccessibilityPermission: Bool = false
     @Published private(set) var hasKeyboardShortcutsEnabled: Bool = false
+
+    var totalSpaces: Int { spaces.count }
+
+    /// The current desktop Space (never empty; falls back to a placeholder).
+    var currentSpace: SpaceInfo {
+        spaces.first { $0.index == currentSpaceIndex } ?? spaces.first ?? .placeholder
+    }
 
     private var spaceChangeObserver: NSObjectProtocol?
     private let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "SpaceTracker")
@@ -140,60 +157,66 @@ class SpaceTracker: ObservableObject {
     }
 
     private func updateCurrentSpace() {
-        let spaceInfo = getCurrentSpaceInfo()
+        let snapshot = readSpaces()
 
-        if spaceInfo.index != currentSpaceIndex || spaceInfo.total != totalSpaces {
-            logger.info("Space changed: index=\(spaceInfo.index), total=\(spaceInfo.total)")
+        if snapshot.spaces != spaces || snapshot.currentIndex != currentSpaceIndex {
+            logger.info("Space changed: index=\(snapshot.currentIndex), total=\(snapshot.spaces.count)")
         }
 
-        currentSpaceIndex = spaceInfo.index
-        totalSpaces = spaceInfo.total
+        spaces = snapshot.spaces
+        currentSpaceIndex = snapshot.currentIndex
     }
 
-    private func getCurrentSpaceInfo() -> (index: Int, total: Int) {
+    private func readSpaces() -> (spaces: [SpaceInfo], currentIndex: Int) {
+        let fallback = (spaces: [SpaceInfo.placeholder], currentIndex: 1)
         let conn = CGSMainConnectionID()
 
         guard conn != 0 else {
             logger.warning("Failed to get CGS connection ID")
             isTrackingAvailable = false
-            return (1, 1)
+            return fallback
         }
 
         guard let spacesRef = CGSCopyManagedDisplaySpaces(conn),
-              let spaces = spacesRef as? [[String: Any]] else {
+              let displays = spacesRef as? [[String: Any]] else {
             logger.warning("Failed to get managed display spaces")
             isTrackingAvailable = false
-            return (1, 1)
+            return fallback
         }
 
         isTrackingAvailable = true
 
-        for display in spaces {
+        for display in displays {
             guard let currentSpace = display["Current Space"] as? [String: Any],
-                  let spaceID = currentSpace["ManagedSpaceID"] as? Int,
+                  let currentID = currentSpace["ManagedSpaceID"] as? Int,
                   let allSpaces = display["Spaces"] as? [[String: Any]] else {
                 continue
             }
 
-            // Filter out fullscreen spaces (type 4) and dashboard (type 2)
-            let desktopSpaces = allSpaces.filter { space in
-                guard let type = space["type"] as? Int else { return true }
-                return type == 0
+            // Only desktop Spaces (type 0); fullscreen apps (type 4) are excluded.
+            let desktops = allSpaces.filter { ($0["type"] as? Int ?? 0) == 0 }
+            let infos = desktops.enumerated().map { offset, space in
+                SpaceInfo(id: Self.stableID(for: space), index: offset + 1)
             }
+            guard !infos.isEmpty else { continue }
 
-            for (index, space) in desktopSpaces.enumerated() {
-                if let id = space["ManagedSpaceID"] as? Int, id == spaceID {
-                    return (index: index + 1, total: max(desktopSpaces.count, 1))
-                }
-            }
-
-            if !desktopSpaces.isEmpty {
-                return (index: 1, total: desktopSpaces.count)
-            }
+            let currentIndex = desktops.firstIndex { ($0["ManagedSpaceID"] as? Int) == currentID }
+                .map { $0 + 1 } ?? 1
+            return (infos, currentIndex)
         }
 
         logger.debug("No spaces found, returning defaults")
-        return (1, 1)
+        return fallback
+    }
+
+    /// Prefer the Space's uuid; some Spaces report an empty one, so fall back to
+    /// the managed Space ID.
+    private static func stableID(for space: [String: Any]) -> String {
+        if let uuid = space["uuid"] as? String, !uuid.isEmpty {
+            return uuid
+        }
+        let managedID = space["ManagedSpaceID"] as? Int ?? 0
+        return "managed-\(managedID)"
     }
 
     // MARK: - Space Switching

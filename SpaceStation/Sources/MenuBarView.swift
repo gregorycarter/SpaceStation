@@ -5,7 +5,7 @@ struct MenuBarView: View {
     @ObservedObject var nameManager: SpaceNameManager
     @State private var isRenaming = false
     @State private var renameText = ""
-    @State private var renamingSpaceIndex: Int?
+    @State private var renamingSpace: SpaceInfo?
     @FocusState private var isTextFieldFocused: Bool
 
     var body: some View {
@@ -36,6 +36,7 @@ struct MenuBarView: View {
         .frame(width: 300)
         .onAppear {
             spaceTracker.checkAccessibilityPermission()
+            nameManager.migrateLegacyNames(using: spaceTracker.spaces)
         }
     }
 
@@ -89,12 +90,12 @@ struct MenuBarView: View {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
 
-                Text(nameManager.name(for: spaceTracker.currentSpaceIndex))
+                Text(nameManager.name(for: spaceTracker.currentSpace))
                     .font(.headline)
 
                 Spacer()
 
-                Button(action: { startRenaming(spaceTracker.currentSpaceIndex) }) {
+                Button(action: { startRenaming(spaceTracker.currentSpace) }) {
                     Image(systemName: "pencil")
                         .foregroundColor(.secondary)
                 }
@@ -111,18 +112,19 @@ struct MenuBarView: View {
                 .foregroundColor(.secondary)
                 .padding(.bottom, 4)
 
-            ForEach(1...max(spaceTracker.totalSpaces, 1), id: \.self) { index in
-                spaceRow(for: index)
+            ForEach(spaceTracker.spaces) { space in
+                spaceRow(for: space)
             }
         }
     }
 
-    private func spaceRow(for index: Int) -> some View {
+    private func spaceRow(for space: SpaceInfo) -> some View {
+        let index = space.index
         let isCurrentSpace = index == spaceTracker.currentSpaceIndex
 
         return HStack {
             // Main tappable area - switches to this space
-            Button(action: { handleSpaceTap(index: index) }) {
+            Button(action: { handleSpaceTap(space) }) {
                 HStack {
                     // Active indicator
                     Image(systemName: isCurrentSpace ? "circle.fill" : "circle")
@@ -130,7 +132,7 @@ struct MenuBarView: View {
                         .foregroundColor(isCurrentSpace ? .blue : .secondary)
 
                     // Name (editable if renaming)
-                    if isRenaming && renamingSpaceIndex == index {
+                    if isRenaming && renamingSpace?.id == space.id {
                         TextField("Space name", text: $renameText)
                             .textFieldStyle(.roundedBorder)
                             .font(.system(.body, design: .rounded))
@@ -142,7 +144,7 @@ struct MenuBarView: View {
                                 cancelRename()
                             }
                     } else {
-                        Text(nameManager.name(for: index))
+                        Text(nameManager.name(for: space))
                             .font(.system(.body, design: .rounded))
                             .foregroundColor(isCurrentSpace ? .primary : .secondary)
                     }
@@ -162,7 +164,7 @@ struct MenuBarView: View {
 
             // Rename button (separate from main tap area)
             if !isRenaming {
-                Button(action: { startRenaming(index) }) {
+                Button(action: { startRenaming(space) }) {
                     Image(systemName: "pencil")
                         .font(.caption)
                 }
@@ -214,7 +216,8 @@ struct MenuBarView: View {
 
     // MARK: - Actions
 
-    private func handleSpaceTap(index: Int) {
+    private func handleSpaceTap(_ space: SpaceInfo) {
+        let index = space.index
         guard !isRenaming else { return }
         guard index != spaceTracker.currentSpaceIndex else { return }
 
@@ -226,9 +229,9 @@ struct MenuBarView: View {
         spaceTracker.switchToSpace(index)
     }
 
-    private func startRenaming(_ index: Int) {
-        renamingSpaceIndex = index
-        renameText = nameManager.hasCustomName(for: index) ? nameManager.name(for: index) : ""
+    private func startRenaming(_ space: SpaceInfo) {
+        renamingSpace = space
+        renameText = nameManager.hasCustomName(for: space) ? nameManager.name(for: space) : ""
         isRenaming = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             isTextFieldFocused = true
@@ -236,18 +239,18 @@ struct MenuBarView: View {
     }
 
     private func commitRename() {
-        if let index = renamingSpaceIndex {
-            nameManager.setName(renameText, for: index)
+        if let space = renamingSpace {
+            nameManager.setName(renameText, for: space)
         }
         isRenaming = false
-        renamingSpaceIndex = nil
+        renamingSpace = nil
         renameText = ""
         isTextFieldFocused = false
     }
 
     private func cancelRename() {
         isRenaming = false
-        renamingSpaceIndex = nil
+        renamingSpace = nil
         renameText = ""
         isTextFieldFocused = false
     }
