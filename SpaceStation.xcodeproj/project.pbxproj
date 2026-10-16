@@ -10,7 +10,9 @@
 		12917AB258A97B8D0DEF4B7D /* SwitcherLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3125E0C14DC502DDD5148F9 /* SwitcherLayoutTests.swift */; };
 		1D5413FC808874F989198846 /* SwitcherLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 540826D4F1C3EE53BD6BE415 /* SwitcherLayout.swift */; };
 		21B657FF099F140967D9E302 /* SystemShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EF59BDFACABB84D02308038 /* SystemShortcuts.swift */; };
+		2653C7B6B3B09261B6582226 /* AppPreferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FE4B1AE1295FF676FF4C405 /* AppPreferencesTests.swift */; };
 		2B7385E9D78105E74A578646 /* GlobalHotKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E2618FA4824B1965303C957 /* GlobalHotKey.swift */; };
+		2E280C55C86522DAB8A5E77D /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4754788611E4AF2A5789E64 /* AppPreferences.swift */; };
 		337A0E03B3454A8FC7BD488A /* SwitcherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451F274A0BD283BBA5EF109 /* SwitcherView.swift */; };
 		37D426812E9F1BA5F57373DD /* SystemShortcutsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EC50DA270F32E9814AEF6B6 /* SystemShortcutsTests.swift */; };
 		4697AC837EB4D910B915DFDE /* CodeSigningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC21ECCEB00406EEB12A1907 /* CodeSigningTests.swift */; };
@@ -34,6 +36,7 @@
 		CC156022CCE824F6DA9CFE0F /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105A3D97C7705DF3BA9BEEC /* MenuBarView.swift */; };
 		D7E6BFA3088EFA8C3A664AF1 /* SpaceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F4C93E36308B4444C858C9 /* SpaceIcon.swift */; };
 		DB7CD01B14FC22D17BE4BC9E /* SpaceNameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */; };
+		DD1EA0640E91F2F0155C3186 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4754788611E4AF2A5789E64 /* AppPreferences.swift */; };
 		E48B2444C02D3F8F65E9041B /* HotCorner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067A0142533E62D423C1F86D /* HotCorner.swift */; };
 		E5C962BB8479F1D50B4975AE /* SpaceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F4C93E36308B4444C858C9 /* SpaceIcon.swift */; };
 		EB33641CC11BAD63C4859138 /* CodeSigning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175450945A925AE639332BBD /* CodeSigning.swift */; };
@@ -42,6 +45,7 @@
 
 /* Begin PBXFileReference section */
 		067A0142533E62D423C1F86D /* HotCorner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotCorner.swift; sourceTree = "<group>"; };
+		0FE4B1AE1295FF676FF4C405 /* AppPreferencesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferencesTests.swift; sourceTree = "<group>"; };
 		175450945A925AE639332BBD /* CodeSigning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeSigning.swift; sourceTree = "<group>"; };
 		1DE1B73231E0FEB09DC325DF /* SwitcherController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherController.swift; sourceTree = "<group>"; };
 		20F4C93E36308B4444C858C9 /* SpaceIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceIcon.swift; sourceTree = "<group>"; };
@@ -60,6 +64,7 @@
 		A99BC02601C17385D1E67C55 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B039E90847D2400FB43C42C2 /* SpaceNameManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceNameManagerTests.swift; sourceTree = "<group>"; };
 		B451F274A0BD283BBA5EF109 /* SwitcherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherView.swift; sourceTree = "<group>"; };
+		C4754788611E4AF2A5789E64 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
 		CC21ECCEB00406EEB12A1907 /* CodeSigningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeSigningTests.swift; sourceTree = "<group>"; };
 		D3125E0C14DC502DDD5148F9 /* SwitcherLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherLayoutTests.swift; sourceTree = "<group>"; };
 		D72F874FDBD2AEA4EF84FE6C /* SpaceStationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpaceStationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -90,6 +95,7 @@
 		4305CEE579CEC4FDEE117EC6 /* SpaceStationTests */ = {
 			isa = PBXGroup;
 			children = (
+				0FE4B1AE1295FF676FF4C405 /* AppPreferencesTests.swift */,
 				CC21ECCEB00406EEB12A1907 /* CodeSigningTests.swift */,
 				4D2531D4116D2A49DDC1B5BF /* DesktopShortcutTests.swift */,
 				813356BD5D76961C078C432F /* HotCornerTests.swift */,
@@ -105,6 +111,7 @@
 		4D7D418B1033BC52774CB381 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				C4754788611E4AF2A5789E64 /* AppPreferences.swift */,
 				175450945A925AE639332BBD /* CodeSigning.swift */,
 				6E2618FA4824B1965303C957 /* GlobalHotKey.swift */,
 				067A0142533E62D423C1F86D /* HotCorner.swift */,
@@ -243,6 +250,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD1EA0640E91F2F0155C3186 /* AppPreferences.swift in Sources */,
 				EB33641CC11BAD63C4859138 /* CodeSigning.swift in Sources */,
 				2B7385E9D78105E74A578646 /* GlobalHotKey.swift in Sources */,
 				E48B2444C02D3F8F65E9041B /* HotCorner.swift in Sources */,
@@ -264,6 +272,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2E280C55C86522DAB8A5E77D /* AppPreferences.swift in Sources */,
+				2653C7B6B3B09261B6582226 /* AppPreferencesTests.swift in Sources */,
 				A1C4A0E144A01EB7D6329C5A /* CodeSigning.swift in Sources */,
 				4697AC837EB4D910B915DFDE /* CodeSigningTests.swift in Sources */,
 				CBFCEDCFC3C75769C5886D6A /* DesktopShortcutTests.swift in Sources */,
