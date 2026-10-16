@@ -6,6 +6,28 @@
 
 A macOS menu bar app for naming and managing Spaces (virtual desktops).
 
+## Why SpaceStation?
+
+macOS lets you switch between Spaces, but Mission Control only ever labels them "Desktop 1", "Desktop 2", … and there is
+no built-in way to rename them. Good menu bar apps already exist for this, notably
+[Spaceman](https://github.com/Jaysce/Spaceman) and [WhichSpace](https://github.com/gechr/WhichSpace),
+and both are worth a look: they show which Space you are on right in the menu bar, with more
+styling and automation options than SpaceStation has.
+
+SpaceStation takes a different angle. It is built around **names and a switcher**, so you can find a Space by what
+it is for, not by counting:
+
+- **Real names and icons.** Names up to 40 characters, with an SF Symbol or emoji for each, shown in the menu bar and everywhere else.
+- **A switcher you can drive from the keyboard or a corner.** A floating panel opened by a shortcut you choose or by resting the
+  pointer in a screen corner. It opens on your previous Space, so open + Return flips between your last two. Pick by clicking,
+  with the arrow keys, **1–9**, or by **typing part of a name**.
+- **Names follow the Space,** not its position, so reordering Spaces in Mission Control doesn't scramble them.
+- **Reaches every Space,** including those past macOS's ⌃1–⌃9 shortcuts, by stepping with the arrow shortcuts.
+- **Small and plain.** No third-party dependencies, no analytics, and the only network request is an optional check for a
+  newer version. [SECURITY.md](SECURITY.md) lists exactly what it does and doesn't do.
+
+If you only want a number or a coloured badge for the current Space, one of the apps above may suit you better.
+
 ## Features
 
 - Name your Spaces and give each an **icon** (an SF Symbol or any emoji), instead of "Desktop 1", "Desktop 2", …
@@ -31,6 +53,13 @@ A macOS menu bar app for naming and managing Spaces (virtual desktops).
 
 Download the latest `.dmg` from the [Releases](../../releases) page, drag
 SpaceStation to Applications and launch it. It runs in the menu bar only (no Dock icon).
+
+> **The current release is not yet signed or notarized by Apple.** macOS will refuse to open it the first time.
+> After dragging it to Applications, open it once (it will be blocked), then go to **System Settings → Privacy & Security**,
+> scroll to the message about SpaceStation and click **Open Anyway**. You only need to do this once per download.
+> Until it is signed, macOS also forgets the Accessibility permission after each update, so you will need to
+> allow it again (SpaceStation will say so). Prefer to check for yourself? The source is here and you can
+> [build it](#build-from-source), and each release lists a SHA-256 checksum for the `.dmg`.
 
 ### Setup
 
