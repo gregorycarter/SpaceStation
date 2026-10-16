@@ -39,3 +39,6 @@ playground.xcworkspace
 *.ipa
 *.dSYM.zip
 *.dSYM
+
+# Local signing configuration
+Config/Local.xcconfig

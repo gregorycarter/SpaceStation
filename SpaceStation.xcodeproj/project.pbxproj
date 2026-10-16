@@ -54,6 +54,7 @@
 		D75349D15412B5C5E40B1A88 /* SpaceTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceTracker.swift; sourceTree = "<group>"; };
 		E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceNameManager.swift; sourceTree = "<group>"; };
 		E411A0A1E0AD6BA45B9C27C7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F04530EC133698DF350F2130 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -103,9 +104,18 @@
 			path = Sources;
 			sourceTree = "<group>";
 		};
+		8277A8DCA9426DE31AD17EC7 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				F04530EC133698DF350F2130 /* Shared.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		8BABD55EE989349E44740E36 = {
 			isa = PBXGroup;
 			children = (
+				8277A8DCA9426DE31AD17EC7 /* Config */,
 				13F46F7713181484D5570B29 /* SpaceStation */,
 				3FD52484023EFAEE01525DAB /* Tests */,
 				B748047F1CD0ABF7408942D0 /* Products */,
@@ -253,6 +263,7 @@
 /* Begin XCBuildConfiguration section */
 		19F8D99D14FA40E1AD577857 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F04530EC133698DF350F2130 /* Shared.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -284,11 +295,9 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -388,6 +397,7 @@
 		};
 		F554B2FA4740AE173F514176 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F04530EC133698DF350F2130 /* Shared.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -419,11 +429,9 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;

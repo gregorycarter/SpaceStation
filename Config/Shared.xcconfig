@@ -1,0 +1,10 @@
+// Build settings shared by every configuration.
+//
+// To keep macOS's Accessibility permission across rebuilds, sign your local builds with a
+// real certificate. Copy Config/Local.xcconfig.example to Config/Local.xcconfig (git-ignored)
+// and set your team there; see CONTRIBUTING.md.
+
+CODE_SIGN_STYLE = Automatic
+DEVELOPMENT_TEAM =
+
+#include? "Local.xcconfig"

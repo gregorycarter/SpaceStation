@@ -140,7 +140,10 @@ macOS TCC (Transparency, Consent, and Control) tracks permissions by:
 
 With ad-hoc signing, each rebuild generates a new code signature hash. macOS sees each build as a "different app" and invalidates the previous accessibility permission.
 
-**Solution for development:** Use "Reset & try again" button which runs `tccutil reset`
+**Solution for development:** Sign with a stable certificate (see CONTRIBUTING.md and
+`Config/Local.xcconfig.example`), or use the "Reset & try again" button which runs `tccutil reset`.
+The app detects ad-hoc signing (`CodeSigning.swift`) and tells the user when the build has
+changed since access was last granted.
 **Solution for distribution:** Sign with Apple Developer ID ($99/year)
 
 ### Keyboard Shortcut Detection
