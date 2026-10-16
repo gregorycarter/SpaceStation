@@ -35,8 +35,28 @@ targets:
     info:
       path: SpaceStation/Info.plist
       properties:
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         LSUIElement: true
         LSApplicationCategoryType: public.app-category.utilities
         LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
         CFBundleDisplayName: SpaceStation
         NSHumanReadableCopyright: "Copyright © 2025 Gregory Carter"
+    scheme:
+      testTargets:
+        - SpaceStationTests
+
+  SpaceStationTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests/SpaceStationTests
+    dependencies:
+      - target: SpaceStation
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: true
+        PRODUCT_BUNDLE_IDENTIFIER: com.gregorycarter.SpaceStationTests
+        # The app target is an executable; load it into the test host.
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/SpaceStation.app/Contents/MacOS/SpaceStation"

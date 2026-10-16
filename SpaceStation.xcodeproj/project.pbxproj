@@ -9,17 +9,34 @@
 /* Begin PBXBuildFile section */
 		4B984A3568A94147F7C795BF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E411A0A1E0AD6BA45B9C27C7 /* Assets.xcassets */; };
 		4C88780C91B8B6D411D368AD /* SpaceTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75349D15412B5C5E40B1A88 /* SpaceTracker.swift */; };
+		4FD5C5BEBDC7C2F0E884DA9C /* SpaceNameManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B039E90847D2400FB43C42C2 /* SpaceNameManagerTests.swift */; };
 		5F0EE27AD81E2C71D688B25E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A99BC02601C17385D1E67C55 /* SettingsView.swift */; };
 		8148C0735E170A45D37DD6C0 /* SpaceStationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F03E1B76F5A93E6D4409834 /* SpaceStationApp.swift */; };
+		A88D18CEFCB56E7A6D4262D4 /* SpaceParsingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A508B5DD8A2A268C79B708B /* SpaceParsingTests.swift */; };
+		CBFCEDCFC3C75769C5886D6A /* DesktopShortcutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2531D4116D2A49DDC1B5BF /* DesktopShortcutTests.swift */; };
 		CC156022CCE824F6DA9CFE0F /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105A3D97C7705DF3BA9BEEC /* MenuBarView.swift */; };
 		DB7CD01B14FC22D17BE4BC9E /* SpaceNameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		3590084C10DB7A38F146D2B0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1CB02F3636DB225F332FB0E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F2FD1E11EB41E98F44FCDCE1;
+			remoteInfo = SpaceStation;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		3105A3D97C7705DF3BA9BEEC /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		4D2531D4116D2A49DDC1B5BF /* DesktopShortcutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopShortcutTests.swift; sourceTree = "<group>"; };
 		6F03E1B76F5A93E6D4409834 /* SpaceStationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceStationApp.swift; sourceTree = "<group>"; };
+		8A508B5DD8A2A268C79B708B /* SpaceParsingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceParsingTests.swift; sourceTree = "<group>"; };
 		8F5D5BE57DB007B1EC63273F /* SpaceStation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpaceStation.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A99BC02601C17385D1E67C55 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B039E90847D2400FB43C42C2 /* SpaceNameManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceNameManagerTests.swift; sourceTree = "<group>"; };
+		D72F874FDBD2AEA4EF84FE6C /* SpaceStationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpaceStationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D75349D15412B5C5E40B1A88 /* SpaceTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceTracker.swift; sourceTree = "<group>"; };
 		E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceNameManager.swift; sourceTree = "<group>"; };
 		E411A0A1E0AD6BA45B9C27C7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -33,6 +50,24 @@
 				4D7D418B1033BC52774CB381 /* Sources */,
 			);
 			path = SpaceStation;
+			sourceTree = "<group>";
+		};
+		3FD52484023EFAEE01525DAB /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				4305CEE579CEC4FDEE117EC6 /* SpaceStationTests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		4305CEE579CEC4FDEE117EC6 /* SpaceStationTests */ = {
+			isa = PBXGroup;
+			children = (
+				4D2531D4116D2A49DDC1B5BF /* DesktopShortcutTests.swift */,
+				B039E90847D2400FB43C42C2 /* SpaceNameManagerTests.swift */,
+				8A508B5DD8A2A268C79B708B /* SpaceParsingTests.swift */,
+			);
+			path = SpaceStationTests;
 			sourceTree = "<group>";
 		};
 		4D7D418B1033BC52774CB381 /* Sources */ = {
@@ -51,6 +86,7 @@
 			isa = PBXGroup;
 			children = (
 				13F46F7713181484D5570B29 /* SpaceStation */,
+				3FD52484023EFAEE01525DAB /* Tests */,
 				B748047F1CD0ABF7408942D0 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -59,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				8F5D5BE57DB007B1EC63273F /* SpaceStation.app */,
+				D72F874FDBD2AEA4EF84FE6C /* SpaceStationTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -66,6 +103,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		A00EF63B972500F6E606E6EB /* SpaceStationTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D4A0246B18FC41FA3406593E /* Build configuration list for PBXNativeTarget "SpaceStationTests" */;
+			buildPhases = (
+				B3F8112DB5BB5A0F40D5222B /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				76E303B200F108A96AABA44E /* PBXTargetDependency */,
+			);
+			name = SpaceStationTests;
+			packageProductDependencies = (
+			);
+			productName = SpaceStationTests;
+			productReference = D72F874FDBD2AEA4EF84FE6C /* SpaceStationTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		F2FD1E11EB41E98F44FCDCE1 /* SpaceStation */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0340E7ECA25C2F0D7EFFEF68 /* Build configuration list for PBXNativeTarget "SpaceStation" */;
@@ -93,6 +148,10 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					A00EF63B972500F6E606E6EB = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
 					F2FD1E11EB41E98F44FCDCE1 = {
 						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
@@ -100,7 +159,6 @@
 				};
 			};
 			buildConfigurationList = 8886078E0742A5C0446A39C2 /* Build configuration list for PBXProject "SpaceStation" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -110,10 +168,12 @@
 			mainGroup = 8BABD55EE989349E44740E36;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
+			productRefGroup = B748047F1CD0ABF7408942D0 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				F2FD1E11EB41E98F44FCDCE1 /* SpaceStation */,
+				A00EF63B972500F6E606E6EB /* SpaceStationTests */,
 			);
 		};
 /* End PBXProject section */
@@ -142,7 +202,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B3F8112DB5BB5A0F40D5222B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CBFCEDCFC3C75769C5886D6A /* DesktopShortcutTests.swift in Sources */,
+				4FD5C5BEBDC7C2F0E884DA9C /* SpaceNameManagerTests.swift in Sources */,
+				A88D18CEFCB56E7A6D4262D4 /* SpaceParsingTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		76E303B200F108A96AABA44E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F2FD1E11EB41E98F44FCDCE1 /* SpaceStation */;
+			targetProxy = 3590084C10DB7A38F146D2B0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		19F8D99D14FA40E1AD577857 /* Debug */ = {
@@ -212,6 +290,23 @@
 			};
 			name = Debug;
 		};
+		4DDB249E67C9E56010F8A505 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.gregorycarter.SpaceStationTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SpaceStation.app/Contents/MacOS/SpaceStation";
+			};
+			name = Release;
+		};
 		731B1DED9B440D8DD3A68687 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -245,6 +340,23 @@
 				SDKROOT = macosx;
 			};
 			name = Release;
+		};
+		ED7A04A50E80F420FA123989 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.gregorycarter.SpaceStationTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SpaceStation.app/Contents/MacOS/SpaceStation";
+			};
+			name = Debug;
 		};
 		F554B2FA4740AE173F514176 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -323,6 +435,15 @@
 			buildConfigurations = (
 				19F8D99D14FA40E1AD577857 /* Debug */,
 				F554B2FA4740AE173F514176 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D4A0246B18FC41FA3406593E /* Build configuration list for PBXNativeTarget "SpaceStationTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ED7A04A50E80F420FA123989 /* Debug */,
+				4DDB249E67C9E56010F8A505 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
