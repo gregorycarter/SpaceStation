@@ -1,6 +1,9 @@
 name: SpaceStation
 options:
   bundleIdPrefix: com.gregorycarter
+  # Marks the project as checked against Xcode 26.3's recommended settings
+  # (otherwise Xcode keeps offering "Update to recommended settings").
+  xcodeVersion: "2630"
   deploymentTarget:
     macOS: "13.0"
   createIntermediateGroups: true
@@ -18,6 +21,9 @@ settings:
     # Xcode's "recommended settings"
     DEAD_CODE_STRIPPING: YES
     ENABLE_USER_SCRIPT_SANDBOXING: YES
+    STRING_CATALOG_GENERATE_SYMBOLS: YES
+    # We don't use asset-symbol helpers; recorded as a deliberate choice.
+    ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: NO
 
 targets:
   SpaceStation:
