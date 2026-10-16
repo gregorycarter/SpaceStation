@@ -42,3 +42,4 @@ playground.xcworkspace
 
 # Local signing configuration
 Config/Local.xcconfig
+dist/
