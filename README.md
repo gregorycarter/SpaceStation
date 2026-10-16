@@ -24,4 +24,4 @@ Built with Swift and SwiftUI.
 
 ## License
 
-MIT
+[MIT](LICENSE) © Gregory Carter

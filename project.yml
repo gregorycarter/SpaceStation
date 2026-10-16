@@ -37,4 +37,4 @@ targets:
       properties:
         LSUIElement: true
         CFBundleDisplayName: SpaceStation
-        NSHumanReadableCopyright: "Copyright © 2025 Greg Carter"
+        NSHumanReadableCopyright: "Copyright © 2025 Gregory Carter"
