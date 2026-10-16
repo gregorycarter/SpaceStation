@@ -16,10 +16,11 @@ class SpaceNameManager: ObservableObject {
     private let storageKey = "SpaceStationNamesByID"
     /// Pre-1.1 storage: names keyed by Space position.
     private let legacyStorageKey = "SpaceStationNames"
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
     private let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "SpaceNameManager")
 
-    init() {
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         loadNames()
         logger.info("SpaceNameManager initialized with \(self.spaceNames.count) custom names")
     }

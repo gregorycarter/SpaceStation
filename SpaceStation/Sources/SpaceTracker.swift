@@ -14,6 +14,12 @@ struct SpaceInfo: Identifiable, Equatable {
     static let placeholder = SpaceInfo(id: "placeholder", index: 1)
 }
 
+/// A "Switch to Desktop N" keyboard shortcut.
+struct DesktopShortcut: Equatable {
+    let keyCode: CGKeyCode
+    let flags: CGEventFlags
+}
+
 /// Tracks the current Space (virtual desktop) and notifies observers of changes
 @MainActor
 class SpaceTracker: ObservableObject {
@@ -26,7 +32,7 @@ class SpaceTracker: ObservableObject {
     @Published private(set) var hasKeyboardShortcutsEnabled: Bool = false
 
     /// macOS only provides "Switch to Desktop N" shortcuts for Desktops 1-9.
-    static let maxSwitchableSpace = 9
+    nonisolated static let maxSwitchableSpace = 9
 
     var totalSpaces: Int { spaces.count }
 
@@ -129,10 +135,15 @@ class SpaceTracker: ObservableObject {
 
     /// The key and modifiers the user has configured for "Switch to Desktop N",
     /// or nil if that shortcut is disabled or can't be read.
-    private func desktopShortcut(for index: Int) -> (keyCode: CGKeyCode, flags: CGEventFlags)? {
-        guard (1...9).contains(index),
-              let hotkeys = UserDefaults.standard.persistentDomain(forName: "com.apple.symbolichotkeys"),
-              let symbolicHotkeys = hotkeys["AppleSymbolicHotKeys"] as? [String: Any],
+    private func desktopShortcut(for index: Int) -> DesktopShortcut? {
+        let hotkeys = UserDefaults.standard.persistentDomain(forName: "com.apple.symbolichotkeys")
+        return Self.desktopShortcut(for: index, in: hotkeys)
+    }
+
+    /// Pure parser for the `com.apple.symbolichotkeys` domain (testable).
+    nonisolated static func desktopShortcut(for index: Int, in hotkeys: [String: Any]?) -> DesktopShortcut? {
+        guard (1...maxSwitchableSpace).contains(index),
+              let symbolicHotkeys = hotkeys?["AppleSymbolicHotKeys"] as? [String: Any],
               let entry = symbolicHotkeys[String(117 + index)] as? [String: Any],
               (entry["enabled"] as? Int) == 1,
               let value = entry["value"] as? [String: Any],
@@ -144,7 +155,8 @@ class SpaceTracker: ObservableObject {
             return nil
         }
         // The stored modifier mask uses the same bit layout as CGEventFlags.
-        return (CGKeyCode(parameters[1]), CGEventFlags(rawValue: UInt64(parameters[2])))
+        return DesktopShortcut(keyCode: CGKeyCode(parameters[1]),
+                               flags: CGEventFlags(rawValue: UInt64(parameters[2])))
     }
 
     // MARK: - Space Change Observer
@@ -197,37 +209,55 @@ class SpaceTracker: ObservableObject {
 
         isTrackingAvailable = true
 
-        guard let display = activeDisplay(in: displays),
+        guard let snapshot = Self.parseSpaces(displays: displays, focusedDisplayUUID: Self.focusedDisplayUUID()) else {
+            logger.debug("No spaces found, returning defaults")
+            return fallback
+        }
+        return snapshot
+    }
+
+    /// Pure parser for the `CGSCopyManagedDisplaySpaces` result (testable).
+    /// Returns nil if no usable display/desktop is found.
+    nonisolated static func parseSpaces(displays: [[String: Any]],
+                                        focusedDisplayUUID: String?) -> (spaces: [SpaceInfo], currentIndex: Int?)? {
+        guard let display = activeDisplay(in: displays, focusedDisplayUUID: focusedDisplayUUID),
               let currentSpace = display["Current Space"] as? [String: Any],
               let currentID = currentSpace["ManagedSpaceID"] as? Int,
               let allSpaces = display["Spaces"] as? [[String: Any]] else {
-            logger.debug("No spaces found, returning defaults")
-            return fallback
+            return nil
         }
 
         // Only desktop Spaces (type 0); fullscreen apps (type 4) are excluded.
         let desktops = allSpaces.filter { ($0["type"] as? Int ?? 0) == 0 }
-        guard !desktops.isEmpty else { return fallback }
+        guard !desktops.isEmpty else { return nil }
 
         let infos = desktops.enumerated().map { offset, space in
-            SpaceInfo(id: Self.stableID(for: space), index: offset + 1)
+            SpaceInfo(id: stableID(for: space), index: offset + 1)
         }
         let currentIndex = desktops.firstIndex { ($0["ManagedSpaceID"] as? Int) == currentID }
             .map { $0 + 1 }
         return (infos, currentIndex)
     }
 
+    /// UUID string of the display with keyboard focus, if it can be determined.
+    private static func focusedDisplayUUID() -> String? {
+        guard let screen = NSScreen.main,
+              let number = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID,
+              let uuid = CGDisplayCreateUUIDFromDisplayID(number)?.takeRetainedValue() else {
+            return nil
+        }
+        return CFUUIDCreateString(nil, uuid) as String?
+    }
+
     /// With "Displays have separate Spaces" each display has its own Spaces. Use the
     /// one the user is working on (the screen with keyboard focus), not just the first.
-    private func activeDisplay(in displays: [[String: Any]]) -> [String: Any]? {
+    nonisolated private static func activeDisplay(in displays: [[String: Any]],
+                                                  focusedDisplayUUID: String?) -> [String: Any]? {
         guard displays.count > 1 else { return displays.first }
 
-        if let screen = NSScreen.main,
-           let number = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID,
-           let uuid = CGDisplayCreateUUIDFromDisplayID(number)?.takeRetainedValue(),
-           let uuidString = CFUUIDCreateString(nil, uuid) as String?,
+        if let focusedDisplayUUID,
            let match = displays.first(where: {
-               ($0["Display Identifier"] as? String)?.caseInsensitiveCompare(uuidString) == .orderedSame
+               ($0["Display Identifier"] as? String)?.caseInsensitiveCompare(focusedDisplayUUID) == .orderedSame
            }) {
             return match
         }
@@ -237,7 +267,7 @@ class SpaceTracker: ObservableObject {
 
     /// Prefer the Space's uuid; some Spaces report an empty one, so fall back to
     /// the managed Space ID.
-    private static func stableID(for space: [String: Any]) -> String {
+    nonisolated static func stableID(for space: [String: Any]) -> String {
         if let uuid = space["uuid"] as? String, !uuid.isEmpty {
             return uuid
         }
