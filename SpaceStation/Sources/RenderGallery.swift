@@ -77,6 +77,21 @@ enum RenderGallery {
             render(AboutSettingsView(), size: CGSize(width: w, height: 400), appearance: appearance, background: windowBackground,
                    to: folder.appendingPathComponent("settings-about-\(tag).png"))
         }
+        // Smoke test of the real Settings window (this is the code path that once crashed on
+        // building the tab controller): open every tab, check it, and capture the window chrome.
+        for tab in SettingsTab.allCases {
+            SettingsWindowController.shared.show(tab: tab, spaceTracker: tracker, nameManager: names, preferences: prefs)
+            RunLoop.current.run(until: Date().addingTimeInterval(0.4))
+            guard let window = SettingsWindowController.shared.windowForTesting, let frameView = window.contentView?.superview else {
+                print("FAILED: no Settings window for \(tab.title)")
+                continue
+            }
+            print("Settings tab \(tab.title): window title '\(window.title)', content \(Int(window.contentLayoutRect.width))x\(Int(window.contentLayoutRect.height))")
+            if let rep = frameView.bitmapImageRepForCachingDisplay(in: frameView.bounds) {
+                frameView.cacheDisplay(in: frameView.bounds, to: rep)
+                try? rep.representation(using: .png, properties: [:])?.write(to: folder.appendingPathComponent("window-\(tab.title.lowercased()).png"))
+            }
+        }
         print("Rendered to \(folder.path)")
     }
 

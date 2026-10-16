@@ -21,7 +21,7 @@ final class AppPreferencesTests: XCTestCase {
         XCTAssertTrue(prefs.shortenMenuBarNames)
         XCTAssertEqual(prefs.hotCorner, .off)
         XCTAssertEqual(prefs.hotCornerDelay, AppPreferences.instantDelay)   // "Instant", per the product owner
-        XCTAssertEqual(prefs.panelPlacement, .nearCorner)
+        XCTAssertEqual(prefs.panelPlacement, .centered)   // opens centred, as it always did; next-to-corner is opt-in
         XCTAssertTrue(prefs.showKeyboardHints)
         XCTAssertFalse(prefs.closeOnPointerExit)
         XCTAssertEqual(prefs.switcherShortcut?.display, "⌃⌥S")
@@ -33,7 +33,7 @@ final class AppPreferencesTests: XCTestCase {
         prefs.shortenMenuBarNames = false
         prefs.hotCorner = .topRight
         prefs.hotCornerDelay = 0.4
-        prefs.panelPlacement = .centered
+        prefs.panelPlacement = .nearCorner
         prefs.showKeyboardHints = false
         prefs.closeOnPointerExit = true
         prefs.switcherShortcut = KeyBinding(keyCode: 46, flags: .maskCommand)
@@ -43,7 +43,7 @@ final class AppPreferencesTests: XCTestCase {
         XCTAssertFalse(reloaded.shortenMenuBarNames)
         XCTAssertEqual(reloaded.hotCorner, .topRight)
         XCTAssertEqual(reloaded.hotCornerDelay, 0.4)
-        XCTAssertEqual(reloaded.panelPlacement, .centered)
+        XCTAssertEqual(reloaded.panelPlacement, .nearCorner)
         XCTAssertFalse(reloaded.showKeyboardHints)
         XCTAssertTrue(reloaded.closeOnPointerExit)
         XCTAssertEqual(reloaded.switcherShortcut?.display, "⌘M")

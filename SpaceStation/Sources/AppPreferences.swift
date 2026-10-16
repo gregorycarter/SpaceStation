@@ -72,7 +72,7 @@ final class AppPreferences: ObservableObject {
         hotCorner = defaults.string(forKey: Key.hotCorner).flatMap(HotCorner.init(rawValue:)) ?? .off
         let delay = defaults.object(forKey: Key.hotCornerDelay) as? Double ?? Self.instantDelay
         hotCornerDelay = min(max(delay, Self.delayRange.lowerBound), Self.delayRange.upperBound)
-        panelPlacement = defaults.string(forKey: Key.panelPlacement).flatMap(PanelPlacement.init(rawValue:)) ?? .nearCorner
+        panelPlacement = defaults.string(forKey: Key.panelPlacement).flatMap(PanelPlacement.init(rawValue:)) ?? .centered
         showKeyboardHints = defaults.object(forKey: Key.showKeyboardHints) as? Bool ?? true
         closeOnPointerExit = defaults.object(forKey: Key.closeOnPointerExit) as? Bool ?? false
     }

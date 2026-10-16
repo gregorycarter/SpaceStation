@@ -23,20 +23,37 @@ enum SettingsTab: Int, CaseIterable {
     }
 }
 
+/// NSTabViewController owns its tab view's delegate (assigning another one is an assertion
+/// failure), so tab changes are observed by overriding the delegate method here.
+private final class SettingsTabViewController: NSTabViewController {
+    var onSelectTab: ((SettingsTab) -> Void)?
+
+    override func tabView(_ tabView: NSTabView, didSelect tabViewItem: NSTabViewItem?) {
+        super.tabView(tabView, didSelect: tabViewItem)
+        guard let tabViewItem, let tab = SettingsTab(rawValue: tabView.indexOfTabViewItem(tabViewItem)) else { return }
+        onSelectTab?(tab)
+    }
+}
+
 /// The Settings window: a standard toolbar-style tab window (like System Settings' older panes)
 /// whose tabs are SwiftUI grouped forms. It is built directly rather than as a SwiftUI Settings
 /// scene, which is unreliable for apps with no Dock icon.
 @MainActor
-final class SettingsWindowController: NSObject, NSTabViewDelegate {
+final class SettingsWindowController: NSObject {
     static let shared = SettingsWindowController()
 
     static let width: CGFloat = 560
 
     private var window: NSWindow?
-    private var tabController: NSTabViewController?
+    private var tabController: SettingsTabViewController?
     private var model: SettingsModel?
 
     private override init() { super.init() }
+
+    #if DEBUG
+    /// For the offscreen renderer's smoke test of the real window.
+    var windowForTesting: NSWindow? { window }
+    #endif
 
     func show(tab: SettingsTab = .general, spaceTracker: SpaceTracker, nameManager: SpaceNameManager, preferences: AppPreferences) {
         if window == nil {
@@ -56,7 +73,7 @@ final class SettingsWindowController: NSObject, NSTabViewDelegate {
         let model = SettingsModel(spaceTracker: spaceTracker, nameManager: nameManager, preferences: preferences)
         self.model = model
 
-        let tabController = NSTabViewController()
+        let tabController = SettingsTabViewController()
         tabController.tabStyle = .toolbar
         tabController.transitionOptions = []
 
@@ -71,7 +88,9 @@ final class SettingsWindowController: NSObject, NSTabViewDelegate {
         tabController.addTabViewItem(item(.switcher, SwitcherSettingsView(model: model, preferences: preferences)))
         tabController.addTabViewItem(item(.spaces, SpacesSettingsView(nameManager: nameManager, spaceTracker: spaceTracker)))
         tabController.addTabViewItem(item(.about, AboutSettingsView()))
-        tabController.tabView.delegate = self
+        tabController.onSelectTab = { [weak self] tab in
+            self?.resizeWindow(for: tab, animated: self?.window?.isVisible == true)
+        }
         self.tabController = tabController
 
         let window = NSWindow(contentViewController: tabController)
@@ -99,17 +118,11 @@ final class SettingsWindowController: NSObject, NSTabViewDelegate {
 
     private func resizeWindow(for tab: SettingsTab, animated: Bool) {
         guard let window else { return }
+        window.title = tab.title   // the title follows the selected tab
         let newContent = NSSize(width: Self.width, height: height(for: tab))
         let frame = window.frameRect(forContentRect: NSRect(origin: .zero, size: newContent))
         var origin = window.frame.origin
         origin.y += window.frame.height - frame.height   // keep the top edge in place
         window.setFrame(NSRect(origin: origin, size: frame.size), display: true, animate: animated)
-    }
-
-    nonisolated func tabView(_ tabView: NSTabView, didSelect tabViewItem: NSTabViewItem?) {
-        MainActor.assumeIsolated {
-            guard let tabViewItem, let tab = SettingsTab(rawValue: tabView.indexOfTabViewItem(tabViewItem)) else { return }
-            resizeWindow(for: tab, animated: window?.isVisible == true)
-        }
     }
 }
