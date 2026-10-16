@@ -1,14 +1,14 @@
 import SwiftUI
 import ServiceManagement
+import os.log
 
 struct SettingsView: View {
     @ObservedObject var nameManager: SpaceNameManager
     @ObservedObject var spaceTracker: SpaceTracker
-    @AppStorage("launchAtLogin") private var launchAtLogin = false
 
     var body: some View {
         TabView {
-            GeneralSettingsView(launchAtLogin: $launchAtLogin)
+            GeneralSettingsView()
                 .tabItem {
                     Label("General", systemImage: "gear")
                 }
@@ -30,19 +30,31 @@ struct SettingsView: View {
 // MARK: - General Settings
 
 struct GeneralSettingsView: View {
-    @Binding var launchAtLogin: Bool
+    // The system (SMAppService) is the source of truth, not a stored preference,
+    // so the toggle can't drift if registration fails or the user changes it in
+    // System Settings → General → Login Items.
+    @State private var launchAtLogin = false
+    @State private var launchError: String?
+
+    private static let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "Settings")
 
     var body: some View {
         Form {
             Section {
-                Toggle("Launch at Login", isOn: $launchAtLogin)
-                    .onChange(of: launchAtLogin) { newValue in
-                        setLaunchAtLogin(newValue)
-                    }
+                Toggle("Launch at Login", isOn: Binding(
+                    get: { launchAtLogin },
+                    set: { setLaunchAtLogin($0) }
+                ))
 
                 Text("SpaceStation will start automatically when you log in.")
                     .font(.caption)
                     .foregroundColor(.secondary)
+
+                if let launchError {
+                    Text(launchError)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                }
             }
 
             Section {
@@ -62,6 +74,9 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .padding()
+        .onAppear {
+            refreshLaunchAtLogin()
+        }
     }
 
     private func shortcutRow(_ label: String, shortcut: String) -> some View {
@@ -74,7 +89,12 @@ struct GeneralSettingsView: View {
         }
     }
 
+    private func refreshLaunchAtLogin() {
+        launchAtLogin = SMAppService.mainApp.status == .enabled
+    }
+
     private func setLaunchAtLogin(_ enabled: Bool) {
+        launchError = nil
         do {
             if enabled {
                 try SMAppService.mainApp.register()
@@ -82,8 +102,14 @@ struct GeneralSettingsView: View {
                 try SMAppService.mainApp.unregister()
             }
         } catch {
-            print("Failed to \(enabled ? "enable" : "disable") launch at login: \(error)")
+            Self.logger.error("Failed to \(enabled ? "enable" : "disable") launch at login: \(error.localizedDescription)")
+            launchError = "Couldn't \(enabled ? "enable" : "disable") launch at login: \(error.localizedDescription)"
         }
+
+        if SMAppService.mainApp.status == .requiresApproval {
+            launchError = "Approve SpaceStation in System Settings → General → Login Items."
+        }
+        refreshLaunchAtLogin()
     }
 }
 
