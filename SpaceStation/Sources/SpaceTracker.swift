@@ -50,8 +50,8 @@ class SpaceTracker: ObservableObject {
     private var spaceChangeObserver: NSObjectProtocol?
     private let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "SpaceTracker")
     private let signingIdentity = CodeSigning.current()
-    private static let lastTrustedBuildKey = "lastAccessibilityTrustedBuildID"
-    private static let lastAutoResetBuildKey = "lastAccessibilityAutoResetBuildID"
+    private static let lastTrustedRequirementKey = "lastAccessibilityTrustedRequirement"
+    private static let lastAutoResetRequirementKey = "lastAccessibilityAutoResetRequirement"
     private var accessibilityObserver: NSObjectProtocol?
 
     init() {
@@ -79,9 +79,9 @@ class SpaceTracker: ObservableObject {
         }
     }
 
-    /// If this ad-hoc build differs from the one that was granted access, the old grant can't
-    /// apply but still looks enabled in System Settings. Clear our entry once and re-prompt so
-    /// the user only has to switch it on, instead of diagnosing a stale toggle.
+    /// If the app's signing requirement differs from the one that was granted access, the old
+    /// grant can't apply but still looks enabled in System Settings. Clear our entry once and
+    /// re-prompt so the user only has to switch it on, instead of diagnosing a stale toggle.
     private func healStaleAccessibilityGrantIfNeeded() {
         // The unit-test host launches the real app; never touch the user's permissions from tests.
         guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
@@ -90,11 +90,11 @@ class SpaceTracker: ObservableObject {
         guard CodeSigning.shouldAutoResetStaleGrant(
                 hint: accessibilityHint,
                 identity: signingIdentity,
-                lastAutoResetBuildID: defaults.string(forKey: Self.lastAutoResetBuildKey)),
-              let buildID = signingIdentity?.buildID else { return }
+                lastAutoResetRequirement: defaults.string(forKey: Self.lastAutoResetRequirementKey)),
+              let requirement = signingIdentity?.requirement else { return }
 
-        defaults.set(buildID, forKey: Self.lastAutoResetBuildKey)
-        logger.info("Stale Accessibility grant for a previous ad-hoc build; resetting it once")
+        defaults.set(requirement, forKey: Self.lastAutoResetRequirementKey)
+        logger.info("Stale Accessibility grant for a previous signature; resetting it once")
         resetAndRequestPermission(openSettings: false)
     }
 
@@ -108,17 +108,17 @@ class SpaceTracker: ObservableObject {
         logger.info("Accessibility permission check: \(trusted)")
     }
 
-    /// Records the result, and remembers which build was last trusted so a later
-    /// "not trusted" on a different ad-hoc build can be explained.
+    /// Records the result, and remembers which signing requirement was last trusted so a
+    /// later "not trusted" under a different signature can be explained and healed.
     private func updateAccessibilityState(trusted: Bool) {
         hasAccessibilityPermission = trusted
-        if trusted, let id = signingIdentity?.buildID {
-            UserDefaults.standard.set(id, forKey: Self.lastTrustedBuildKey)
+        if trusted, let requirement = signingIdentity?.requirement {
+            UserDefaults.standard.set(requirement, forKey: Self.lastTrustedRequirementKey)
         }
         accessibilityHint = CodeSigning.accessibilityHint(
             isTrusted: trusted,
             identity: signingIdentity,
-            lastTrustedBuildID: UserDefaults.standard.string(forKey: Self.lastTrustedBuildKey))
+            lastTrustedRequirement: UserDefaults.standard.string(forKey: Self.lastTrustedRequirementKey))
     }
 
     func requestAccessibilityPermission() {

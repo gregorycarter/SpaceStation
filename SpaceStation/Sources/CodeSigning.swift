@@ -3,21 +3,23 @@ import Security
 
 /// Describes how the running app is signed.
 ///
-/// macOS ties the Accessibility permission to the app's code signature. An ad-hoc
-/// signature (what Xcode produces without a signing certificate) is identified only by
-/// a hash of that exact build, so every rebuild looks like a different app and the
-/// previously granted permission stops applying, even though System Settings still
-/// lists SpaceStation as switched on.
+/// macOS ties the Accessibility permission to the app's *designated requirement*, a rule
+/// derived from its code signature. For an ad-hoc signature (Xcode without a certificate)
+/// that rule is a hash of the exact build, so every rebuild looks like a different app. For
+/// a certificate-signed build it names the certificate and stays the same across rebuilds.
+/// If the requirement changes (ad-hoc to signed, dev certificate to Developer ID, ...) an
+/// existing grant stops applying even though System Settings still lists the app as enabled.
 enum CodeSigning {
     struct Identity: Equatable {
         let isAdHoc: Bool
-        /// Hex hash of this exact build (the cdhash), if available.
-        let buildID: String?
+        /// The designated requirement as text, e.g. `cdhash H"..."` or
+        /// `identifier "..." and anchor apple generic and certificate leaf[...]`.
+        let requirement: String?
     }
 
     enum AccessibilityHint: Equatable {
-        /// An ad-hoc build whose hash differs from the one that was last granted access.
-        case buildChanged
+        /// The app's signing requirement differs from the one that was last granted access.
+        case signatureChanged
         /// An ad-hoc build: permission won't survive rebuilds or updates.
         case adHocBuild
     }
@@ -38,30 +40,34 @@ enum CodeSigning {
             return nil
         }
         let flags = (dict[kSecCodeInfoFlags as String] as? NSNumber)?.uint32Value ?? 0
-        let unique = dict[kSecCodeInfoUnique as String] as? Data
-        return Identity(isAdHoc: isAdHoc(flags: flags),
-                        buildID: unique?.map { String(format: "%02x", $0) }.joined())
+
+        var requirement: SecRequirement?
+        var requirementText: CFString?
+        if SecCodeCopyDesignatedRequirement(staticCode, [], &requirement) == errSecSuccess, let requirement {
+            SecRequirementCopyString(requirement, [], &requirementText)
+        }
+        return Identity(isAdHoc: isAdHoc(flags: flags), requirement: requirementText as String?)
     }
 
-    /// Whether to automatically clear a stale Accessibility grant: only for an ad-hoc build
-    /// that differs from the one last trusted (so the old grant provably can't apply), and
-    /// only once per build so a failed attempt can't loop.
-    static func shouldAutoResetStaleGrant(hint: AccessibilityHint?,
-                                          identity: Identity?,
-                                          lastAutoResetBuildID: String?) -> Bool {
-        guard hint == .buildChanged, let buildID = identity?.buildID else { return false }
-        return lastAutoResetBuildID != buildID
-    }
-
-    /// Why Accessibility might not be working, when we can tell. Nil when it is granted,
-    /// or when the signature gives no reason to suspect a stale grant.
+    /// Why Accessibility might not be working, when we can tell. Nil when it is granted, or
+    /// when nothing about the signature explains it.
     static func accessibilityHint(isTrusted: Bool,
                                   identity: Identity?,
-                                  lastTrustedBuildID: String?) -> AccessibilityHint? {
-        guard !isTrusted, let identity, identity.isAdHoc else { return nil }
-        if let last = lastTrustedBuildID, let current = identity.buildID, last != current {
-            return .buildChanged
+                                  lastTrustedRequirement: String?) -> AccessibilityHint? {
+        guard !isTrusted, let identity else { return nil }
+        if let last = lastTrustedRequirement, let current = identity.requirement, last != current {
+            return .signatureChanged
         }
-        return .adHocBuild
+        return identity.isAdHoc ? .adHocBuild : nil
+    }
+
+    /// Whether to automatically clear a stale Accessibility grant: only when the signing
+    /// requirement changed since access was granted (so the old grant provably can't apply),
+    /// and only once per requirement so a failed attempt can't loop.
+    static func shouldAutoResetStaleGrant(hint: AccessibilityHint?,
+                                          identity: Identity?,
+                                          lastAutoResetRequirement: String?) -> Bool {
+        guard hint == .signatureChanged, let requirement = identity?.requirement else { return false }
+        return lastAutoResetRequirement != requirement
     }
 }

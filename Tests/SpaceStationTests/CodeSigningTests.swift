@@ -3,8 +3,8 @@ import Security
 @testable import SpaceStation
 
 final class CodeSigningTests: XCTestCase {
-    private let adHoc = CodeSigning.Identity(isAdHoc: true, buildID: "bbbb")
-    private let signed = CodeSigning.Identity(isAdHoc: false, buildID: "bbbb")
+    private let adHocB = CodeSigning.Identity(isAdHoc: true, requirement: #"cdhash H"bbbb""#)
+    private let signedA = CodeSigning.Identity(isAdHoc: false, requirement: #"identifier "x" and certificate leaf[subject.CN] = "Dev A""#)
 
     func testAdHocFlagIsDetected() {
         XCTAssertTrue(CodeSigning.isAdHoc(flags: SecCodeSignatureFlags.adhoc.rawValue))
@@ -14,47 +14,51 @@ final class CodeSigningTests: XCTestCase {
     }
 
     func testNoHintWhenTrusted() {
-        XCTAssertNil(CodeSigning.accessibilityHint(isTrusted: true, identity: adHoc, lastTrustedBuildID: "aaaa"))
+        XCTAssertNil(CodeSigning.accessibilityHint(isTrusted: true, identity: adHocB, lastTrustedRequirement: #"cdhash H"aaaa""#))
     }
 
-    func testBuildChangedWhenAdHocBuildDiffersFromLastTrusted() {
-        XCTAssertEqual(CodeSigning.accessibilityHint(isTrusted: false, identity: adHoc, lastTrustedBuildID: "aaaa"),
-                       .buildChanged)
+    func testSignatureChangedForAnyKindOfChange() {
+        // ad-hoc build -> different ad-hoc build
+        XCTAssertEqual(CodeSigning.accessibilityHint(isTrusted: false, identity: adHocB, lastTrustedRequirement: #"cdhash H"aaaa""#), .signatureChanged)
+        // ad-hoc grant -> now signed with a certificate (the real-world case)
+        XCTAssertEqual(CodeSigning.accessibilityHint(isTrusted: false, identity: signedA, lastTrustedRequirement: #"cdhash H"aaaa""#), .signatureChanged)
+        // certificate A -> certificate B
+        XCTAssertEqual(CodeSigning.accessibilityHint(isTrusted: false, identity: signedA, lastTrustedRequirement: #"identifier "x" and certificate leaf[subject.CN] = "Dev B""#), .signatureChanged)
     }
 
     func testAdHocHintWhenNothingWasTrustedBefore() {
-        XCTAssertEqual(CodeSigning.accessibilityHint(isTrusted: false, identity: adHoc, lastTrustedBuildID: nil),
-                       .adHocBuild)
-        XCTAssertEqual(CodeSigning.accessibilityHint(isTrusted: false, identity: adHoc, lastTrustedBuildID: "bbbb"),
-                       .adHocBuild)
+        XCTAssertEqual(CodeSigning.accessibilityHint(isTrusted: false, identity: adHocB, lastTrustedRequirement: nil), .adHocBuild)
+        XCTAssertEqual(CodeSigning.accessibilityHint(isTrusted: false, identity: adHocB, lastTrustedRequirement: adHocB.requirement), .adHocBuild)
     }
 
-    func testNoHintForProperlySignedOrUnknownBuilds() {
-        XCTAssertNil(CodeSigning.accessibilityHint(isTrusted: false, identity: signed, lastTrustedBuildID: "aaaa"))
-        XCTAssertNil(CodeSigning.accessibilityHint(isTrusted: false, identity: nil, lastTrustedBuildID: "aaaa"))
+    func testNoHintWhenSignatureIsUnchangedAndNotAdHoc() {
+        // Same stable signature as when it was granted, yet not trusted: the signature doesn't explain it.
+        XCTAssertNil(CodeSigning.accessibilityHint(isTrusted: false, identity: signedA, lastTrustedRequirement: signedA.requirement))
+        XCTAssertNil(CodeSigning.accessibilityHint(isTrusted: false, identity: signedA, lastTrustedRequirement: nil))
+        XCTAssertNil(CodeSigning.accessibilityHint(isTrusted: false, identity: nil, lastTrustedRequirement: "anything"))
     }
 
     func testCurrentIdentityCanBeReadForTheRunningProcess() throws {
         let identity = try XCTUnwrap(CodeSigning.current())
-        XCTAssertNotNil(identity.buildID)
+        XCTAssertNotNil(identity.requirement)
     }
 }
 
 final class StaleGrantHealingTests: XCTestCase {
-    private let adHoc = CodeSigning.Identity(isAdHoc: true, buildID: "bbbb")
+    private let identity = CodeSigning.Identity(isAdHoc: false, requirement: "req-B")
 
-    func testResetsOnceWhenAnAdHocBuildChanged() {
-        XCTAssertTrue(CodeSigning.shouldAutoResetStaleGrant(hint: .buildChanged, identity: adHoc, lastAutoResetBuildID: nil))
-        XCTAssertTrue(CodeSigning.shouldAutoResetStaleGrant(hint: .buildChanged, identity: adHoc, lastAutoResetBuildID: "aaaa"))
+    func testResetsOnceWhenTheSignatureChanged() {
+        XCTAssertTrue(CodeSigning.shouldAutoResetStaleGrant(hint: .signatureChanged, identity: identity, lastAutoResetRequirement: nil))
+        XCTAssertTrue(CodeSigning.shouldAutoResetStaleGrant(hint: .signatureChanged, identity: identity, lastAutoResetRequirement: "req-A"))
     }
 
-    func testDoesNotRepeatForTheSameBuild() {
-        XCTAssertFalse(CodeSigning.shouldAutoResetStaleGrant(hint: .buildChanged, identity: adHoc, lastAutoResetBuildID: "bbbb"))
+    func testDoesNotRepeatForTheSameSignature() {
+        XCTAssertFalse(CodeSigning.shouldAutoResetStaleGrant(hint: .signatureChanged, identity: identity, lastAutoResetRequirement: "req-B"))
     }
 
     func testNeverResetsWithoutEvidenceOfAStaleGrant() {
-        XCTAssertFalse(CodeSigning.shouldAutoResetStaleGrant(hint: nil, identity: adHoc, lastAutoResetBuildID: nil))
-        XCTAssertFalse(CodeSigning.shouldAutoResetStaleGrant(hint: .adHocBuild, identity: adHoc, lastAutoResetBuildID: nil))
-        XCTAssertFalse(CodeSigning.shouldAutoResetStaleGrant(hint: .buildChanged, identity: nil, lastAutoResetBuildID: nil))
+        XCTAssertFalse(CodeSigning.shouldAutoResetStaleGrant(hint: nil, identity: identity, lastAutoResetRequirement: nil))
+        XCTAssertFalse(CodeSigning.shouldAutoResetStaleGrant(hint: .adHocBuild, identity: identity, lastAutoResetRequirement: nil))
+        XCTAssertFalse(CodeSigning.shouldAutoResetStaleGrant(hint: .signatureChanged, identity: nil, lastAutoResetRequirement: nil))
     }
 }

@@ -129,8 +129,8 @@ struct SetupWindowView: View {
 
     static func hintText(for hint: CodeSigning.AccessibilityHint) -> String {
         switch hint {
-        case .buildChanged:
-            return "This is a different build from the one you previously allowed. macOS ties the permission to the exact build, so SpaceStation may look switched on in System Settings but not count. Click “Reset & try again” below, then allow it again."
+        case .signatureChanged:
+            return "This build is signed differently from the one you previously allowed. macOS ties the permission to the app's signature, so SpaceStation may look switched on in System Settings but not count. Click “Reset & try again” below, then allow it again."
         case .adHocBuild:
             return "This build isn't signed with a developer certificate, so macOS forgets the permission whenever it is rebuilt or updated. If SpaceStation is already switched on but not detected, click “Reset & try again” below."
         }

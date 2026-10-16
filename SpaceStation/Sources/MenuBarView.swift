@@ -51,8 +51,8 @@ struct MenuBarView: View {
                 Text("Accessibility Permission Required")
                     .font(.caption)
                     .fontWeight(.semibold)
-                Text(spaceTracker.accessibilityHint == .buildChanged
-                     ? "New build: permission needs re-allowing"
+                Text(spaceTracker.accessibilityHint == .signatureChanged
+                     ? "Signature changed: re-allow permission"
                      : "Click to enable space switching")
                     .font(.caption2)
                     .foregroundColor(.secondary)
