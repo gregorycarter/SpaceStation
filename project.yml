@@ -74,6 +74,7 @@ targets:
       - path: SpaceStation/Sources/SwitcherLayout.swift
       - path: SpaceStation/Sources/MenuBarFormat.swift
       - path: SpaceStation/Sources/AppPreferences.swift
+      - path: SpaceStation/Sources/SpaceStepper.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: true

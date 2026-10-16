@@ -21,6 +21,12 @@ class SpaceTracker: ObservableObject {
     @Published private(set) var spaces: [SpaceInfo] = [.placeholder]
     /// True while the active Space is a fullscreen app rather than a desktop.
     @Published private(set) var isInFullscreenSpace: Bool = false
+    /// Every Space on the focused display (fullscreen included), for stepping with the arrow shortcuts.
+    @Published private(set) var spaceOrder: SpaceOrder?
+    /// The desktop that was current before the present one, so the switcher can open on it and
+    /// open + Return toggles between the last two Spaces.
+    @Published private(set) var previousSpaceID: String?
+    private var history = SpaceHistory()
     @Published private(set) var isTrackingAvailable: Bool = true
     @Published private(set) var hasAccessibilityPermission: Bool = false
     /// Set when Accessibility isn't granted and the build's signature suggests why.
@@ -235,8 +241,15 @@ class SpaceTracker: ObservableObject {
         spaces = snapshot.spaces
         currentSpaceIndex = newIndex
         isInFullscreenSpace = isFullscreen
+        recordPreviousSpace()
         // The set of shortcuts that matter depends on how many desktops exist.
         if spacesChanged { checkKeyboardShortcuts() }
+    }
+
+    private func recordPreviousSpace() {
+        let current = isInFullscreenSpace ? nil : spaces.first(where: { $0.index == currentSpaceIndex })?.id
+        history.record(currentDesktopID: current == SpaceInfo.placeholder.id ? nil : current)
+        if previousSpaceID != history.previousID { previousSpaceID = history.previousID }
     }
 
     /// `currentIndex` is nil when the active Space is not a desktop (e.g. a fullscreen app).
@@ -258,6 +271,7 @@ class SpaceTracker: ObservableObject {
         }
 
         isTrackingAvailable = true
+        spaceOrder = SpaceOrder.parse(displays: displays, focusedDisplayUUID: Self.focusedDisplayUUID())
 
         guard let snapshot = Self.parseSpaces(displays: displays, focusedDisplayUUID: Self.focusedDisplayUUID()) else {
             logger.debug("No spaces found, returning defaults")
@@ -301,7 +315,7 @@ class SpaceTracker: ObservableObject {
 
     /// With "Displays have separate Spaces" each display has its own Spaces. Use the
     /// one the user is working on (the screen with keyboard focus), not just the first.
-    nonisolated private static func activeDisplay(in displays: [[String: Any]],
+    nonisolated static func activeDisplay(in displays: [[String: Any]],
                                                   focusedDisplayUUID: String?) -> [String: Any]? {
         guard displays.count > 1 else { return displays.first }
 
