@@ -92,6 +92,12 @@ class SetupWindowController {
 // MARK: - Setup Window View (Standalone)
 
 struct SetupWindowView: View {
+    /// e.g. "Select Mission Control → turn on “Switch to Desktop 7”"
+    static func shortcutInstruction(missing: [Int]) -> String {
+        let desktops = missing.map(String.init).joined(separator: ", ")
+        return "Select Mission Control → turn on “Switch to Desktop \(desktops)”"
+    }
+
     static func hintText(for hint: CodeSigning.AccessibilityHint) -> String {
         switch hint {
         case .buildChanged:
@@ -179,7 +185,7 @@ struct SetupWindowView: View {
                 title: "Enable Keyboard Shortcuts",
                 description: spaceTracker.hasKeyboardShortcutsEnabled
                     ? "Keyboard shortcuts enabled"
-                    : "Select Mission Control → Enable \"Switch to Desktop 1-9\"",
+                    : Self.shortcutInstruction(missing: spaceTracker.missingShortcuts),
                 buttonTitle: "Open Keyboard Shortcuts",
                 isComplete: spaceTracker.hasKeyboardShortcutsEnabled
             ) {

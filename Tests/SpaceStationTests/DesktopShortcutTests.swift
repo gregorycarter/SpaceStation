@@ -43,3 +43,33 @@ final class DesktopShortcutTests: XCTestCase {
         XCTAssertNil(SpaceTracker.desktopShortcut(for: 10, in: domain))
     }
 }
+
+final class MissingShortcutTests: XCTestCase {
+    /// Hotkeys with "Switch to Desktop N" enabled for the given desktops.
+    private func hotkeys(enabled desktops: [Int]) -> [String: Any] {
+        var entries: [String: Any] = [:]
+        for n in desktops {
+            entries[String(117 + n)] = ["enabled": 1, "value": ["parameters": [65535, 17 + n, 262144], "type": "standard"]]
+        }
+        return ["AppleSymbolicHotKeys": entries]
+    }
+
+    func testSevenDesktopsWithSixShortcutsReportsDesktopSeven() {
+        // The real-world case: Desktops 1-6 enabled, 7 exists but its shortcut was never turned on.
+        XCTAssertEqual(SpaceTracker.missingShortcuts(spaceCount: 7, in: hotkeys(enabled: [1, 2, 3, 4, 5, 6])), [7])
+    }
+
+    func testOnlyDesktopsThatExistAreRequired() {
+        XCTAssertEqual(SpaceTracker.missingShortcuts(spaceCount: 3, in: hotkeys(enabled: [1, 2, 3])), [])
+        XCTAssertEqual(SpaceTracker.missingShortcuts(spaceCount: 3, in: hotkeys(enabled: [1, 2])), [3])
+    }
+
+    func testRequirementIsCappedAtNine() {
+        XCTAssertEqual(SpaceTracker.missingShortcuts(spaceCount: 12, in: hotkeys(enabled: Array(1...6))), [7, 8, 9])
+        XCTAssertEqual(SpaceTracker.missingShortcuts(spaceCount: 12, in: hotkeys(enabled: Array(1...9))), [])
+    }
+
+    func testMissingDomainMeansAllMissing() {
+        XCTAssertEqual(SpaceTracker.missingShortcuts(spaceCount: 2, in: nil), [1, 2])
+    }
+}

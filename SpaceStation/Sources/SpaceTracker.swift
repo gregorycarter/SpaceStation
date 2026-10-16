@@ -31,7 +31,10 @@ class SpaceTracker: ObservableObject {
     @Published private(set) var hasAccessibilityPermission: Bool = false
     /// Set when Accessibility isn't granted and the build's signature suggests why.
     @Published private(set) var accessibilityHint: CodeSigning.AccessibilityHint?
+    /// True when "Switch to Desktop N" is enabled for every desktop that exists (up to 9).
     @Published private(set) var hasKeyboardShortcutsEnabled: Bool = false
+    /// Desktops (1-based, up to 9) whose "Switch to Desktop N" shortcut is not enabled.
+    @Published private(set) var missingShortcuts: [Int] = []
 
     /// macOS only provides "Switch to Desktop N" shortcuts for Desktops 1-9.
     nonisolated static let maxSwitchableSpace = 9
@@ -144,10 +147,19 @@ class SpaceTracker: ObservableObject {
 
     func checkKeyboardShortcuts() {
         // "Switch to Desktop N" shortcuts live in com.apple.symbolichotkeys,
-        // keys 118-126 (Desktop 1-9).
-        let enabledCount = (1...9).filter { desktopShortcut(for: $0) != nil }.count
-        hasKeyboardShortcutsEnabled = enabledCount >= 1
-        logger.info("Keyboard shortcuts enabled: \(self.hasKeyboardShortcutsEnabled) (\(enabledCount)/9 shortcuts)")
+        // keys 118-126 (Desktop 1-9). macOS only offers (and enables) them for
+        // desktops that exist, so a Mac with 7 desktops can have 6 of 7 enabled.
+        let hotkeys = UserDefaults.standard.persistentDomain(forName: "com.apple.symbolichotkeys")
+        let missing = Self.missingShortcuts(spaceCount: spaces.count, in: hotkeys)
+        missingShortcuts = missing
+        hasKeyboardShortcutsEnabled = missing.isEmpty
+        logger.info("Keyboard shortcuts: \(missing.isEmpty ? "all enabled" : "missing for desktops \(missing)")")
+    }
+
+    /// Which of the first `spaceCount` desktops (capped at 9) have no enabled switch shortcut.
+    nonisolated static func missingShortcuts(spaceCount: Int, in hotkeys: [String: Any]?) -> [Int] {
+        guard spaceCount >= 1 else { return [] }
+        return (1...min(spaceCount, maxSwitchableSpace)).filter { desktopShortcut(for: $0, in: hotkeys) == nil }
     }
 
     /// The key and modifiers the user has configured for "Switch to Desktop N",
@@ -201,9 +213,12 @@ class SpaceTracker: ObservableObject {
             logger.info("Space changed: index=\(newIndex), total=\(snapshot.spaces.count), fullscreen=\(isFullscreen)")
         }
 
+        let spacesChanged = snapshot.spaces != spaces
         spaces = snapshot.spaces
         currentSpaceIndex = newIndex
         isInFullscreenSpace = isFullscreen
+        // The set of shortcuts that matter depends on how many desktops exist.
+        if spacesChanged { checkKeyboardShortcuts() }
     }
 
     /// `currentIndex` is nil when the active Space is not a desktop (e.g. a fullscreen app).
