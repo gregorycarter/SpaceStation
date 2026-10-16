@@ -1,7 +1,7 @@
 # SpaceStation
 
 <p align="center">
-  <img src="appstore.png" width="128" height="128" alt="SpaceStation Icon">
+  <img src="docs/icon.png" width="128" height="128" alt="SpaceStation Icon">
 </p>
 
 A macOS menu bar app for naming and managing Spaces (virtual desktops).
