@@ -11,6 +11,31 @@ enum SwitcherLayout {
     /// Space kept free of the screen edges when fitting the panel.
     static let screenMargin: CGFloat = 40
 
+    /// Fixed card height: 12 top padding + 46 icon tile + 6 + 30 (two lines of name) + 6 + 4 dot + 6 bottom.
+    static let cardHeight: CGFloat = 110
+    /// Keyboard hints row: hairline + 8 top padding + one line of 11 pt text + 6 bottom.
+    static let footerHeight: CGFloat = 30
+
+    static func panelHeight(count: Int, showsFooter: Bool) -> CGFloat {
+        let rows = CGFloat(rows(for: count))
+        return 2 * panelPadding + rows * cardHeight + (rows - 1) * cardGap + (showsFooter ? footerHeight : 0)
+    }
+
+    /// The card under `point`, given in the panel's top-left-origin coordinates, or nil if the point
+    /// is in the padding, a gap, the footer, or past the last card.
+    static func cardIndex(at point: CGPoint, count: Int, cardWidth: CGFloat) -> Int? {
+        let x = point.x - panelPadding
+        let y = point.y - panelPadding
+        guard x >= 0, y >= 0 else { return nil }
+        let column = Int(x / (cardWidth + cardGap))
+        let row = Int(y / (cardHeight + cardGap))
+        guard x - CGFloat(column) * (cardWidth + cardGap) <= cardWidth,
+              y - CGFloat(row) * (cardHeight + cardGap) <= cardHeight,
+              column < columns(for: count), row < rows(for: count) else { return nil }
+        let index = row * columns(for: count) + column
+        return index < count ? index : nil
+    }
+
     static func columns(for count: Int) -> Int { max(1, min(count, maxColumns)) }
 
     static func rows(for count: Int) -> Int {
@@ -90,5 +115,47 @@ struct TypeSelectBuffer {
         return names.firstIndex {
             $0.range(of: prefix, options: [.caseInsensitive, .diacriticInsensitive, .anchored]) != nil
         }
+    }
+}
+
+/// Where the switcher panel appears.
+enum SwitcherAnchor: Equatable {
+    case centered
+    /// Next to this screen corner (opened by the hot corner with "Next to the corner" selected).
+    case corner(HotCorner)
+}
+
+enum SwitcherPlacement {
+    static let sideInset: CGFloat = 8
+    /// Below the menu bar when anchored to a top corner.
+    static let topCornerGap: CGFloat = 6
+    /// Above the Dock or screen edge when anchored to a bottom corner.
+    static let bottomCornerGap: CGFloat = 8
+    /// Below the menu bar when centred (hotkey, menu, or "Centered on screen").
+    static let centeredGap: CGFloat = 40
+
+    /// The panel's frame in global (bottom-left origin) coordinates, within `visibleFrame`, the
+    /// area of the pointer's screen that excludes the menu bar and Dock.
+    static func frame(size: CGSize, visibleFrame: CGRect, anchor: SwitcherAnchor) -> CGRect {
+        let centeredX = visibleFrame.midX - size.width / 2
+        var origin = CGPoint(x: centeredX, y: visibleFrame.maxY - centeredGap - size.height)
+
+        if case .corner(let corner) = anchor {
+            switch corner {
+            case .off: break
+            case .topLeft:
+                origin = CGPoint(x: visibleFrame.minX + sideInset, y: visibleFrame.maxY - topCornerGap - size.height)
+            case .topRight:
+                origin = CGPoint(x: visibleFrame.maxX - sideInset - size.width, y: visibleFrame.maxY - topCornerGap - size.height)
+            case .bottomLeft:
+                origin = CGPoint(x: visibleFrame.minX + sideInset, y: visibleFrame.minY + bottomCornerGap)
+            case .bottomRight:
+                origin = CGPoint(x: visibleFrame.maxX - sideInset - size.width, y: visibleFrame.minY + bottomCornerGap)
+            }
+        }
+
+        // Never hang off the screen: if the panel is wider than the space, centre it.
+        if size.width > visibleFrame.width - 2 * sideInset { origin.x = centeredX }
+        return CGRect(origin: origin, size: size)
     }
 }
