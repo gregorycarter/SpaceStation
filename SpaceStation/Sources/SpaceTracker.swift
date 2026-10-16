@@ -254,8 +254,11 @@ class SpaceTracker: ObservableObject {
 
 // MARK: - Private Core Graphics APIs
 
+// CGSConnectionID is a C `int` (32-bit), so it must be Int32, not Int.
+typealias CGSConnectionID = Int32
+
 @_silgen_name("CGSMainConnectionID")
-func CGSMainConnectionID() -> Int
+func CGSMainConnectionID() -> CGSConnectionID
 
 @_silgen_name("CGSCopyManagedDisplaySpaces")
-func CGSCopyManagedDisplaySpaces(_ connection: Int) -> CFArray?
+func CGSCopyManagedDisplaySpaces(_ connection: CGSConnectionID) -> CFArray?
