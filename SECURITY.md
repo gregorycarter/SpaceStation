@@ -25,6 +25,10 @@ rather than opening a public issue.
   (`~/Library/Preferences/com.gregorycarter.SpaceStation.plist`), keyed by
   Space ID.
 - Optionally registers itself as a login item via `SMAppService`.
+- Registers one global hotkey (Control+Option+S, can be turned off in Settings) with the
+  public Carbon `RegisterEventHotKey` API to show the Space switcher. This only fires
+  when that exact combination is pressed and needs no extra permission; it does not
+  observe other keystrokes.
 
 ## What the app does not do
 

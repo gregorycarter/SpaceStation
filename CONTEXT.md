@@ -40,7 +40,10 @@ SpaceStation/
 │   │   ├── SpaceTracker.swift       # Space detection, switching, permissions
 │   │   ├── SpaceNameManager.swift   # Name persistence (UserDefaults)
 │   │   ├── MenuBarView.swift        # Main dropdown UI
-│   │   └── SettingsView.swift       # Preferences window
+│   │   ├── SettingsView.swift       # Preferences window
+│   │   ├── SwitcherController.swift # Floating Space switcher panel + hotkey wiring
+│   │   ├── SwitcherView.swift       # SwiftUI cards for the switcher
+│   │   └── GlobalHotKey.swift       # Carbon RegisterEventHotKey wrapper
 │   ├── Assets.xcassets/             # App icons (macOS sizes)
 │   ├── Info.plist
 │   └── SpaceStation.entitlements
