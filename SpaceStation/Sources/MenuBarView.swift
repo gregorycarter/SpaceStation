@@ -267,9 +267,12 @@ struct MenuBarView: View {
     }
 
     private func openSettings() {
-        // Bring app to front and open settings (macOS 13 fallback)
+        // Bring app to front and open settings (macOS 13 fallback; macOS 14+ uses SettingsLink).
+        // Ventura renamed the responder action from showPreferencesWindow: to showSettingsWindow:.
         NSApp.activate(ignoringOtherApps: true)
-        NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+        if !NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil) {
+            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+        }
     }
 
     private func quitApp() {
