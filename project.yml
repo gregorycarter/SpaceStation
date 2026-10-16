@@ -76,6 +76,7 @@ targets:
       - path: SpaceStation/Sources/AppPreferences.swift
       - path: SpaceStation/Sources/SpaceStepper.swift
       - path: SpaceStation/Sources/SpaceIconImage.swift
+      - path: SpaceStation/Sources/SettingsLogic.swift
       - path: SpaceStation/Sources/GlobalHotKey.swift
       - path: SpaceStation/Sources/StatusItemController.swift
     settings:
