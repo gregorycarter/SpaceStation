@@ -135,6 +135,7 @@ struct SpaceNamesSettingsView: View {
     @ObservedObject var nameManager: SpaceNameManager
     @ObservedObject var spaceTracker: SpaceTracker
     @State private var editingNames: [String: String] = [:]
+    @State private var iconPickerSpaceID: String?
 
     var body: some View {
         Form {
@@ -147,6 +148,21 @@ struct SpaceNamesSettingsView: View {
             Section("Space Names") {
                 ForEach(spaceTracker.spaces) { space in
                     HStack {
+                        Button(action: { iconPickerSpaceID = space.id }) {
+                            SpaceIconView(icon: nameManager.icon(for: space), size: 22)
+                        }
+                        .buttonStyle(.plain)
+                        .help("Choose an icon")
+                        .popover(isPresented: Binding(
+                            get: { iconPickerSpaceID == space.id },
+                            set: { if !$0 { iconPickerSpaceID = nil } }
+                        )) {
+                            IconPickerView(current: nameManager.icon(for: space)) { icon in
+                                nameManager.setIcon(icon, for: space)
+                                iconPickerSpaceID = nil
+                            }
+                        }
+
                         Text("Desktop \(space.index)")
                             .frame(width: 80, alignment: .leading)
                             .foregroundColor(.secondary)
@@ -200,6 +216,59 @@ struct SpaceNamesSettingsView: View {
     private func clearName(_ space: SpaceInfo) {
         editingNames.removeValue(forKey: space.id)
         nameManager.removeName(for: space)
+    }
+}
+
+// MARK: - Icon Picker
+
+struct IconPickerView: View {
+    let current: SpaceIcon
+    /// Called with the chosen icon, or nil to reset to the default.
+    let onSelect: (SpaceIcon?) -> Void
+
+    @State private var emojiText = ""
+
+    private let columns = Array(repeating: GridItem(.fixed(34), spacing: 6), count: 6)
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            LazyVGrid(columns: columns, spacing: 6) {
+                ForEach(SpaceIcon.symbolChoices, id: \.self) { name in
+                    let icon = SpaceIcon.symbol(name)
+                    Button(action: { onSelect(icon) }) {
+                        SpaceIconView(icon: icon, size: 22)
+                            .frame(width: 34, height: 34)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(icon == current ? Color.accentColor.opacity(0.25) : Color.clear)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(name)
+                }
+            }
+
+            Divider()
+
+            HStack {
+                TextField("Emoji", text: $emojiText)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 80)
+                    .onSubmit(applyEmoji)
+                Button("Use emoji", action: applyEmoji)
+                    .disabled(SpaceIcon.emoji(from: emojiText) == nil)
+                Spacer()
+                Button("Reset") { onSelect(nil) }
+            }
+        }
+        .padding(14)
+        .frame(width: 270)
+    }
+
+    private func applyEmoji() {
+        if let icon = SpaceIcon.emoji(from: emojiText) {
+            onSelect(icon)
+        }
     }
 }
 
