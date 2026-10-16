@@ -19,20 +19,25 @@ rather than opening a public issue.
   read-only queries.
 - Reads the "Switch to Desktop N" shortcut settings from the system's
   `com.apple.symbolichotkeys` preferences (read-only).
-- Switches Spaces by posting the keyboard shortcut you have configured for
-  that Desktop (`CGEvent`). This is only done when you click a Space in the menu.
 - Stores the names you choose in `UserDefaults`
   (`~/Library/Preferences/com.gregorycarter.SpaceStation.plist`), keyed by
   Space ID.
 - Optionally registers itself as a login item via `SMAppService`.
-- Registers one global hotkey (Control+S, can be turned off in Settings; note it takes ⌃S away from other apps while enabled) with the
+- Registers one global hotkey (default Control+Option+S; you can record another or turn it off in
+  Settings, and Settings warns if it clashes with a macOS shortcut) with the
   public Carbon `RegisterEventHotKey` API to show the Space switcher. This only fires
   when that exact combination is pressed and needs no extra permission; it does not
   observe other keystrokes.
-- Optionally (off by default) watches the pointer position to open the switcher from a screen
-  corner, using a global mouse-moved monitor. macOS requires no permission for mouse movement
-  (only keyboard events), and the app only compares the pointer position to the screen corner;
-  it does not record or store it.
+- Optionally (off by default) opens the switcher from a screen corner by sampling the pointer
+  position with `NSEvent.mouseLocation` a few dozen times a second while a corner is selected. This
+  needs no permission; the app only compares the position to the corner and does not record or
+  store it.
+- Switches Spaces by posting macOS's own "Switch to Desktop N" shortcut, or, for Spaces without
+  one, by stepping with its "Move left/right a space" shortcuts. It only ever posts a shortcut that
+  macOS currently has enabled, so a keystroke can't land in the frontmost app.
+- Reads (read-only) the `com.apple.symbolichotkeys` and `com.apple.dock` preference domains: the
+  first to know which shortcuts are enabled, the second to warn when a hot corner is already used
+  by macOS.
 
 ## What the app does not do
 

@@ -52,6 +52,13 @@ xcodebuild test -project SpaceStation.xcodeproj -scheme SpaceStation \
   -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
 ```
 
+To check how the UI looks without opening windows, run a Debug build with
+`SPACESTATION_RENDER_DIR=/some/folder` (see CONTEXT.md, "Debug-only hooks").
+
+If you add a Swift file that the tests should cover, list it under the `SpaceStationTests` target's
+`sources` in `project.yml` (the test target is host-less and compiles files directly), then run
+`xcodegen generate`.
+
 Unit tests live in `Tests/SpaceStationTests`. They are host-less: the logic under test is compiled
 straight into the test bundle, so running them never launches the app or touches your real
 preferences or macOS permissions. The parsing of the private

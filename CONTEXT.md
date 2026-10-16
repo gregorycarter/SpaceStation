@@ -34,21 +34,24 @@ SpaceStation solves these problems by:
 
 ```
 SpaceStation/
-├── SpaceStation/
-│   ├── Sources/
-│   │   ├── SpaceStationApp.swift    # App entry point, MenuBarExtra, SetupWindow
-│   │   ├── SpaceTracker.swift       # Space detection, switching, permissions
-│   │   ├── SpaceNameManager.swift   # Name persistence (UserDefaults)
-│   │   ├── MenuBarView.swift        # Main dropdown UI
-│   │   ├── SettingsView.swift       # Preferences window
-│   │   ├── SwitcherController.swift # Floating Space switcher panel + hotkey wiring
-│   │   ├── SwitcherView.swift       # SwiftUI cards for the switcher
-│   │   ├── GlobalHotKey.swift       # Carbon RegisterEventHotKey wrapper
-│   │   └── HotCorner.swift          # Screen-corner detection + pointer monitor
-│   ├── Assets.xcassets/             # App icons (macOS sizes)
-│   ├── Info.plist
-│   └── SpaceStation.entitlements
-├── Tests/SpaceStationTests/         # Unit tests (parsing, shortcuts, name storage)
+├── SpaceStation/Sources/
+│   ├── SpaceStationApp.swift        # AppKit entry point + AppDelegate (owns models, wires everything)
+│   ├── StatusItemController.swift   # NSStatusItem + native NSMenu (Spaces, ⌥ Rename alternates)
+│   ├── SpaceTracker.swift           # Space detection, switching (shortcut or stepping), permissions
+│   ├── SpaceStepper.swift           # SpaceOrder, stepping plan, previous-Space history (pure)
+│   ├── SystemShortcuts.swift        # KeyBinding, symbolichotkeys + Dock hot-corner readers (pure)
+│   ├── SpaceNameManager.swift       # Names + icons by Space ID (UserDefaults)
+│   ├── SpaceIcon.swift / SpaceIconImage.swift  # Icon model; NSImage rendering for menus
+│   ├── AppPreferences.swift         # Typed settings + migration from the old Control+S switch
+│   ├── Switcher*.swift              # Panel controller, SwiftUI cards, pure layout/placement
+│   ├── GlobalHotKey.swift, HotCorner.swift, KeyRecorder.swift, CornerMapView.swift
+│   ├── Settings*.swift, *SettingsView.swift  # Toolbar-tab Settings window + tabs, shared logic
+│   ├── RenamePopover.swift, RenameDraft.swift, IconPickerView.swift
+│   ├── SetupWindow.swift            # First-run / Accessibility window
+│   ├── CodeSigning.swift            # Detects stale permission after a signature change
+│   └── RenderGallery.swift          # DEBUG only: renders views to PNG offscreen
+├── Tests/SpaceStationTests/         # Host-less unit tests of the pure logic and menu structure
+├── Config/                          # Shared.xcconfig (+ git-ignored Local.xcconfig for signing)
 ├── .github/workflows/ci.yml         # Build + test on macOS
 ├── project.yml                      # XcodeGen definition (source of truth)
 ├── SpaceStation.xcodeproj           # Generated from project.yml; commit both
@@ -57,54 +60,35 @@ SpaceStation/
 └── docs/icon.png                    # README icon
 ```
 
-### Key Components
+### How it fits together
 
-#### 1. SpaceStationApp.swift
-- **Purpose:** Application entry point
-- **Key elements:**
-  - `MenuBarExtra` - Creates the menu bar presence
-  - `Settings` scene - Preferences window
-  - `SetupWindowController` - Standalone NSPanel for permission setup
-  - `SetupWindowView` - SwiftUI view for onboarding flow
+- **Status item and menu:** `StatusItemController` builds a real `NSMenu` each time it opens, so it
+  always reflects the current Space, names, icons and the user's shortcuts. Option alternates turn
+  each Space row into its Rename action. Rename shows an `NSPopover` anchored to the status button.
+- **Switching** (`SpaceTracker.switchTo`): use the user's "Switch to Desktop N" shortcut when macOS
+  has one enabled (1–9); otherwise step with "Move left/right a space", counting fullscreen Spaces
+  in the way (`SpaceOrder`/`SpaceStepper`). Presses are sent back to back (100 ms apart) and the
+  result is verified and corrected. It never posts a key that isn't an enabled macOS shortcut.
+- **Switcher panel:** a non-activating, floating, all-Spaces `NSPanel` (this configuration is what
+  lets it appear over fullscreen apps and take the hotkey; change it with care) with a rounded
+  `NSVisualEffectView` background and SwiftUI cards. Opened by the user-recorded hotkey, the menu, or
+  the hot corner. Layout, hit-testing and placement are pure functions in `SwitcherLayout.swift`.
+- **Hot corner:** `HotCornerMonitor` samples `NSEvent.mouseLocation` every 20 ms (no permission, and
+  it works for a pointer resting in a corner, which sends no events). `HotCornerTrigger` is a pure
+  dwell/re-arm state machine; the user's delay (Instant to Long) is its dwell.
+- **Settings:** an `NSTabViewController` (toolbar style) hosting SwiftUI grouped forms. It is built
+  directly because the SwiftUI Settings scene is unreliable for an app with no Dock icon.
+- **Permissions:** Accessibility only. `CodeSigning` notices when the app's signature changed since
+  access was granted (macOS then ignores the old grant while still showing it as enabled).
 
-#### 2. SpaceTracker.swift
-- **Purpose:** Core functionality for Space detection and switching
-- **Key elements:**
-  - `spaces` - Desktop Spaces (`SpaceInfo`: stable `id` + 1-based `index`) on the focused display
-  - `currentSpaceIndex` / `currentSpace` - Active desktop (last known one while in fullscreen)
-  - `isInFullscreenSpace` - True when the active Space is a fullscreen app
-  - `totalSpaces` - Number of desktop Spaces
-  - `hasAccessibilityPermission` - Permission status
-  - `hasKeyboardShortcutsEnabled` - Detects if Control+1-9 shortcuts are enabled
-  - `switchToSpace(_:)` - Switches Spaces by posting the user's configured Desktop shortcut
-    (read from `com.apple.symbolichotkeys`) via CGEvent; does nothing if that shortcut is disabled
-- **Private APIs used:**
-  - `CGSMainConnectionID()` - Gets WindowServer connection
-  - `CGSCopyManagedDisplaySpaces()` - Returns Space information
+### Debug-only hooks
 
-#### 3. SpaceNameManager.swift
-- **Purpose:** Persists custom Space names
-- **Storage:** UserDefaults with JSON encoding
-- **Key:** `SpaceStationNamesByID` stores a `[String: String]` mapping of Space ID to name.
-  Space IDs are the Space's `uuid` (falling back to `managed-<ManagedSpaceID>`), so names
-  survive reordering. The old position-keyed `SpaceStationNames` key is migrated once and removed.
-- **Limits:** names are capped at `SpaceNameManager.maxNameLength` (40) characters
-
-#### 4. MenuBarView.swift
-- **Purpose:** Main dropdown menu UI
-- **Features:**
-  - Permission warning banner
-  - Current Space header
-  - List of all Spaces (clickable to switch)
-  - Inline renaming
-  - Settings and Quit buttons
-
-#### 5. SettingsView.swift
-- **Purpose:** Preferences window
-- **Tabs:**
-  - General (Launch at Login)
-  - Space Names (bulk editing)
-  - About (credits, version)
+Compiled out of Release builds:
+- `SPACESTATION_RENDER_DIR=<dir>`: render the main views to PNGs offscreen and exit (no menu bar item,
+  hotkeys or windows). Blur materials don't render offscreen, so backgrounds are flat.
+- `SPACESTATION_DEBUG_SWITCH=<n>`: switch to desktop n two seconds after launch (no keystrokes needed).
+- `SPACESTATION_DEBUG_FORCE_STEP=1`: with the above, use arrow-key stepping even when a direct shortcut exists.
+- `SPACESTATION_DEBUG_STEP_INTERVAL_MS=<ms>`: override the stepping press interval.
 
 ---
 
@@ -158,18 +142,24 @@ Keys 118-126 correspond to "Switch to Desktop 1-9". We read this plist to detect
 
 ### Space Switching Implementation
 
-Switching Spaces is done by simulating the keyboard shortcut the user has configured for
-"Switch to Desktop N" (normally Control+Number). The key code and modifiers come from
-`com.apple.symbolichotkeys`, and nothing is posted if that shortcut is disabled:
+SpaceStation switches Spaces by posting one of macOS's own shortcuts, never a key of its own:
+
+1. If macOS has "Switch to Desktop N" enabled for that Space (1–9), post it. The key code and
+   modifiers come from `com.apple.symbolichotkeys`, so a remapped shortcut still works.
+2. Otherwise step there with "Move left/right a space" (default ⌃← / ⌃→), pressing it once per Space
+   in the way (fullscreen Spaces count). Presses are sent 100 ms apart, then the result is checked
+   and corrected, so seven steps take about a second.
+3. If neither is available the switch is refused (`SwitchOutcome.unavailable`) and Settings →
+   General explains why, rather than sending a key into whatever app is in front.
+
 ```swift
-let keyDown = CGEvent(keyboardEventSource: source, virtualKey: shortcut.keyCode, keyDown: true)
-keyDown.flags = shortcut.flags
+let keyDown = CGEvent(keyboardEventSource: source, virtualKey: binding.keyCode, keyDown: true)
+keyDown.flags = binding.flags
 keyDown.post(tap: .cghidEventTap)
 ```
 
-This requires:
-1. Accessibility permission granted
-2. "Switch to Desktop N" shortcuts enabled in System Settings
+This requires Accessibility permission. The "Switch to Desktop" shortcuts are optional (instant
+switching); the "Move a space" shortcuts are on by default in macOS.
 
 ---
 
@@ -177,8 +167,10 @@ This requires:
 
 | Permission | Purpose | How to Grant |
 |------------|---------|--------------|
-| Accessibility | Post keyboard events to switch Spaces | System Settings → Privacy & Security → Accessibility |
-| Keyboard Shortcuts | Enable Control+1-9 for Space switching | System Settings → Keyboard → Keyboard Shortcuts → Mission Control |
+| Accessibility | Post the shortcuts that switch Spaces | System Settings → Privacy & Security → Accessibility |
+
+Nothing else is requested. (Reading the shortcut and Dock preferences, sampling the pointer for the
+hot corner and registering the hotkey need no permission.)
 
 ---
 
@@ -186,16 +178,18 @@ This requires:
 
 ### 1. Permission Detection After Rebuild
 **Issue:** Accessibility permission returns false after rebuilding
-**Cause:** Ad-hoc signing changes code signature hash
-**Workaround:** Click "Reset & try again" or sign with Developer ID
+**Cause:** Ad-hoc signing changes the code signature hash
+**Handling:** `CodeSigning` detects it and clears the stale entry once; sign local builds with a stable
+certificate (see CONTRIBUTING.md) to avoid it entirely
 
 ### 2. macOS Version Compatibility
 **Issue:** Private APIs may change
 **Mitigation:** Graceful fallback to "Desktop 1" if detection fails
 
-### 3. Maximum 9 Spaces for Switching
-**Issue:** Keyboard shortcuts only support Spaces 1-9
-**Reason:** macOS only provides Control+1 through Control+9 shortcuts
+### 3. Spaces without a "Switch to Desktop" shortcut
+**Issue:** macOS only provides "Switch to Desktop N" shortcuts for Desktops 1-9, and they are off until enabled
+**Handling:** Those Spaces (and all beyond 9) are reached by stepping with the "Move left/right a space"
+shortcuts, which is slower. If those are off too, the Space can't be switched to and Settings says so.
 
 ### 4. Fullscreen Apps
 **Issue:** Fullscreen apps create their own Spaces
