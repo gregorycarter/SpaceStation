@@ -23,10 +23,39 @@ struct SpaceStationApp: App {
             }
         }
         .menuBarExtraStyle(.window)
+    }
+}
 
-        Settings {
-            SettingsView(nameManager: nameManager, spaceTracker: spaceTracker)
+// MARK: - Settings Window Controller
+
+/// Opens the Settings window directly. SwiftUI's Settings scene / SettingsLink is unreliable
+/// in menu-bar-only apps (no Dock icon), so this uses a plain NSWindow, like the setup window.
+@MainActor
+final class SettingsWindowController {
+    static let shared = SettingsWindowController()
+    private var window: NSWindow?
+
+    private init() {}
+
+    func show(nameManager: SpaceNameManager, spaceTracker: SpaceTracker) {
+        if window == nil {
+            let hostingView = NSHostingView(rootView: SettingsView(nameManager: nameManager, spaceTracker: spaceTracker))
+            let newWindow = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 450, height: 400),
+                styleMask: [.titled, .closable, .miniaturizable],
+                backing: .buffered,
+                defer: false
+            )
+            newWindow.title = "SpaceStation Settings"
+            newWindow.contentView = hostingView
+            newWindow.isReleasedWhenClosed = false
+            newWindow.center()
+            window = newWindow
         }
+
+        window?.makeKeyAndOrderFront(nil)
+        window?.orderFrontRegardless()
+        NSApp.activate(ignoringOtherApps: true)
     }
 }
 

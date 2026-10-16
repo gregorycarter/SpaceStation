@@ -199,17 +199,8 @@ struct MenuBarView: View {
 
     private var actionButtons: some View {
         HStack {
-            if #available(macOS 14.0, *) {
-                SettingsLink {
-                    Label("Settings", systemImage: "gear")
-                }
-                .simultaneousGesture(TapGesture().onEnded {
-                    NSApp.activate(ignoringOtherApps: true)
-                })
-            } else {
-                Button(action: openSettings) {
-                    Label("Settings", systemImage: "gear")
-                }
+            Button(action: showSettings) {
+                Label("Settings", systemImage: "gear")
             }
 
             Button(action: showSwitcher) {
@@ -269,18 +260,19 @@ struct MenuBarView: View {
         isTextFieldFocused = false
     }
 
-    private func openSettings() {
-        // Bring app to front and open settings (macOS 13 fallback; macOS 14+ uses SettingsLink).
-        // Ventura renamed the responder action from showPreferencesWindow: to showSettingsWindow:.
-        NSApp.activate(ignoringOtherApps: true)
-        if !NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil) {
-            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-        }
+    private func showSettings() {
+        dismissPopover()
+        SettingsWindowController.shared.show(nameManager: nameManager, spaceTracker: spaceTracker)
+    }
+
+    /// Closes the menu bar popover (the key window while it is open).
+    private func dismissPopover() {
+        NSApp.keyWindow?.close()
     }
 
     private func showSwitcher() {
         // Dismiss the menu popover first, then show the switcher strip.
-        NSApp.keyWindow?.close()
+        dismissPopover()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
             SwitcherController.shared.show()
         }
