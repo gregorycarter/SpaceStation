@@ -121,6 +121,7 @@ final class SettingsWindowController: NSObject {
     private func resizeWindow(for tab: SettingsTab, animated: Bool) {
         guard let window else { return }
         window.title = tab.title   // the title follows the selected tab
+        tabController?.title = tab.title   // the window re-reads its title from this, else it shows "Untitled"
         let newContent = NSSize(width: Self.width, height: height(for: tab))
         let frame = window.frameRect(forContentRect: NSRect(origin: .zero, size: newContent))
         var origin = window.frame.origin

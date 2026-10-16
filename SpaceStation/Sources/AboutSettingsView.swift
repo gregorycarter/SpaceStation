@@ -14,7 +14,7 @@ struct AboutSettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Image(nsImage: NSApp.applicationIconImage)
+            Image(nsImage: NSImage(named: "AppIcon") ?? NSApp.applicationIconImage)
                 .resizable()
                 .frame(width: 96, height: 96)
                 .accessibilityHidden(true)

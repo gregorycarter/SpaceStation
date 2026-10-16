@@ -62,7 +62,7 @@ struct SetupWindowView: View {
         let granted = spaceTracker.hasAccessibilityPermission
         VStack(spacing: 18) {
             VStack(spacing: 6) {
-                Image(nsImage: NSApp.applicationIconImage)
+                Image(nsImage: NSImage(named: "AppIcon") ?? NSApp.applicationIconImage)
                     .resizable()
                     .frame(width: 64, height: 64)
                     .accessibilityHidden(true)
