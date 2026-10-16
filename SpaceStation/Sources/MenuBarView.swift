@@ -141,13 +141,12 @@ struct MenuBarView: View {
 
                     // Name (editable if renaming)
                     if isRenaming && renamingSpace?.id == space.id {
-                        TextField("Space name", text: $renameText)
+                        // Clamp via the binding; onChange(of:) changed signature in macOS 14.
+                        TextField("Space name", text: Binding(
+                            get: { renameText },
+                            set: { renameText = String($0.prefix(SpaceNameManager.maxNameLength)) }
+                        ))
                             .textFieldStyle(.roundedBorder)
-                            .onChange(of: renameText) { newValue in
-                                if newValue.count > SpaceNameManager.maxNameLength {
-                                    renameText = String(newValue.prefix(SpaceNameManager.maxNameLength))
-                                }
-                            }
                             .font(.system(.body, design: .rounded))
                             .focused($isTextFieldFocused)
                             .onSubmit {
