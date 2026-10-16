@@ -56,3 +56,56 @@ final class HotCornerTests: XCTestCase {
         XCTAssertFalse(HotCorner.topRight.contains(CGPoint(x: 2559, y: 1439), screens: []))
     }
 }
+
+final class HotCornerTriggerTests: XCTestCase {
+    private let screens = [CGRect(x: 0, y: 0, width: 2560, height: 1440)]
+    private let inCorner = CGPoint(x: 2559, y: 1439)
+    private let middle = CGPoint(x: 1280, y: 720)
+
+    func testFiresOnlyAfterTheDwell() {
+        var trigger = HotCornerTrigger(corner: .topRight, dwell: 0.15)
+        XCTAssertFalse(trigger.sample(point: inCorner, screens: screens, at: 0.00))
+        XCTAssertFalse(trigger.sample(point: inCorner, screens: screens, at: 0.10))
+        XCTAssertTrue(trigger.sample(point: inCorner, screens: screens, at: 0.16))
+    }
+
+    func testFlickingThroughTheCornerDoesNotFire() {
+        var trigger = HotCornerTrigger(corner: .topRight, dwell: 0.15)
+        XCTAssertFalse(trigger.sample(point: inCorner, screens: screens, at: 0.00))
+        XCTAssertFalse(trigger.sample(point: middle, screens: screens, at: 0.05)) // left before the dwell
+        XCTAssertFalse(trigger.sample(point: inCorner, screens: screens, at: 0.10)) // dwell restarts here
+        XCTAssertFalse(trigger.sample(point: inCorner, screens: screens, at: 0.20))
+        XCTAssertTrue(trigger.sample(point: inCorner, screens: screens, at: 0.26))
+    }
+
+    func testFiresOncePerVisit() {
+        var trigger = HotCornerTrigger(corner: .topRight, dwell: 0.1)
+        _ = trigger.sample(point: inCorner, screens: screens, at: 0.0)
+        XCTAssertTrue(trigger.sample(point: inCorner, screens: screens, at: 0.2))
+        // Staying in the corner must not fire again.
+        XCTAssertFalse(trigger.sample(point: inCorner, screens: screens, at: 0.4))
+        XCTAssertFalse(trigger.sample(point: inCorner, screens: screens, at: 5.0))
+    }
+
+    func testRearmsOnlyAfterMovingAway() {
+        var trigger = HotCornerTrigger(corner: .topRight, dwell: 0.1, rearmDistance: 40)
+        _ = trigger.sample(point: inCorner, screens: screens, at: 0.0)
+        XCTAssertTrue(trigger.sample(point: inCorner, screens: screens, at: 0.2))
+
+        // A small wiggle that is still near the corner must not re-arm it.
+        _ = trigger.sample(point: CGPoint(x: 2540, y: 1420), screens: screens, at: 0.3)
+        _ = trigger.sample(point: inCorner, screens: screens, at: 0.4)
+        XCTAssertFalse(trigger.sample(point: inCorner, screens: screens, at: 0.6))
+
+        // Moving well away re-arms; the next visit fires again.
+        _ = trigger.sample(point: middle, screens: screens, at: 1.0)
+        _ = trigger.sample(point: inCorner, screens: screens, at: 1.1)
+        XCTAssertTrue(trigger.sample(point: inCorner, screens: screens, at: 1.3))
+    }
+
+    func testOffNeverFires() {
+        var trigger = HotCornerTrigger(corner: .off, dwell: 0.0)
+        XCTAssertFalse(trigger.sample(point: inCorner, screens: screens, at: 0))
+        XCTAssertFalse(trigger.sample(point: inCorner, screens: screens, at: 10))
+    }
+}

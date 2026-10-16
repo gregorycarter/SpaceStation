@@ -64,6 +64,7 @@ final class SwitcherController {
     func configure(spaceTracker: SpaceTracker, nameManager: SpaceNameManager) {
         self.spaceTracker = spaceTracker
         self.nameManager = nameManager
+        logger.info("Switcher configured")
         UserDefaults.standard.register(defaults: [Self.hotKeyEnabledKey: true,
                                                   Self.hotCornerKey: HotCorner.off.rawValue])
         applyHotKeyPreference()
@@ -74,9 +75,14 @@ final class SwitcherController {
     func applyHotCornerPreference() {
         let corner = UserDefaults.standard.string(forKey: Self.hotCornerKey).flatMap(HotCorner.init(rawValue:)) ?? .off
         hotCornerMonitor = nil
-        guard corner != .off else { return }
+        guard corner != .off else {
+            logger.info("Hot corner off")
+            return
+        }
+        logger.info("Hot corner active: \(corner.rawValue)")
         hotCornerMonitor = HotCornerMonitor(corner: corner) { [weak self] in
             guard let self, !self.isVisible else { return }
+            self.logger.info("Hot corner triggered")
             self.show()
         }
     }
@@ -90,6 +96,8 @@ final class SwitcherController {
             }
             if hotKey == nil {
                 logger.warning("Could not register the switcher hotkey (already in use?)")
+            } else {
+                logger.info("Switcher hotkey registered")
             }
         } else {
             hotKey = nil

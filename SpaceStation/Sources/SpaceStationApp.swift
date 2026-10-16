@@ -1,28 +1,48 @@
 import SwiftUI
 
+/// Owns the app-wide model objects and finishes startup. Startup work lives here rather than in
+/// SwiftUI view callbacks: `.onAppear` on a menu bar item's label does not reliably run at launch,
+/// which left the switcher's hotkey and hot corner unregistered.
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    let spaceTracker = SpaceTracker()
+    let nameManager = SpaceNameManager()
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        nameManager.migrateLegacyNames(using: spaceTracker.spaces)
+        SwitcherController.shared.configure(spaceTracker: spaceTracker, nameManager: nameManager)
+    }
+}
+
 @main
 struct SpaceStationApp: App {
-    @StateObject private var spaceTracker = SpaceTracker()
-    @StateObject private var nameManager = SpaceNameManager()
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
         MenuBarExtra {
-            MenuBarView(spaceTracker: spaceTracker, nameManager: nameManager)
+            MenuBarView(spaceTracker: appDelegate.spaceTracker, nameManager: appDelegate.nameManager)
         } label: {
-            HStack(spacing: 4) {
-                Image(systemName: "square.grid.2x2")
-                Text(spaceTracker.isInFullscreenSpace ? "Full Screen" : nameManager.name(for: spaceTracker.currentSpace))
-                    .font(.system(.body, design: .rounded))
-                    .lineLimit(1)
-            }
-            .onReceive(spaceTracker.$spaces) { spaces in
-                nameManager.migrateLegacyNames(using: spaces)
-            }
-            .onAppear {
-                SwitcherController.shared.configure(spaceTracker: spaceTracker, nameManager: nameManager)
-            }
+            MenuBarLabel(spaceTracker: appDelegate.spaceTracker, nameManager: appDelegate.nameManager)
         }
         .menuBarExtraStyle(.window)
+    }
+}
+
+/// The current Space's name in the menu bar.
+struct MenuBarLabel: View {
+    @ObservedObject var spaceTracker: SpaceTracker
+    @ObservedObject var nameManager: SpaceNameManager
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "square.grid.2x2")
+            Text(spaceTracker.isInFullscreenSpace ? "Full Screen" : nameManager.name(for: spaceTracker.currentSpace))
+                .font(.system(.body, design: .rounded))
+                .lineLimit(1)
+        }
+        .onReceive(spaceTracker.$spaces) { spaces in
+            nameManager.migrateLegacyNames(using: spaces)
+        }
     }
 }
 

@@ -67,66 +67,98 @@ enum HotCorner: String, CaseIterable, Identifiable {
     }
 }
 
-/// Watches the pointer and calls `onTrigger` when it rests in the chosen corner.
-///
-/// Uses a global mouse-moved monitor, which needs no Accessibility or Input Monitoring
-/// permission (only keyboard events do). It waits a short moment so flicking past the corner
-/// doesn't fire, and re-arms only after the pointer has left the corner.
-@MainActor
-final class HotCornerMonitor {
-    private let corner: HotCorner
-    private let onTrigger: () -> Void
-    private var monitor: Any?
-    private var pending: DispatchWorkItem?
+extension HotCorner {
+    /// Whether `point` is within `distance` points of this corner on any screen.
+    func isNear(_ point: CGPoint, distance: CGFloat, screens: [CGRect]) -> Bool {
+        guard self != .off else { return false }
+        return screens.contains { frame in
+            guard frame.insetBy(dx: -1, dy: -1).contains(point) else { return false }
+            let corner = cornerPointForProximity(of: frame)
+            return abs(point.x - corner.x) <= distance && abs(point.y - corner.y) <= distance
+        }
+    }
+
+    private func cornerPointForProximity(of frame: CGRect) -> CGPoint {
+        switch self {
+        case .off, .topLeft: return CGPoint(x: frame.minX, y: frame.maxY)
+        case .topRight: return CGPoint(x: frame.maxX, y: frame.maxY)
+        case .bottomLeft: return CGPoint(x: frame.minX, y: frame.minY)
+        case .bottomRight: return CGPoint(x: frame.maxX, y: frame.minY)
+        }
+    }
+}
+
+/// Decides when resting the pointer in a corner should trigger: the pointer must stay in the
+/// corner for `dwell` seconds, and after firing the corner re-arms only once the pointer has
+/// moved `rearmDistance` away. Pure state machine, fed samples, so it is easy to test.
+struct HotCornerTrigger {
+    let corner: HotCorner
+    var dwell: TimeInterval = 0.15
+    var rearmDistance: CGFloat = 40
+
+    private var enteredAt: TimeInterval?
     private var armed = true
 
-    private static let dwell: TimeInterval = 0.15
-    /// Distance from the corner the pointer must move before the corner re-arms.
-    private static let rearmDistance: CGFloat = 40
+    init(corner: HotCorner, dwell: TimeInterval = 0.15, rearmDistance: CGFloat = 40) {
+        self.corner = corner
+        self.dwell = dwell
+        self.rearmDistance = rearmDistance
+    }
+
+    /// Feed the current pointer position; returns true when the corner should fire.
+    mutating func sample(point: CGPoint, screens: [CGRect], at time: TimeInterval) -> Bool {
+        if corner.contains(point, screens: screens) {
+            guard armed else { return false }
+            let entered = enteredAt ?? time
+            enteredAt = entered
+            if time - entered >= dwell {
+                armed = false
+                enteredAt = nil
+                return true
+            }
+            return false
+        }
+
+        enteredAt = nil
+        if !armed, !corner.isNear(point, distance: rearmDistance, screens: screens) {
+            armed = true
+        }
+        return false
+    }
+}
+
+/// Polls the pointer position and calls `onTrigger` when it rests in the chosen corner.
+///
+/// Sampling `NSEvent.mouseLocation` needs no permission at all and works whether or not
+/// mouse-moved events are delivered (a global event monitor can miss them, and a pointer pinned
+/// in a corner generates none at rest). It runs only while a corner is selected.
+@MainActor
+final class HotCornerMonitor {
+    private var trigger: HotCornerTrigger
+    private let onTrigger: () -> Void
+    private var timer: Timer?
+
+    private static let interval: TimeInterval = 0.05
 
     init(corner: HotCorner, onTrigger: @escaping () -> Void) {
-        self.corner = corner
+        self.trigger = HotCornerTrigger(corner: corner)
         self.onTrigger = onTrigger
-        monitor = NSEvent.addGlobalMonitorForEvents(matching: .mouseMoved) { [weak self] _ in
-            Task { @MainActor in self?.pointerMoved() }
+        let timer = Timer(timeInterval: Self.interval, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.tick() }
         }
+        timer.tolerance = 0.02
+        RunLoop.main.add(timer, forMode: .common)
+        self.timer = timer
     }
 
     deinit {
-        if let monitor { NSEvent.removeMonitor(monitor) }
+        timer?.invalidate()
     }
 
-    private var screenFrames: [CGRect] { NSScreen.screens.map(\.frame) }
-
-    private func pointerMoved() {
-        let point = NSEvent.mouseLocation
-        if corner.contains(point, screens: screenFrames) {
-            guard armed, pending == nil else { return }
-            let work = DispatchWorkItem { [weak self] in
-                guard let self else { return }
-                self.pending = nil
-                // Still resting in the corner after the dwell?
-                if self.corner.contains(NSEvent.mouseLocation, screens: self.screenFrames) {
-                    self.armed = false
-                    self.onTrigger()
-                }
-            }
-            pending = work
-            DispatchQueue.main.asyncAfter(deadline: .now() + Self.dwell, execute: work)
-        } else {
-            pending?.cancel()
-            pending = nil
-            if !armed, isFarFromCorner(point) { armed = true }
-        }
-    }
-
-    private func isFarFromCorner(_ point: CGPoint) -> Bool {
-        // Re-arm once the pointer is more than `rearmDistance` away from the corner on every screen.
-        !screenFrames.contains { frame in
-            let nearX = (corner == .topLeft || corner == .bottomLeft) ? frame.minX : frame.maxX
-            let nearY = (corner == .topLeft || corner == .topRight) ? frame.maxY : frame.minY
-            return frame.insetBy(dx: -1, dy: -1).contains(point)
-                && abs(point.x - nearX) <= Self.rearmDistance && abs(point.y - nearY) <= Self.rearmDistance
-        }
+    private func tick() {
+        let fired = trigger.sample(point: NSEvent.mouseLocation,
+                                   screens: NSScreen.screens.map(\.frame),
+                                   at: ProcessInfo.processInfo.systemUptime)
+        if fired { onTrigger() }
     }
 }
