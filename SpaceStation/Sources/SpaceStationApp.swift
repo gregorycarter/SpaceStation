@@ -18,6 +18,9 @@ struct SpaceStationApp: App {
             .onReceive(spaceTracker.$spaces) { spaces in
                 nameManager.migrateLegacyNames(using: spaces)
             }
+            .onAppear {
+                SwitcherController.shared.configure(spaceTracker: spaceTracker, nameManager: nameManager)
+            }
         }
         .menuBarExtraStyle(.window)
 
@@ -69,6 +72,15 @@ class SetupWindowController {
         NSApp.activate(ignoringOtherApps: true)
 
         self.window = newWindow
+    }
+
+    /// Switch to a Space, or walk the user through setup if that isn't possible yet
+    /// (no Accessibility permission, or the Desktop shortcut is disabled).
+    func switchOrShowSetup(spaceTracker: SpaceTracker, to index: Int) {
+        guard index <= SpaceTracker.maxSwitchableSpace else { return }
+        if !spaceTracker.hasAccessibilityPermission || !spaceTracker.switchToSpace(index) {
+            showSetupWindow(spaceTracker: spaceTracker)
+        }
     }
 
     func closeWindow() {

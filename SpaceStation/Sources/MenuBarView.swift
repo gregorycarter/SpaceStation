@@ -210,6 +210,11 @@ struct MenuBarView: View {
                 }
             }
 
+            Button(action: showSwitcher) {
+                Label("Switcher", systemImage: "rectangle.split.3x1")
+            }
+            .help("Show the Space switcher (⌃⌥S)")
+
             Spacer()
 
             if isRenaming {
@@ -235,13 +240,8 @@ struct MenuBarView: View {
         guard !isRenaming else { return }
         guard spaceTracker.isInFullscreenSpace || index != spaceTracker.currentSpaceIndex else { return }
 
-        guard index <= SpaceTracker.maxSwitchableSpace else { return }
-
-        // switchToSpace returns false when Accessibility or the Desktop shortcut
-        // isn't set up; walk the user through setup instead of failing silently.
-        if !spaceTracker.hasAccessibilityPermission || !spaceTracker.switchToSpace(index) {
-            SetupWindowController.shared.showSetupWindow(spaceTracker: spaceTracker)
-        }
+        // Falls back to the setup walkthrough if switching isn't possible yet.
+        SetupWindowController.shared.switchOrShowSetup(spaceTracker: spaceTracker, to: index)
     }
 
     private func startRenaming(_ space: SpaceInfo) {
@@ -273,6 +273,14 @@ struct MenuBarView: View {
         NSApp.activate(ignoringOtherApps: true)
         if !NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil) {
             NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
+        }
+    }
+
+    private func showSwitcher() {
+        // Dismiss the menu popover first, then show the switcher strip.
+        NSApp.keyWindow?.close()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            SwitcherController.shared.show()
         }
     }
 
