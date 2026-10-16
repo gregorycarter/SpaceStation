@@ -12,6 +12,7 @@ import os.log
 final class StatusItemController: NSObject, NSMenuDelegate {
     /// Nil when built without installing (unit tests build menus without touching the menu bar).
     private var statusItem: NSStatusItem?
+    private var badge: StatusItemBadge?
     private let spaceTracker: SpaceTracker
     private let nameManager: SpaceNameManager
     private let preferences: AppPreferences
@@ -48,6 +49,14 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         menu.delegate = self
         item.menu = menu
         item.button?.setAccessibilityLabel("SpaceStation")
+        if let button = item.button {
+            badge = StatusItemBadge.install(on: button)
+            // The status item resizes with its content; keep the badge on the icon.
+            button.postsFrameChangedNotifications = true
+            NotificationCenter.default.publisher(for: NSView.frameDidChangeNotification, object: button)
+                .sink { [weak self] _ in self?.repositionBadge() }
+                .store(in: &subscriptions)
+        }
 
         // Refresh the button whenever anything it shows may have changed. The publishers fire
         // before the value changes, so read it on the next run loop turn.
@@ -82,8 +91,31 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         button.image = display.showsIcon ? image : nil
         button.title = display.showsName ? MenuBarFormat.displayName(name, shorten: preferences.shortenMenuBarNames) : ""
         button.imagePosition = display.showsName && display.showsIcon ? .imageLeading : (display.showsIcon ? .imageOnly : .noImage)
-        button.toolTip = name
-        button.setAccessibilityLabel("SpaceStation, \(name)")
+        let update = updateChecker.availableUpdate
+        badge?.isHidden = update == nil
+        repositionBadge()
+        button.toolTip = Self.toolTip(name: name, update: update)
+        button.setAccessibilityLabel(Self.accessibilityLabel(name: name, update: update))
+    }
+
+    private func repositionBadge() {
+        guard let button = statusItem?.button else { return }
+        badge?.reposition(on: button, showsIcon: preferences.menuBarDisplay.showsIcon)
+        // The button lays out its image and title after its size changes; position again once it has.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let button = self.statusItem?.button else { return }
+            self.badge?.reposition(on: button, showsIcon: self.preferences.menuBarDisplay.showsIcon)
+        }
+    }
+
+    /// The VoiceOver label for the menu bar item, mentioning a waiting update.
+    nonisolated static func accessibilityLabel(name: String, update: ReleaseInfo?) -> String {
+        let base = "SpaceStation, \(name)"
+        return update.map { "\(base), update available: version \($0.version)" } ?? base
+    }
+
+    nonisolated static func toolTip(name: String, update: ReleaseInfo?) -> String {
+        update.map { "\(name)\nUpdate available: SpaceStation \($0.version)" } ?? name
     }
 
     // MARK: - Menu

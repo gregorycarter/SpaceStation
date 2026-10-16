@@ -65,7 +65,9 @@ re-allowed after each update.
 
 SpaceStation does not update itself. **Check for Updates…** (menu and About tab, plus an optional
 once-a-day check that is off by default) asks GitHub for the repository's latest release and, if its
-tag is newer than the running version, offers a link to the release page. Users then download the new
+tag is newer than the running version, shows a red dot on the menu bar icon, an "Update Available" item
+at the top of the menu, and offers a link to the release page. The notice is remembered across launches
+and clears once the new version is installed. Users then download the new
 `.dmg` and replace the app. A signed build keeps the Accessibility permission across that replacement;
 an unsigned one does not.
 

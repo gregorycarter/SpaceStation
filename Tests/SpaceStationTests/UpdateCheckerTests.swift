@@ -238,3 +238,100 @@ final class UpdateStatusSummaryTests: XCTestCase {
         XCTAssertEqual(UpdateStatus.failed("Nope").summary, "Nope")
     }
 }
+
+@MainActor
+final class UpdatePersistenceTests: XCTestCase {
+    private var suiteName: String!
+    private var defaults: UserDefaults!
+
+    override func setUp() async throws {
+        suiteName = "SpaceStationUpdatePersist-\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: suiteName)
+    }
+
+    override func tearDown() async throws {
+        defaults.removePersistentDomain(forName: suiteName)
+    }
+
+    private func checker(current: String = "1.0.0", tag: String? = "v1.1.0", status: Int = 200) -> UpdateChecker {
+        UpdateChecker(currentVersion: current, defaults: defaults, fetch: { _ in
+            let body = try JSONSerialization.data(withJSONObject: [
+                "tag_name": tag ?? "v1.0.0",
+                "html_url": "https://github.com/gregorycarter/SpaceStation/releases/tag/\(tag ?? "v1.0.0")"])
+            return (body, HTTPURLResponse(url: UpdateChecker.latestReleaseURL, statusCode: status, httpVersion: nil, headerFields: nil)!)
+        })
+    }
+
+    func testAFoundUpdateSurvivesARelaunch() async {
+        _ = await checker().check()
+        let relaunched = checker()   // a new instance, same stored preferences
+        XCTAssertEqual(relaunched.availableUpdate?.version, "1.1.0")
+        XCTAssertNil(relaunched.status, "no fresh result yet, only the remembered update")
+    }
+
+    func testTheNoticeClearsOnceYouRunTheNewVersion() async {
+        _ = await checker().check()
+        XCTAssertNil(checker(current: "1.1.0").availableUpdate, "you installed it")
+        XCTAssertNil(checker(current: "1.2.0").availableUpdate)
+        XCTAssertNil(checker().availableUpdate, "and it is forgotten, not just hidden")
+    }
+
+    func testAnUpToDateResultClearsAStoredUpdate() async {
+        _ = await checker().check()
+        _ = await checker(tag: "v1.0.0").check()
+        XCTAssertNil(checker().availableUpdate)
+    }
+
+    func testAFailedCheckKeepsWhatWasKnown() async {
+        _ = await checker().check()
+        _ = await checker(status: 500).check()
+        XCTAssertEqual(checker().availableUpdate?.version, "1.1.0")
+    }
+
+    func testATamperedStoredLinkIsDiscarded() {
+        defaults.set(["tag": "v9.0.0", "version": "9.0.0", "name": "x", "url": "https://evil.example.com/x"],
+                     forKey: UpdateChecker.availableUpdateKey)
+        XCTAssertNil(checker().availableUpdate)
+        XCTAssertNil(defaults.dictionary(forKey: UpdateChecker.availableUpdateKey))
+    }
+
+    func testGarbageStoredValuesAreDiscarded() {
+        defaults.set("nonsense", forKey: UpdateChecker.availableUpdateKey)
+        XCTAssertNil(checker().availableUpdate)
+    }
+}
+
+@MainActor
+final class StatusItemBadgeTests: XCTestCase {
+    private let update = ReleaseInfo(tag: "v1.1.0", version: "1.1.0", name: "n", url: UpdateChecker.releasesPage)
+
+    func testAccessibilityLabelMentionsAWaitingUpdate() {
+        XCTAssertEqual(StatusItemController.accessibilityLabel(name: "Inbox", update: nil), "SpaceStation, Inbox")
+        XCTAssertEqual(StatusItemController.accessibilityLabel(name: "Inbox", update: update),
+                       "SpaceStation, Inbox, update available: version 1.1.0")
+    }
+
+    func testToolTip() {
+        XCTAssertEqual(StatusItemController.toolTip(name: "Inbox", update: nil), "Inbox")
+        XCTAssertEqual(StatusItemController.toolTip(name: "Inbox", update: update), "Inbox\nUpdate available: SpaceStation 1.1.0")
+    }
+
+    func testBadgeSitsOnTheTopRightCornerOfTheTarget() {
+        let target = NSRect(x: 10, y: 4, width: 16, height: 16)
+        let unflipped = StatusItemBadge.frame(onCornerOf: target, isFlipped: false)
+        XCTAssertEqual(unflipped.midX, 25)                     // 1 pt inside the right edge
+        XCTAssertEqual(unflipped.midY, 19)                     // 1 pt inside the top edge (y grows upward)
+        let flipped = StatusItemBadge.frame(onCornerOf: target, isFlipped: true)
+        XCTAssertEqual(flipped.midX, 25)
+        XCTAssertEqual(flipped.midY, 5)                        // the top edge is minY when flipped
+        XCTAssertEqual(unflipped.size, NSSize(width: StatusItemBadge.diameter, height: StatusItemBadge.diameter))
+    }
+
+    func testBadgeInstallsHiddenAndNeverTakesClicks() {
+        let button = NSButton(frame: NSRect(x: 0, y: 0, width: 80, height: 24))
+        let badge = StatusItemBadge.install(on: button)
+        XCTAssertTrue(badge.isHidden)
+        XCTAssertNil(badge.hitTest(NSPoint(x: 1, y: 1)), "clicks must reach the menu bar item")
+        XCTAssertTrue(button.subviews.contains(badge))
+    }
+}

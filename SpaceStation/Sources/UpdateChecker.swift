@@ -62,6 +62,7 @@ final class UpdateChecker: ObservableObject {
     nonisolated static let releasesPage = URL(string: "https://github.com/\(repository)/releases")!
     nonisolated static let latestReleaseURL = URL(string: "https://api.github.com/repos/\(repository)/releases/latest")!
     nonisolated static let lastCheckKey = "lastUpdateCheck"
+    nonisolated static let availableUpdateKey = "availableUpdate"
     nonisolated static let automaticInterval: TimeInterval = 24 * 60 * 60
 
     @Published private(set) var availableUpdate: ReleaseInfo?
@@ -83,6 +84,32 @@ final class UpdateChecker: ObservableObject {
         self.defaults = defaults
         self.now = now
         self.fetch = fetch ?? Self.liveFetch
+        availableUpdate = Self.loadStoredUpdate(from: defaults, currentVersion: self.currentVersion)
+    }
+
+    // MARK: - Remembering a found update
+
+    /// An update found earlier is kept so the notice survives a relaunch. It is dropped as soon as it
+    /// is no longer newer than the running version (i.e. you installed it) or its link isn't trusted.
+    nonisolated static func loadStoredUpdate(from defaults: UserDefaults, currentVersion: String) -> ReleaseInfo? {
+        guard let stored = defaults.dictionary(forKey: availableUpdateKey),
+              let tag = stored["tag"] as? String, let version = stored["version"] as? String,
+              let name = stored["name"] as? String, let urlString = stored["url"] as? String,
+              let url = URL(string: urlString), isTrustedReleaseURL(url),
+              UpdateVersion.isNewer(version, than: currentVersion) else {
+            defaults.removeObject(forKey: availableUpdateKey)
+            return nil
+        }
+        return ReleaseInfo(tag: tag, version: version, name: name, url: url)
+    }
+
+    private func store(_ release: ReleaseInfo?) {
+        if let release {
+            defaults.set(["tag": release.tag, "version": release.version, "name": release.name,
+                          "url": release.url.absoluteString], forKey: Self.availableUpdateKey)
+        } else {
+            defaults.removeObject(forKey: Self.availableUpdateKey)
+        }
     }
 
     nonisolated static var bundleVersion: String {
@@ -100,7 +127,16 @@ final class UpdateChecker: ObservableObject {
 
         let result = await performCheck()
         status = result
-        if case .available(let release) = result { availableUpdate = release } else { availableUpdate = nil }
+        switch result {
+        case .available(let release):
+            availableUpdate = release
+            store(release)
+        case .upToDate, .noReleases:
+            availableUpdate = nil
+            store(nil)
+        case .failed:
+            break   // a failed check says nothing about whether an update exists; keep what we knew
+        }
         if case .failed = result {} else { defaults.set(now(), forKey: Self.lastCheckKey) }
         return result
     }

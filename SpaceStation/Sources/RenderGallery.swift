@@ -85,6 +85,37 @@ enum RenderGallery {
             render(AboutSettingsView(updateChecker: updates), size: CGSize(width: w, height: 440), appearance: appearance, background: windowBackground,
                    to: folder.appendingPathComponent("settings-about-\(tag).png"))
         }
+        // The menu bar badge: a stand-in button (the real status item can't be drawn offscreen) with
+        // the same badge code, in each display mode.
+        for dark in [false, true] {
+            let tag = dark ? "dark" : "light"
+            let barColor = dark ? NSColor(white: 0.16, alpha: 1) : NSColor(white: 0.93, alpha: 1)
+            let modes: [(String, Bool, Bool)] = [("icon-name", true, true), ("icon", true, false), ("name", false, true)]
+            let row = NSStackView()
+            row.orientation = .horizontal
+            row.spacing = 28
+            row.edgeInsets = NSEdgeInsets(top: 4, left: 16, bottom: 4, right: 16)
+            for (_, showsIcon, showsName) in modes {
+                let button = NSButton(frame: .zero)
+                button.isBordered = false
+                button.font = NSFont.menuBarFont(ofSize: 0)
+                button.imagePosition = showsName && showsIcon ? .imageLeading : (showsIcon ? .imageOnly : .noImage)
+                button.image = showsIcon ? SpaceIconImage.symbol("tray") : nil
+                button.title = showsName ? "Inbox" : ""
+                button.contentTintColor = dark ? .white : .black
+                button.sizeToFit()
+                button.frame.size.width += 12
+                button.frame.size.height = 22
+                let badge = StatusItemBadge.install(on: button)
+                badge.isHidden = false
+                badge.reposition(on: button, showsIcon: showsIcon)
+                row.addArrangedSubview(button)
+            }
+            row.frame = NSRect(x: 0, y: 0, width: 360, height: 30)
+            renderView(row, size: CGSize(width: 360, height: 30), appearance: dark ? .darkAqua : .aqua,
+                       background: barColor, to: folder.appendingPathComponent("menubar-badge-\(tag).png"))
+        }
+
         // Smoke test of the real Settings window (this is the code path that once crashed on
         // building the tab controller): open every tab, check it, and capture the window chrome.
         for tab in SettingsTab.allCases {
@@ -126,6 +157,27 @@ enum RenderGallery {
         return data.enumerated().map { offset, entry in
             SwitcherItem(space: SpaceInfo(id: "sample-\(offset)", index: offset + 1), name: entry.0, icon: entry.1)
         }
+    }
+
+    /// Renders an AppKit view at `size` (points) into a 2x PNG.
+    private static func renderView(_ content: NSView, size: CGSize, appearance: NSAppearance.Name, background: NSColor, to url: URL) {
+        let container = NSView(frame: CGRect(origin: .zero, size: size))
+        container.wantsLayer = true
+        container.layer?.backgroundColor = background.cgColor
+        content.frame = container.bounds
+        container.addSubview(content)
+        let window = NSWindow(contentRect: container.frame, styleMask: [.borderless], backing: .buffered, defer: false)
+        window.appearance = NSAppearance(named: appearance)
+        window.contentView = container
+        container.layoutSubtreeIfNeeded()
+        RunLoop.current.run(until: Date().addingTimeInterval(0.15))
+        container.layoutSubtreeIfNeeded()
+        guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(size.width) * 2, pixelsHigh: Int(size.height) * 2,
+                                         bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                                         colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0) else { return }
+        rep.size = size
+        container.cacheDisplay(in: container.bounds, to: rep)
+        try? rep.representation(using: .png, properties: [:])?.write(to: url)
     }
 
     /// Renders `view` at `size` (points) into a 2x PNG.

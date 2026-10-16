@@ -78,6 +78,7 @@ targets:
       - path: SpaceStation/Sources/SpaceIconImage.swift
       - path: SpaceStation/Sources/SettingsLogic.swift
       - path: SpaceStation/Sources/RenameDraft.swift
+      - path: SpaceStation/Sources/StatusItemBadge.swift
       - path: SpaceStation/Sources/UpdateChecker.swift
       - path: SpaceStation/Sources/GlobalHotKey.swift
       - path: SpaceStation/Sources/StatusItemController.swift
