@@ -233,7 +233,7 @@ xcodegen generate
 Key settings in `project.yml`:
 - `deploymentTarget: macOS 13.0`
 - `LSUIElement: true` (no dock icon)
-- `ENABLE_HARDENED_RUNTIME: false`
+- `ENABLE_HARDENED_RUNTIME: true` (required for notarization)
 - Non-sandboxed (`com.apple.security.app-sandbox: false`)
 
 ---

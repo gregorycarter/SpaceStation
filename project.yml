@@ -30,7 +30,7 @@ targets:
         PRODUCT_NAME: SpaceStation
         LD_RUNPATH_SEARCH_PATHS:
           - "@executable_path/../Frameworks"
-        ENABLE_HARDENED_RUNTIME: false
+        ENABLE_HARDENED_RUNTIME: true
         COMBINE_HIDPI_IMAGES: true
     info:
       path: SpaceStation/Info.plist
