@@ -41,7 +41,7 @@ targets:
         LSApplicationCategoryType: public.app-category.utilities
         LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
         CFBundleDisplayName: SpaceStation
-        NSHumanReadableCopyright: "Copyright © 2025 Gregory Carter"
+        NSHumanReadableCopyright: "Copyright © 2026 Gregory Carter"
     scheme:
       testTargets:
         - SpaceStationTests
