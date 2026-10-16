@@ -13,6 +13,7 @@ struct SpaceStationApp: App {
                 Image(systemName: "square.grid.2x2")
                 Text(spaceTracker.isInFullscreenSpace ? "Full Screen" : nameManager.name(for: spaceTracker.currentSpace))
                     .font(.system(.body, design: .rounded))
+                    .lineLimit(1)
             }
             .onReceive(spaceTracker.$spaces) { spaces in
                 nameManager.migrateLegacyNames(using: spaces)

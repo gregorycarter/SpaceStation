@@ -168,8 +168,9 @@ struct SpaceNamesSettingsView: View {
         Binding(
             get: { editingNames[space.id] ?? nameManager.name(for: space) },
             set: { newValue in
-                editingNames[space.id] = newValue
-                nameManager.setName(newValue, for: space)
+                let limited = String(newValue.prefix(SpaceNameManager.maxNameLength))
+                editingNames[space.id] = limited
+                nameManager.setName(limited, for: space)
             }
         )
     }

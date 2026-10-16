@@ -143,6 +143,11 @@ struct MenuBarView: View {
                     if isRenaming && renamingSpace?.id == space.id {
                         TextField("Space name", text: $renameText)
                             .textFieldStyle(.roundedBorder)
+                            .onChange(of: renameText) { newValue in
+                                if newValue.count > SpaceNameManager.maxNameLength {
+                                    renameText = String(newValue.prefix(SpaceNameManager.maxNameLength))
+                                }
+                            }
                             .font(.system(.body, design: .rounded))
                             .focused($isTextFieldFocused)
                             .onSubmit {

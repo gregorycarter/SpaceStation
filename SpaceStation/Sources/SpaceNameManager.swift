@@ -10,6 +10,9 @@ import os.log
 class SpaceNameManager: ObservableObject {
     @Published private var spaceNames: [String: String] = [:]
 
+    /// Keeps the menu bar item (which shows the name) from growing without bound.
+    static let maxNameLength = 40
+
     private let storageKey = "SpaceStationNamesByID"
     /// Pre-1.1 storage: names keyed by Space position.
     private let legacyStorageKey = "SpaceStationNames"
@@ -33,7 +36,7 @@ class SpaceNameManager: ObservableObject {
 
     /// Set a custom name for a space
     func setName(_ name: String, for space: SpaceInfo) {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(Self.maxNameLength))
 
         if trimmed.isEmpty || trimmed == defaultName(for: space) {
             // Remove custom name if empty or matches default
