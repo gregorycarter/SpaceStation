@@ -11,6 +11,7 @@
 		0CF57B37BA0FC007595D0DCE /* SpaceStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15667B16A76A1270BA4F4BE /* SpaceStepper.swift */; };
 		12917AB258A97B8D0DEF4B7D /* SwitcherLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3125E0C14DC502DDD5148F9 /* SwitcherLayoutTests.swift */; };
 		156DFD40F95CDC3E4A68C0FC /* GeneralSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2847901D92E3DEF0BC5C65 /* GeneralSettingsView.swift */; };
+		1D01FB3EC46FB2B663DD7112 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C05D4469EC3F39A7512F602 /* UpdateChecker.swift */; };
 		1D5413FC808874F989198846 /* SwitcherLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 540826D4F1C3EE53BD6BE415 /* SwitcherLayout.swift */; };
 		1DDF391AB2E4583B711A062C /* SettingsLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5A9F88BFBE1786C593D8C0 /* SettingsLogic.swift */; };
 		21B657FF099F140967D9E302 /* SystemShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EF59BDFACABB84D02308038 /* SystemShortcuts.swift */; };
@@ -39,6 +40,7 @@
 		7FB5AB242EF8FFEF12BED21D /* SpaceIconTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFCE4D9166BEF62F7532376 /* SpaceIconTests.swift */; };
 		7FBFC013C37366B50DD3533B /* SetupWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C5133C41D4D8CBBFE50E0 /* SetupWindow.swift */; };
 		8148C0735E170A45D37DD6C0 /* SpaceStationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F03E1B76F5A93E6D4409834 /* SpaceStationApp.swift */; };
+		841F0C47CB40646B8673079A /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C05D4469EC3F39A7512F602 /* UpdateChecker.swift */; };
 		842F1ED5CF0BD5DFBABDE8ED /* SettingsLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2620BDFD3591F136E08DFDB0 /* SettingsLogicTests.swift */; };
 		85AC5042E21D14D10F207B56 /* AboutSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0B42CEE79B9DC04A201011 /* AboutSettingsView.swift */; };
 		8AF6A5387137B5676CCE2FCE /* KeyRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1C4F4B42ADB812886F8497 /* KeyRecorder.swift */; };
@@ -56,6 +58,7 @@
 		C07DD84D5E5FF4EA5682CEA3 /* SpaceTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75349D15412B5C5E40B1A88 /* SpaceTracker.swift */; };
 		CA54BBC251B21C5083754B61 /* SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84241F3C489D605A4488A972 /* SettingsComponents.swift */; };
 		CBFCEDCFC3C75769C5886D6A /* DesktopShortcutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2531D4116D2A49DDC1B5BF /* DesktopShortcutTests.swift */; };
+		D0707879B4D705D20F1676BF /* UpdateCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27DE39DE15952A4169622117 /* UpdateCheckerTests.swift */; };
 		D7E6BFA3088EFA8C3A664AF1 /* SpaceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F4C93E36308B4444C858C9 /* SpaceIcon.swift */; };
 		DB7CD01B14FC22D17BE4BC9E /* SpaceNameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */; };
 		DD1EA0640E91F2F0155C3186 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4754788611E4AF2A5789E64 /* AppPreferences.swift */; };
@@ -78,6 +81,7 @@
 		1DE1B73231E0FEB09DC325DF /* SwitcherController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherController.swift; sourceTree = "<group>"; };
 		20F4C93E36308B4444C858C9 /* SpaceIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceIcon.swift; sourceTree = "<group>"; };
 		2620BDFD3591F136E08DFDB0 /* SettingsLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsLogicTests.swift; sourceTree = "<group>"; };
+		27DE39DE15952A4169622117 /* UpdateCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckerTests.swift; sourceTree = "<group>"; };
 		3F3D6D6FE01364223980D1E5 /* SpaceIconImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceIconImage.swift; sourceTree = "<group>"; };
 		3FFD759C5584136EFF923B40 /* IconPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPickerView.swift; sourceTree = "<group>"; };
 		41965DA232156EBF30C711FC /* RenderGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderGallery.swift; sourceTree = "<group>"; };
@@ -95,6 +99,7 @@
 		6E2618FA4824B1965303C957 /* GlobalHotKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKey.swift; sourceTree = "<group>"; };
 		6E5A9F88BFBE1786C593D8C0 /* SettingsLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsLogic.swift; sourceTree = "<group>"; };
 		6F03E1B76F5A93E6D4409834 /* SpaceStationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceStationApp.swift; sourceTree = "<group>"; };
+		7C05D4469EC3F39A7512F602 /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 		7C1C4F4B42ADB812886F8497 /* KeyRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyRecorder.swift; sourceTree = "<group>"; };
 		7EC50DA270F32E9814AEF6B6 /* SystemShortcutsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemShortcutsTests.swift; sourceTree = "<group>"; };
 		813356BD5D76961C078C432F /* HotCornerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotCornerTests.swift; sourceTree = "<group>"; };
@@ -153,6 +158,7 @@
 				6B6E1ADAA6C1F0B83E1CBBC2 /* StatusItemMenuTests.swift */,
 				D3125E0C14DC502DDD5148F9 /* SwitcherLayoutTests.swift */,
 				7EC50DA270F32E9814AEF6B6 /* SystemShortcutsTests.swift */,
+				27DE39DE15952A4169622117 /* UpdateCheckerTests.swift */,
 			);
 			path = SpaceStationTests;
 			sourceTree = "<group>";
@@ -192,6 +198,7 @@
 				B451F274A0BD283BBA5EF109 /* SwitcherView.swift */,
 				6AF248B2DBAEBBC0362B7899 /* SystemSettingsLinks.swift */,
 				9EF59BDFACABB84D02308038 /* SystemShortcuts.swift */,
+				7C05D4469EC3F39A7512F602 /* UpdateChecker.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -348,6 +355,7 @@
 				337A0E03B3454A8FC7BD488A /* SwitcherView.swift in Sources */,
 				959B21B422DEDEDBCF6B8095 /* SystemSettingsLinks.swift in Sources */,
 				B30740E6E94255026FEECC35 /* SystemShortcuts.swift in Sources */,
+				1D01FB3EC46FB2B663DD7112 /* UpdateChecker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,6 +390,8 @@
 				12917AB258A97B8D0DEF4B7D /* SwitcherLayoutTests.swift in Sources */,
 				21B657FF099F140967D9E302 /* SystemShortcuts.swift in Sources */,
 				37D426812E9F1BA5F57373DD /* SystemShortcutsTests.swift in Sources */,
+				841F0C47CB40646B8673079A /* UpdateChecker.swift in Sources */,
+				D0707879B4D705D20F1676BF /* UpdateCheckerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

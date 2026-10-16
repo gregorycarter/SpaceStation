@@ -24,6 +24,7 @@ final class AppPreferencesTests: XCTestCase {
         XCTAssertEqual(prefs.panelPlacement, .centered)   // opens centred, as it always did; next-to-corner is opt-in
         XCTAssertTrue(prefs.showKeyboardHints)
         XCTAssertFalse(prefs.closeOnPointerExit)
+        XCTAssertFalse(prefs.checkForUpdatesAutomatically, "no network use unless the user asks")
         XCTAssertEqual(prefs.switcherShortcut?.display, "⌃⌥S")
     }
 
@@ -36,6 +37,7 @@ final class AppPreferencesTests: XCTestCase {
         prefs.panelPlacement = .nearCorner
         prefs.showKeyboardHints = false
         prefs.closeOnPointerExit = true
+        prefs.checkForUpdatesAutomatically = true
         prefs.switcherShortcut = KeyBinding(keyCode: 46, flags: .maskCommand)
 
         let reloaded = AppPreferences(defaults: defaults)
@@ -46,6 +48,7 @@ final class AppPreferencesTests: XCTestCase {
         XCTAssertEqual(reloaded.panelPlacement, .nearCorner)
         XCTAssertFalse(reloaded.showKeyboardHints)
         XCTAssertTrue(reloaded.closeOnPointerExit)
+        XCTAssertTrue(reloaded.checkForUpdatesAutomatically)
         XCTAssertEqual(reloaded.switcherShortcut?.display, "⌘M")
     }
 

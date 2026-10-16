@@ -30,6 +30,7 @@ final class AppPreferences: ObservableObject {
         static let panelPlacement = "panelPlacement"
         static let showKeyboardHints = "showKeyboardHints"
         static let closeOnPointerExit = "closeOnPointerExit"
+        static let checkForUpdatesAutomatically = "checkForUpdatesAutomatically"
         /// Pre-redesign on/off switch for the hardcoded Control+S hotkey.
         static let legacyHotKeyEnabled = "switcherHotKeyEnabled"
     }
@@ -62,6 +63,8 @@ final class AppPreferences: ObservableObject {
     @Published var panelPlacement: PanelPlacement { didSet { defaults.set(panelPlacement.rawValue, forKey: Key.panelPlacement) } }
     @Published var showKeyboardHints: Bool { didSet { defaults.set(showKeyboardHints, forKey: Key.showKeyboardHints) } }
     @Published var closeOnPointerExit: Bool { didSet { defaults.set(closeOnPointerExit, forKey: Key.closeOnPointerExit) } }
+    /// Off by default: SpaceStation only contacts GitHub when asked, unless this is turned on.
+    @Published var checkForUpdatesAutomatically: Bool { didSet { defaults.set(checkForUpdatesAutomatically, forKey: Key.checkForUpdatesAutomatically) } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -75,6 +78,7 @@ final class AppPreferences: ObservableObject {
         panelPlacement = defaults.string(forKey: Key.panelPlacement).flatMap(PanelPlacement.init(rawValue:)) ?? .centered
         showKeyboardHints = defaults.object(forKey: Key.showKeyboardHints) as? Bool ?? true
         closeOnPointerExit = defaults.object(forKey: Key.closeOnPointerExit) as? Bool ?? false
+        checkForUpdatesAutomatically = defaults.object(forKey: Key.checkForUpdatesAutomatically) as? Bool ?? false
     }
 
     /// The saved shortcut, migrating the pre-redesign on/off switch the first time: an install
