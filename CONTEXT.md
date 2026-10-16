@@ -43,7 +43,8 @@ SpaceStation/
 │   │   ├── SettingsView.swift       # Preferences window
 │   │   ├── SwitcherController.swift # Floating Space switcher panel + hotkey wiring
 │   │   ├── SwitcherView.swift       # SwiftUI cards for the switcher
-│   │   └── GlobalHotKey.swift       # Carbon RegisterEventHotKey wrapper
+│   │   ├── GlobalHotKey.swift       # Carbon RegisterEventHotKey wrapper
+│   │   └── HotCorner.swift          # Screen-corner detection + pointer monitor
 │   ├── Assets.xcassets/             # App icons (macOS sizes)
 │   ├── Info.plist
 │   └── SpaceStation.entitlements

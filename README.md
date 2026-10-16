@@ -13,6 +13,7 @@ A macOS menu bar app for naming and managing Spaces (virtual desktops).
 - Click a Space in the menu to switch to it (Desktops 1–9)
 - A floating **Space switcher** strip showing your names, opened with ⌃S or from the menu
   (macOS offers no way to rename the labels in Mission Control itself, so SpaceStation provides its own)
+- Optionally open the switcher by resting the pointer in a screen corner (Settings → General)
 - Names follow the Space, even if you reorder or add Spaces in Mission Control
 - Names stored locally; no network access, no analytics
 

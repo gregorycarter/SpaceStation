@@ -29,6 +29,10 @@ rather than opening a public issue.
   public Carbon `RegisterEventHotKey` API to show the Space switcher. This only fires
   when that exact combination is pressed and needs no extra permission; it does not
   observe other keystrokes.
+- Optionally (off by default) watches the pointer position to open the switcher from a screen
+  corner, using a global mouse-moved monitor. macOS requires no permission for mouse movement
+  (only keyboard events), and the app only compares the pointer position to the screen corner;
+  it does not record or store it.
 
 ## What the app does not do
 

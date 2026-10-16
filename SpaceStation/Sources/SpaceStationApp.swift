@@ -41,7 +41,7 @@ final class SettingsWindowController {
         if window == nil {
             let hostingView = NSHostingView(rootView: SettingsView(nameManager: nameManager, spaceTracker: spaceTracker))
             let newWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 450, height: 400),
+                contentRect: NSRect(x: 0, y: 0, width: 450, height: 460),
                 styleMask: [.titled, .closable, .miniaturizable],
                 backing: .buffered,
                 defer: false

@@ -23,7 +23,7 @@ struct SettingsView: View {
                     Label("About", systemImage: "info.circle")
                 }
         }
-        .frame(width: 450, height: 400)
+        .frame(width: 450, height: 460)
     }
 }
 
@@ -35,6 +35,8 @@ struct GeneralSettingsView: View {
     // System Settings → General → Login Items.
     @State private var launchAtLogin = false
     @State private var launchError: String?
+    @State private var switcherHotCorner = HotCorner(
+        rawValue: UserDefaults.standard.string(forKey: SwitcherController.hotCornerKey) ?? "") ?? .off
     @State private var switcherHotKeyEnabled = UserDefaults.standard.object(forKey: SwitcherController.hotKeyEnabledKey) as? Bool ?? true
 
     private static let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "Settings")
@@ -69,6 +71,23 @@ struct GeneralSettingsView: View {
                 ))
 
                 Text("A floating strip of your named Spaces. Pick one with the mouse, 1–9, or ←/→ and Return. You can also open it from the menu.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Picker("Open from a screen corner", selection: Binding(
+                    get: { switcherHotCorner },
+                    set: { newValue in
+                        switcherHotCorner = newValue
+                        UserDefaults.standard.set(newValue.rawValue, forKey: SwitcherController.hotCornerKey)
+                        SwitcherController.shared.applyHotCornerPreference()
+                    }
+                )) {
+                    ForEach(HotCorner.allCases) { corner in
+                        Text(corner.label).tag(corner)
+                    }
+                }
+
+                Text("Rest the pointer in the corner for a moment. If macOS Hot Corners (System Settings → Desktop & Dock) use the same corner, both will fire, so pick a corner they don't use.")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }

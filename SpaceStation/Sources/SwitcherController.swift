@@ -41,6 +41,8 @@ final class SwitcherController {
 
     /// Whether the global hotkey is registered. Stored under this key by Settings.
     static let hotKeyEnabledKey = "switcherHotKeyEnabled"
+    /// Which screen corner (if any) opens the switcher; a `HotCorner` raw value.
+    static let hotCornerKey = "switcherHotCorner"
     /// Control + S. Note this shadows ⌃S in every other app (terminals, Emacs-style editors)
     /// while the hotkey is enabled; users can turn it off in Settings.
     private static let hotKeyCode = kVK_ANSI_S
@@ -50,6 +52,7 @@ final class SwitcherController {
     private let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "Switcher")
     private var panel: SwitcherPanel?
     private var hotKey: GlobalHotKey?
+    private var hotCornerMonitor: HotCornerMonitor?
     private var spaceTracker: SpaceTracker?
     private var nameManager: SpaceNameManager?
     private var isDismissing = false
@@ -61,8 +64,21 @@ final class SwitcherController {
     func configure(spaceTracker: SpaceTracker, nameManager: SpaceNameManager) {
         self.spaceTracker = spaceTracker
         self.nameManager = nameManager
-        UserDefaults.standard.register(defaults: [Self.hotKeyEnabledKey: true])
+        UserDefaults.standard.register(defaults: [Self.hotKeyEnabledKey: true,
+                                                  Self.hotCornerKey: HotCorner.off.rawValue])
         applyHotKeyPreference()
+        applyHotCornerPreference()
+    }
+
+    /// Starts or stops watching the chosen screen corner to match the stored preference.
+    func applyHotCornerPreference() {
+        let corner = UserDefaults.standard.string(forKey: Self.hotCornerKey).flatMap(HotCorner.init(rawValue:)) ?? .off
+        hotCornerMonitor = nil
+        guard corner != .off else { return }
+        hotCornerMonitor = HotCornerMonitor(corner: corner) { [weak self] in
+            guard let self, !self.isVisible else { return }
+            self.show()
+        }
     }
 
     /// Registers or unregisters the hotkey to match the stored preference.
