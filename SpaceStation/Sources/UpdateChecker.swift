@@ -73,6 +73,7 @@ final class UpdateChecker: ObservableObject {
     private let defaults: UserDefaults
     private let now: () -> Date
     private let fetch: Fetch
+    private var inFlight: Task<UpdateStatus, Never>?
 
     /// - Parameters are injectable so tests never touch the network: `fetch` defaults to a real
     ///   HTTPS request and `currentVersion` to the running app's version.
@@ -121,11 +122,23 @@ final class UpdateChecker: ObservableObject {
     /// Checks now (the user asked). Concurrent calls share the result of the one in flight.
     @discardableResult
     func check() async -> UpdateStatus {
-        if isChecking, let status { return status }
+        if let inFlight { return await inFlight.value }
         isChecking = true
-        defer { isChecking = false }
+        let task = Task { @MainActor in
+            defer {
+                inFlight = nil
+                isChecking = false
+            }
+            let result = await performCheck()
+            record(result)
+            return result
+        }
+        inFlight = task
+        return await task.value
+    }
 
-        let result = await performCheck()
+    /// Publish and persist once per request, regardless of how many callers await it.
+    private func record(_ result: UpdateStatus) {
         status = result
         switch result {
         case .available(let release):
@@ -135,10 +148,9 @@ final class UpdateChecker: ObservableObject {
             availableUpdate = nil
             store(nil)
         case .failed:
-            break   // a failed check says nothing about whether an update exists; keep what we knew
+            return   // a failed check says nothing about whether an update exists; keep what we knew
         }
-        if case .failed = result {} else { defaults.set(now(), forKey: Self.lastCheckKey) }
-        return result
+        defaults.set(now(), forKey: Self.lastCheckKey)
     }
 
     /// The optional background check: does nothing unless the user turned it on, and then at most
