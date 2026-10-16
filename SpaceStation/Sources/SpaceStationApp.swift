@@ -24,10 +24,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             nameManager: nameManager,
             preferences: preferences,
             actions: StatusItemController.Actions(
-                rename: { [unowned self] _ in showSettings() },   // replaced by the rename popover
+                rename: { [unowned self] _ in showSettings(tab: .spaces) },   // replaced by the rename popover
                 showSwitcher: { SwitcherController.shared.show(trigger: .menu) },
                 showSettings: { [unowned self] in showSettings() },
-                showAbout: { [unowned self] in showSettings() },
+                showAbout: { [unowned self] in showSettings(tab: .about) },
                 allowAccessibility: { [unowned self] in
                     SetupWindowController.shared.showSetupWindow(spaceTracker: spaceTracker)
                 },
@@ -51,8 +51,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         #endif
     }
 
-    func showSettings() {
-        SettingsWindowController.shared.show(nameManager: nameManager, spaceTracker: spaceTracker)
+    func showSettings(tab: SettingsTab = .general) {
+        SettingsWindowController.shared.show(tab: tab, spaceTracker: spaceTracker, nameManager: nameManager, preferences: preferences)
     }
 
     /// What to do when a switch couldn't be made: walk the user through setup.
@@ -71,45 +71,19 @@ enum SpaceStationMain {
 
     @MainActor
     static func main() {
+        #if DEBUG
+        // Debug-only: render views to PNG files and exit (no menu bar item, hotkey or windows).
+        if let directory = ProcessInfo.processInfo.environment["SPACESTATION_RENDER_DIR"] {
+            RenderGallery.run(directory: directory)
+            return
+        }
+        #endif
         let app = NSApplication.shared
         let delegate = AppDelegate()
         Self.delegate = delegate   // NSApplication only holds its delegate weakly
         app.delegate = delegate
         app.setActivationPolicy(.accessory)
         app.run()
-    }
-}
-
-// MARK: - Settings Window Controller
-
-/// Opens the Settings window directly. SwiftUI's Settings scene / SettingsLink is unreliable
-/// in menu-bar-only apps (no Dock icon), so this uses a plain NSWindow, like the setup window.
-@MainActor
-final class SettingsWindowController {
-    static let shared = SettingsWindowController()
-    private var window: NSWindow?
-
-    private init() {}
-
-    func show(nameManager: SpaceNameManager, spaceTracker: SpaceTracker) {
-        if window == nil {
-            let hostingView = NSHostingView(rootView: SettingsView(nameManager: nameManager, spaceTracker: spaceTracker))
-            let newWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 450, height: 460),
-                styleMask: [.titled, .closable, .miniaturizable],
-                backing: .buffered,
-                defer: false
-            )
-            newWindow.title = "SpaceStation Settings"
-            newWindow.contentView = hostingView
-            newWindow.isReleasedWhenClosed = false
-            newWindow.center()
-            window = newWindow
-        }
-
-        window?.makeKeyAndOrderFront(nil)
-        window?.orderFrontRegardless()
-        NSApp.activate(ignoringOtherApps: true)
     }
 }
 
