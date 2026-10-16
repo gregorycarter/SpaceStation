@@ -127,6 +127,7 @@ struct MenuBarView: View {
 
     private func spaceRow(for space: SpaceInfo) -> some View {
         let index = space.index
+        let canSwitch = index <= SpaceTracker.maxSwitchableSpace
         let isCurrentSpace = !spaceTracker.isInFullscreenSpace && index == spaceTracker.currentSpaceIndex
 
         return HStack {
@@ -158,8 +159,8 @@ struct MenuBarView: View {
 
                     Spacer()
 
-                    // Keyboard shortcut hint
-                    if index <= 9 {
+                    // Keyboard shortcut hint (macOS only offers shortcuts for Desktops 1-9)
+                    if canSwitch {
                         Text("⌃\(index)")
                             .font(.caption)
                             .foregroundColor(.gray.opacity(0.5))
@@ -168,6 +169,8 @@ struct MenuBarView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .disabled(!canSwitch && !isCurrentSpace)
+            .help(canSwitch ? "" : "macOS has no keyboard shortcut for Desktop \(index), so SpaceStation can't switch to it")
 
             // Rename button (separate from main tap area)
             if !isRenaming {
@@ -228,12 +231,13 @@ struct MenuBarView: View {
         guard !isRenaming else { return }
         guard spaceTracker.isInFullscreenSpace || index != spaceTracker.currentSpaceIndex else { return }
 
-        if !spaceTracker.hasAccessibilityPermission {
-            SetupWindowController.shared.showSetupWindow(spaceTracker: spaceTracker)
-            return
-        }
+        guard index <= SpaceTracker.maxSwitchableSpace else { return }
 
-        spaceTracker.switchToSpace(index)
+        // switchToSpace returns false when Accessibility or the Desktop shortcut
+        // isn't set up; walk the user through setup instead of failing silently.
+        if !spaceTracker.hasAccessibilityPermission || !spaceTracker.switchToSpace(index) {
+            SetupWindowController.shared.showSetupWindow(spaceTracker: spaceTracker)
+        }
     }
 
     private func startRenaming(_ space: SpaceInfo) {

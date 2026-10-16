@@ -25,6 +25,9 @@ class SpaceTracker: ObservableObject {
     @Published private(set) var hasAccessibilityPermission: Bool = false
     @Published private(set) var hasKeyboardShortcutsEnabled: Bool = false
 
+    /// macOS only provides "Switch to Desktop N" shortcuts for Desktops 1-9.
+    static let maxSwitchableSpace = 9
+
     var totalSpaces: Int { spaces.count }
 
     /// The current desktop Space (never empty; falls back to a placeholder).
@@ -247,7 +250,7 @@ class SpaceTracker: ObservableObject {
     /// Returns true if the switch was attempted, false if permissions are missing
     @discardableResult
     func switchToSpace(_ index: Int) -> Bool {
-        guard index >= 1 && index <= 9 else {
+        guard (1...Self.maxSwitchableSpace).contains(index) else {
             logger.warning("Invalid space index: \(index)")
             return false
         }
