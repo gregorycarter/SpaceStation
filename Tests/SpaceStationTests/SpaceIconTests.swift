@@ -99,3 +99,44 @@ final class SpaceIconTests: XCTestCase {
         XCTAssertNil(reloaded.icon(for: space))
     }
 }
+
+final class RenameDraftTests: XCTestCase {
+    func testNothingChangedAtFirst() {
+        let draft = RenameDraft(name: "Inbox", icon: .symbol("tray"))
+        XCTAssertFalse(draft.isChanged)
+    }
+
+    func testRenameIsEnabledByANameOrIconChange() {
+        var draft = RenameDraft(name: "Inbox", icon: nil)
+        draft.setName("Mail")
+        XCTAssertTrue(draft.isChanged)
+        draft.setName("Inbox")
+        XCTAssertFalse(draft.isChanged)
+        draft.icon = .emoji("📬")
+        XCTAssertTrue(draft.isChanged)
+    }
+
+    func testWhitespaceOnlyChangesAreNotChanges() {
+        var draft = RenameDraft(name: "Inbox", icon: nil)
+        draft.setName("  Inbox  ")
+        XCTAssertFalse(draft.isChanged)
+        XCTAssertEqual(draft.normalizedName, "Inbox")
+    }
+
+    func testAnEmptyNameMeansTheMacOSDefault() {
+        var draft = RenameDraft(name: "Inbox", icon: nil)
+        draft.setName("   ")
+        XCTAssertEqual(draft.normalizedName, "")
+        XCTAssertTrue(draft.isChanged, "clearing a custom name is a change")
+        var unnamed = RenameDraft(name: "", icon: nil)
+        unnamed.setName("  ")
+        XCTAssertFalse(unnamed.isChanged)
+    }
+
+    func testNamesAreLimitedToFortyCharacters() {
+        var draft = RenameDraft(name: "", icon: nil)
+        draft.setName(String(repeating: "x", count: 100))
+        XCTAssertEqual(draft.name.count, SpaceNameManager.maxNameLength)
+        XCTAssertEqual(draft.normalizedName.count, SpaceNameManager.maxNameLength)
+    }
+}

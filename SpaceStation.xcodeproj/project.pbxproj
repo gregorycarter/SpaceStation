@@ -15,6 +15,7 @@
 		1DDF391AB2E4583B711A062C /* SettingsLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5A9F88BFBE1786C593D8C0 /* SettingsLogic.swift */; };
 		21B657FF099F140967D9E302 /* SystemShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EF59BDFACABB84D02308038 /* SystemShortcuts.swift */; };
 		2653C7B6B3B09261B6582226 /* AppPreferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FE4B1AE1295FF676FF4C405 /* AppPreferencesTests.swift */; };
+		280F3E94A4566C157421AE09 /* RenameDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = C95221ECDF6E657EEC805384 /* RenameDraft.swift */; };
 		2B7385E9D78105E74A578646 /* GlobalHotKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E2618FA4824B1965303C957 /* GlobalHotKey.swift */; };
 		2E280C55C86522DAB8A5E77D /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4754788611E4AF2A5789E64 /* AppPreferences.swift */; };
 		30CD705140C2F3E0833A115D /* StatusItemMenuTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B6E1ADAA6C1F0B83E1CBBC2 /* StatusItemMenuTests.swift */; };
@@ -33,6 +34,7 @@
 		6563378778D6FBAD35FC5DC7 /* SpaceNameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */; };
 		6C8D7550FEE2241A5714C5D3 /* StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F9A9D8E0CCEABDB4AC94157 /* StatusItemController.swift */; };
 		6F7074807A22B301B656EE15 /* SwitcherController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DE1B73231E0FEB09DC325DF /* SwitcherController.swift */; };
+		70697D1A587C431F4B5BE088 /* RenameDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = C95221ECDF6E657EEC805384 /* RenameDraft.swift */; };
 		77F46CDE081FD19E75C52FB5 /* MenuBarFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E65B33E9F0B5DC9F88D82E0 /* MenuBarFormat.swift */; };
 		7FB5AB242EF8FFEF12BED21D /* SpaceIconTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFCE4D9166BEF62F7532376 /* SpaceIconTests.swift */; };
 		8148C0735E170A45D37DD6C0 /* SpaceStationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F03E1B76F5A93E6D4409834 /* SpaceStationApp.swift */; };
@@ -56,6 +58,7 @@
 		D7E6BFA3088EFA8C3A664AF1 /* SpaceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F4C93E36308B4444C858C9 /* SpaceIcon.swift */; };
 		DB7CD01B14FC22D17BE4BC9E /* SpaceNameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */; };
 		DD1EA0640E91F2F0155C3186 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4754788611E4AF2A5789E64 /* AppPreferences.swift */; };
+		DD749910BB9E055DFEAF1327 /* RenamePopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60E7C2BD49106D6D8C01085A /* RenamePopover.swift */; };
 		E48B2444C02D3F8F65E9041B /* HotCorner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067A0142533E62D423C1F86D /* HotCorner.swift */; };
 		E5C962BB8479F1D50B4975AE /* SpaceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F4C93E36308B4444C858C9 /* SpaceIcon.swift */; };
 		E6AFEC6220EFA0BE9CEC910B /* SpaceIconImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F3D6D6FE01364223980D1E5 /* SpaceIconImage.swift */; };
@@ -84,6 +87,7 @@
 		540826D4F1C3EE53BD6BE415 /* SwitcherLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherLayout.swift; sourceTree = "<group>"; };
 		56D40959751104DE1F47300A /* SwitcherSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherSettingsView.swift; sourceTree = "<group>"; };
 		5E65B33E9F0B5DC9F88D82E0 /* MenuBarFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarFormat.swift; sourceTree = "<group>"; };
+		60E7C2BD49106D6D8C01085A /* RenamePopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenamePopover.swift; sourceTree = "<group>"; };
 		6AF248B2DBAEBBC0362B7899 /* SystemSettingsLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemSettingsLinks.swift; sourceTree = "<group>"; };
 		6B6E1ADAA6C1F0B83E1CBBC2 /* StatusItemMenuTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemMenuTests.swift; sourceTree = "<group>"; };
 		6E2618FA4824B1965303C957 /* GlobalHotKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKey.swift; sourceTree = "<group>"; };
@@ -103,6 +107,7 @@
 		B451F274A0BD283BBA5EF109 /* SwitcherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherView.swift; sourceTree = "<group>"; };
 		C15667B16A76A1270BA4F4BE /* SpaceStepper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceStepper.swift; sourceTree = "<group>"; };
 		C4754788611E4AF2A5789E64 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
+		C95221ECDF6E657EEC805384 /* RenameDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameDraft.swift; sourceTree = "<group>"; };
 		CC21ECCEB00406EEB12A1907 /* CodeSigningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeSigningTests.swift; sourceTree = "<group>"; };
 		D3125E0C14DC502DDD5148F9 /* SwitcherLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherLayoutTests.swift; sourceTree = "<group>"; };
 		D72F874FDBD2AEA4EF84FE6C /* SpaceStationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpaceStationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -163,6 +168,8 @@
 				3FFD759C5584136EFF923B40 /* IconPickerView.swift */,
 				7C1C4F4B42ADB812886F8497 /* KeyRecorder.swift */,
 				5E65B33E9F0B5DC9F88D82E0 /* MenuBarFormat.swift */,
+				C95221ECDF6E657EEC805384 /* RenameDraft.swift */,
+				60E7C2BD49106D6D8C01085A /* RenamePopover.swift */,
 				41965DA232156EBF30C711FC /* RenderGallery.swift */,
 				84241F3C489D605A4488A972 /* SettingsComponents.swift */,
 				6E5A9F88BFBE1786C593D8C0 /* SettingsLogic.swift */,
@@ -316,6 +323,8 @@
 				45325DDB3B8426EE7C8633D1 /* IconPickerView.swift in Sources */,
 				8AF6A5387137B5676CCE2FCE /* KeyRecorder.swift in Sources */,
 				92B783D311EEDD511A9B3FBE /* MenuBarFormat.swift in Sources */,
+				70697D1A587C431F4B5BE088 /* RenameDraft.swift in Sources */,
+				DD749910BB9E055DFEAF1327 /* RenamePopover.swift in Sources */,
 				0C5CBFF3D6A7833F3B6F24C0 /* RenderGallery.swift in Sources */,
 				CA54BBC251B21C5083754B61 /* SettingsComponents.swift in Sources */,
 				1DDF391AB2E4583B711A062C /* SettingsLogic.swift in Sources */,
@@ -351,6 +360,7 @@
 				F057B2BA50E4BD28A95DD3BF /* HotCorner.swift in Sources */,
 				A96DA97912EF64BE62A9FF60 /* HotCornerTests.swift in Sources */,
 				77F46CDE081FD19E75C52FB5 /* MenuBarFormat.swift in Sources */,
+				280F3E94A4566C157421AE09 /* RenameDraft.swift in Sources */,
 				48F047ACE478FA6D2C93B89C /* SettingsLogic.swift in Sources */,
 				842F1ED5CF0BD5DFBABDE8ED /* SettingsLogicTests.swift in Sources */,
 				E5C962BB8479F1D50B4975AE /* SpaceIcon.swift in Sources */,

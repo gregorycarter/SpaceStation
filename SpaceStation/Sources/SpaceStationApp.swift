@@ -24,7 +24,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             nameManager: nameManager,
             preferences: preferences,
             actions: StatusItemController.Actions(
-                rename: { [unowned self] _ in showSettings(tab: .spaces) },   // replaced by the rename popover
+                rename: { [unowned self] space in
+                    // The menu has just closed; show the popover under the menu bar item.
+                    DispatchQueue.main.async { [self] in
+                        RenamePopoverController.shared.show(
+                            space: space, anchor: statusItemController?.button, nameManager: nameManager,
+                            fallback: { showSettings(tab: .spaces) })
+                    }
+                },
                 showSwitcher: { SwitcherController.shared.show(trigger: .menu) },
                 showSettings: { [unowned self] in showSettings() },
                 showAbout: { [unowned self] in showSettings(tab: .about) },

@@ -12,7 +12,7 @@ class SpaceNameManager: ObservableObject {
     @Published private var spaceIcons: [String: String] = [:]
 
     /// Keeps the menu bar item (which shows the name) from growing without bound.
-    static let maxNameLength = 40
+    nonisolated static let maxNameLength = 40
 
     private let storageKey = "SpaceStationNamesByID"
     private let iconStorageKey = "SpaceStationIconsByID"

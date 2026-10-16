@@ -4,6 +4,9 @@ import SwiftUI
 struct IconPickerView: View {
     let icon: SpaceIcon?
     let onChange: (SpaceIcon?) -> Void
+    /// Opens the Character Viewer. Callers that host the picker in a transient popover use this to
+    /// stop the popover closing when the viewer takes focus.
+    var onOpenCharacterPalette: () -> Void = { NSApp.orderFrontCharacterPalette(nil) }
 
     enum Mode: String, CaseIterable, Identifiable {
         case symbols = "Symbols", emoji = "Emoji", number = "Number"
@@ -13,9 +16,11 @@ struct IconPickerView: View {
     @State private var mode: Mode
     @State private var emojiText = ""
 
-    init(icon: SpaceIcon?, onChange: @escaping (SpaceIcon?) -> Void) {
+    init(icon: SpaceIcon?, onChange: @escaping (SpaceIcon?) -> Void,
+         onOpenCharacterPalette: @escaping () -> Void = { NSApp.orderFrontCharacterPalette(nil) }) {
         self.icon = icon
         self.onChange = onChange
+        self.onOpenCharacterPalette = onOpenCharacterPalette
         switch icon {
         case .symbol: _mode = State(initialValue: .symbols)
         case .emoji: _mode = State(initialValue: .emoji)
@@ -73,7 +78,7 @@ struct IconPickerView: View {
                 Button("Use") { applyEmoji() }
                     .disabled(SpaceIcon.emoji(from: emojiText) == nil)
             }
-            Button("Open Emoji & Symbols…") { NSApp.orderFrontCharacterPalette(nil) }
+            Button("Open Emoji & Symbols…") { onOpenCharacterPalette() }
                 .buttonStyle(.link)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

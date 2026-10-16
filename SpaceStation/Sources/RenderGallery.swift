@@ -50,6 +50,14 @@ enum RenderGallery {
                                 height: SwitcherLayout.panelHeight(count: 16, showsFooter: true)),
                    appearance: appearance, background: panelBackground, to: folder.appendingPathComponent("switcher-16-\(tag).png"))
 
+            // The rename popover (Recruitment, as in the design).
+            let recruit = tracker.spaces.indices.contains(4) ? tracker.spaces[4] : tracker.spaces[0]
+            render(RenameView(space: recruit, name: "Recruitment", icon: .symbol("person.2"),
+                              onRename: { _ in }, onCancel: {}, onOpenCharacterPalette: {}),
+                   size: CGSize(width: 316, height: 292), appearance: appearance,
+                   background: dark ? NSColor(white: 0.17, alpha: 1) : NSColor(white: 0.95, alpha: 1),
+                   to: folder.appendingPathComponent("rename-\(tag).png"))
+
             // Settings tabs at the heights the window uses.
             let w = SettingsWindowController.width
             render(GeneralSettingsView(model: model, spaceTracker: tracker, preferences: prefs),
