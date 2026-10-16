@@ -41,15 +41,16 @@ SpaceStation/
 │   │   ├── SpaceNameManager.swift   # Name persistence (UserDefaults)
 │   │   ├── MenuBarView.swift        # Main dropdown UI
 │   │   └── SettingsView.swift       # Preferences window
-│   ├── Assets.xcassets/             # App icons
+│   ├── Assets.xcassets/             # App icons (macOS sizes)
 │   ├── Info.plist
 │   └── SpaceStation.entitlements
-├── project.yml                       # XcodeGen project definition
-├── README.md
-├── CONTEXT.md                        # This file
-├── SECURITY.md                       # Security analysis and reporting
-└── docs/
-    └── (see SECURITY.md at the repo root)
+├── Tests/SpaceStationTests/         # Unit tests (parsing, shortcuts, name storage)
+├── .github/workflows/ci.yml         # Build + test on macOS
+├── project.yml                      # XcodeGen definition (source of truth)
+├── SpaceStation.xcodeproj           # Generated from project.yml; commit both
+├── README.md, CONTRIBUTING.md, SECURITY.md, LICENSE
+├── CONTEXT.md                       # This file
+└── docs/icon.png                    # README icon
 ```
 
 ### Key Components
