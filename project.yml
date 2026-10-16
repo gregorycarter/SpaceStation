@@ -71,6 +71,8 @@ targets:
       - path: SpaceStation/Sources/CodeSigning.swift
       - path: SpaceStation/Sources/HotCorner.swift
       - path: SpaceStation/Sources/SystemShortcuts.swift
+      - path: SpaceStation/Sources/SwitcherLayout.swift
+      - path: SpaceStation/Sources/MenuBarFormat.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: true
