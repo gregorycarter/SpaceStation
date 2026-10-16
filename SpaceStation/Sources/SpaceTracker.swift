@@ -35,6 +35,7 @@ class SpaceTracker: ObservableObject {
         spaces.first { $0.index == currentSpaceIndex } ?? spaces.first ?? .placeholder
     }
 
+    // Registered once for the app's lifetime (SpaceTracker is owned by the App), so it is never removed.
     private var spaceChangeObserver: NSObjectProtocol?
     private let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "SpaceTracker")
 
@@ -294,14 +295,6 @@ class SpaceTracker: ObservableObject {
 
         logger.debug("Key events posted for space \(index)")
         return true
-    }
-
-    func cleanup() {
-        if let observer = spaceChangeObserver {
-            NSWorkspace.shared.notificationCenter.removeObserver(observer)
-            spaceChangeObserver = nil
-            logger.debug("Space change observer removed")
-        }
     }
 }
 
