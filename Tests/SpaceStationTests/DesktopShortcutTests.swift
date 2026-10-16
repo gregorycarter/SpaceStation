@@ -1,6 +1,5 @@
 import XCTest
 import CoreGraphics
-@testable import SpaceStation
 
 final class DesktopShortcutTests: XCTestCase {
     private func hotkeys(key: Int, enabled: Int = 1, parameters: [Int]) -> [String: Any] {

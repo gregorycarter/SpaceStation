@@ -1,5 +1,4 @@
 import XCTest
-@testable import SpaceStation
 
 final class SpaceParsingTests: XCTestCase {
     private func space(_ id: Int, type: Int = 0, uuid: String? = nil) -> [String: Any] {

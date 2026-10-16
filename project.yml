@@ -60,14 +60,16 @@ targets:
   SpaceStationTests:
     type: bundle.unit-test
     platform: macOS
+    # Host-less: the logic under test is compiled straight into the test bundle, so running
+    # the tests never launches the real app (which would touch the user's preferences and
+    # macOS permissions).
     sources:
       - path: Tests/SpaceStationTests
-    dependencies:
-      - target: SpaceStation
+      - path: SpaceStation/Sources/SpaceTracker.swift
+      - path: SpaceStation/Sources/SpaceNameManager.swift
+      - path: SpaceStation/Sources/SpaceIcon.swift
+      - path: SpaceStation/Sources/CodeSigning.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: true
         PRODUCT_BUNDLE_IDENTIFIER: com.gregorycarter.SpaceStationTests
-        # The app target is an executable; load it into the test host.
-        BUNDLE_LOADER: "$(TEST_HOST)"
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/SpaceStation.app/Contents/MacOS/SpaceStation"

@@ -1,6 +1,5 @@
 import XCTest
 import Security
-@testable import SpaceStation
 
 final class CodeSigningTests: XCTestCase {
     private let adHocB = CodeSigning.Identity(isAdHoc: true, requirement: #"cdhash H"bbbb""#)

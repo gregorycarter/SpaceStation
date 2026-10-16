@@ -1,5 +1,4 @@
 import XCTest
-@testable import SpaceStation
 
 @MainActor
 final class SpaceIconTests: XCTestCase {

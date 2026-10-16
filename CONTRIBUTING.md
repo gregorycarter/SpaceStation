@@ -52,7 +52,9 @@ xcodebuild test -project SpaceStation.xcodeproj -scheme SpaceStation \
   -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO
 ```
 
-Unit tests live in `Tests/SpaceStationTests`. The parsing of the private
+Unit tests live in `Tests/SpaceStationTests`. They are host-less: the logic under test is compiled
+straight into the test bundle, so running them never launches the app or touches your real
+preferences or macOS permissions. The parsing of the private
 Space data and of the system shortcut preferences is deliberately written as
 pure functions so it can be tested without a live WindowServer.
 
