@@ -289,9 +289,10 @@ class SpaceTracker: ObservableObject {
         keyUp.flags = shortcut.flags
 
         keyDown.post(tap: .cghidEventTap)
-        // Small delay between key down and up
-        usleep(20000) // 20ms
-        keyUp.post(tap: .cghidEventTap)
+        // Small delay between key down and up, without blocking the main thread
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) {
+            keyUp.post(tap: .cghidEventTap)
+        }
 
         logger.debug("Key events posted for space \(index)")
         return true
