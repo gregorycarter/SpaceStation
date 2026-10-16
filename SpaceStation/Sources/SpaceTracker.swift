@@ -61,25 +61,36 @@ class SpaceTracker: ObservableObject {
     func resetAndRequestPermission() {
         logger.info("Resetting and requesting accessibility permission")
 
-        // Reset TCC entry for this app (requires the app to be re-added)
-        let task = Process()
-        task.launchPath = "/usr/bin/tccutil"
-        task.arguments = ["reset", "Accessibility", "com.gregorycarter.SpaceStation"]
-        try? task.run()
-        task.waitUntilExit()
+        let bundleID = Bundle.main.bundleIdentifier ?? "com.gregorycarter.SpaceStation"
+        let logger = self.logger
 
-        // Small delay to let TCC process the reset
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            // Now request permission fresh
-            let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
-            let trusted = AXIsProcessTrustedWithOptions(options)
-            self?.hasAccessibilityPermission = trusted
-            self?.logger.info("Permission after reset: \(trusted)")
-
-            // Open settings
-            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-                NSWorkspace.shared.open(url)
+        // Reset the TCC entry for this app (it must then be re-added). Run it off
+        // the main thread so the UI doesn't freeze while tccutil executes.
+        Task.detached { [weak self] in
+            let task = Process()
+            task.executableURL = URL(fileURLWithPath: "/usr/bin/tccutil")
+            task.arguments = ["reset", "Accessibility", bundleID]
+            do {
+                try task.run()
+                task.waitUntilExit()
+            } catch {
+                logger.error("tccutil failed: \(error.localizedDescription)")
             }
+
+            // Small delay to let TCC process the reset
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            await self?.requestPermissionAndOpenSettings()
+        }
+    }
+
+    private func requestPermissionAndOpenSettings() {
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+        let trusted = AXIsProcessTrustedWithOptions(options)
+        hasAccessibilityPermission = trusted
+        logger.info("Permission after reset: \(trusted)")
+
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+            NSWorkspace.shared.open(url)
         }
     }
 
