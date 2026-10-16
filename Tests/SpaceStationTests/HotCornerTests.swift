@@ -109,3 +109,9 @@ final class HotCornerTriggerTests: XCTestCase {
         XCTAssertFalse(trigger.sample(point: inCorner, screens: screens, at: 10))
     }
 }
+
+final class HotCornerLabelTests: XCTestCase {
+    func testLabelsMatchTheDesign() {
+        XCTAssertEqual(HotCorner.allCases.map(\.label), ["Off", "Top Left", "Top Right", "Bottom Left", "Bottom Right"])
+    }
+}

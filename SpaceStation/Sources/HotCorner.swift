@@ -10,10 +10,10 @@ enum HotCorner: String, CaseIterable, Identifiable {
     var label: String {
         switch self {
         case .off: return "Off"
-        case .topLeft: return "Top left"
-        case .topRight: return "Top right"
-        case .bottomLeft: return "Bottom left"
-        case .bottomRight: return "Bottom right"
+        case .topLeft: return "Top Left"
+        case .topRight: return "Top Right"
+        case .bottomLeft: return "Bottom Left"
+        case .bottomRight: return "Bottom Right"
         }
     }
 

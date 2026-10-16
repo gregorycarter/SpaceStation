@@ -58,6 +58,10 @@ enum RenderGallery {
                    background: dark ? NSColor(white: 0.17, alpha: 1) : NSColor(white: 0.95, alpha: 1),
                    to: folder.appendingPathComponent("rename-\(tag).png"))
 
+            render(SetupWindowView(spaceTracker: tracker, onDone: {}), size: CGSize(width: 440, height: 440),
+                   appearance: appearance, background: windowBackground,
+                   to: folder.appendingPathComponent("setup-\(tag).png"))
+
             // Settings tabs at the heights the window uses.
             let w = SettingsWindowController.width
             render(GeneralSettingsView(model: model, spaceTracker: tracker, preferences: prefs),

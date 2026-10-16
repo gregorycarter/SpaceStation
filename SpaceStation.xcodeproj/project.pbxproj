@@ -37,6 +37,7 @@
 		70697D1A587C431F4B5BE088 /* RenameDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = C95221ECDF6E657EEC805384 /* RenameDraft.swift */; };
 		77F46CDE081FD19E75C52FB5 /* MenuBarFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E65B33E9F0B5DC9F88D82E0 /* MenuBarFormat.swift */; };
 		7FB5AB242EF8FFEF12BED21D /* SpaceIconTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFCE4D9166BEF62F7532376 /* SpaceIconTests.swift */; };
+		7FBFC013C37366B50DD3533B /* SetupWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111C5133C41D4D8CBBFE50E0 /* SetupWindow.swift */; };
 		8148C0735E170A45D37DD6C0 /* SpaceStationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F03E1B76F5A93E6D4409834 /* SpaceStationApp.swift */; };
 		842F1ED5CF0BD5DFBABDE8ED /* SettingsLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2620BDFD3591F136E08DFDB0 /* SettingsLogicTests.swift */; };
 		85AC5042E21D14D10F207B56 /* AboutSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0B42CEE79B9DC04A201011 /* AboutSettingsView.swift */; };
@@ -71,6 +72,7 @@
 /* Begin PBXFileReference section */
 		067A0142533E62D423C1F86D /* HotCorner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotCorner.swift; sourceTree = "<group>"; };
 		0FE4B1AE1295FF676FF4C405 /* AppPreferencesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferencesTests.swift; sourceTree = "<group>"; };
+		111C5133C41D4D8CBBFE50E0 /* SetupWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupWindow.swift; sourceTree = "<group>"; };
 		175450945A925AE639332BBD /* CodeSigning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeSigning.swift; sourceTree = "<group>"; };
 		1A2847901D92E3DEF0BC5C65 /* GeneralSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralSettingsView.swift; sourceTree = "<group>"; };
 		1DE1B73231E0FEB09DC325DF /* SwitcherController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherController.swift; sourceTree = "<group>"; };
@@ -175,6 +177,7 @@
 				6E5A9F88BFBE1786C593D8C0 /* SettingsLogic.swift */,
 				996812236321D1D612334824 /* SettingsModel.swift */,
 				8494B5BB17EB29A9733ADA89 /* SettingsWindow.swift */,
+				111C5133C41D4D8CBBFE50E0 /* SetupWindow.swift */,
 				20F4C93E36308B4444C858C9 /* SpaceIcon.swift */,
 				3F3D6D6FE01364223980D1E5 /* SpaceIconImage.swift */,
 				E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */,
@@ -330,6 +333,7 @@
 				1DDF391AB2E4583B711A062C /* SettingsLogic.swift in Sources */,
 				AEEA9C238F5C94851CAB2F4E /* SettingsModel.swift in Sources */,
 				43F58A00C12F798B124C1D1F /* SettingsWindow.swift in Sources */,
+				7FBFC013C37366B50DD3533B /* SetupWindow.swift in Sources */,
 				D7E6BFA3088EFA8C3A664AF1 /* SpaceIcon.swift in Sources */,
 				E9941B91AD7BA5A2A0AF371C /* SpaceIconImage.swift in Sources */,
 				DB7CD01B14FC22D17BE4BC9E /* SpaceNameManager.swift in Sources */,
