@@ -36,5 +36,7 @@ targets:
       path: SpaceStation/Info.plist
       properties:
         LSUIElement: true
+        LSApplicationCategoryType: public.app-category.utilities
+        LSMinimumSystemVersion: "$(MACOSX_DEPLOYMENT_TARGET)"
         CFBundleDisplayName: SpaceStation
         NSHumanReadableCopyright: "Copyright © 2025 Gregory Carter"

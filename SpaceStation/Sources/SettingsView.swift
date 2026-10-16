@@ -190,6 +190,10 @@ struct SpaceNamesSettingsView: View {
 // MARK: - About View
 
 struct AboutView: View {
+    private static var versionString: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
+    }
+
     var body: some View {
         VStack(spacing: 16) {
             Image(nsImage: NSApp.applicationIconImage)
@@ -200,7 +204,7 @@ struct AboutView: View {
                 .font(.title)
                 .fontWeight(.bold)
 
-            Text("Version 1.0.0")
+            Text("Version \(Self.versionString)")
                 .font(.caption)
                 .foregroundColor(.secondary)
 
