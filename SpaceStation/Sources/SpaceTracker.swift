@@ -247,6 +247,7 @@ class SpaceTracker: ObservableObject {
     }
 
     private func recordPreviousSpace() {
+        guard !isStepping else { return }
         let current = isInFullscreenSpace ? nil : spaces.first(where: { $0.index == currentSpaceIndex })?.id
         history.record(currentDesktopID: current == SpaceInfo.placeholder.id ? nil : current)
         if previousSpaceID != history.previousID { previousSpaceID = history.previousID }
@@ -341,55 +342,147 @@ class SpaceTracker: ObservableObject {
 
     // MARK: - Space Switching
 
-    /// Switch to a specific space by index
-    /// Returns true if the switch was attempted, false if permissions are missing
+    enum SwitchOutcome: Equatable {
+        /// A shortcut was sent (or stepping toward the Space has begun).
+        case started
+        case alreadyCurrent
+        case needsAccessibility
+        /// macOS has neither a "Switch to Desktop N" shortcut for this Space nor usable
+        /// "Move left/right a space" shortcuts to step to it.
+        case unavailable
+    }
+
+    private var isStepping = false
+
+    /// Switch to a desktop. Uses the user's "Switch to Desktop N" shortcut when macOS has one
+    /// enabled (Desktops 1-9), and otherwise steps there with the "Move left/right a space"
+    /// shortcuts, which works for any number of Spaces. Never posts a key that isn't one of
+    /// macOS's own enabled shortcuts, since it would otherwise land in the frontmost app.
     @discardableResult
-    func switchToSpace(_ index: Int) -> Bool {
-        guard (1...Self.maxSwitchableSpace).contains(index) else {
-            logger.warning("Invalid space index: \(index)")
-            return false
-        }
+    func switchTo(_ space: SpaceInfo) -> SwitchOutcome {
+        guard space.id != SpaceInfo.placeholder.id else { return .unavailable }
+        if !isInFullscreenSpace && space.index == currentSpaceIndex { return .alreadyCurrent }
 
         // Re-check permission before attempting
         checkAccessibilityPermission()
-
         guard hasAccessibilityPermission else {
             logger.warning("Cannot switch space - no accessibility permission")
             requestAccessibilityPermission()
-            return false
+            return .needsAccessibility
         }
 
-        // Post exactly the shortcut the user configured. If it's disabled we
-        // must not post anything, or the keystroke would land in the frontmost app.
-        guard let shortcut = desktopShortcut(for: index) else {
-            logger.warning("Shortcut for space \(index) is not enabled; not switching")
+        let hotkeys = SystemShortcuts.current()
+        var useDirectShortcut = true
+        #if DEBUG
+        // Test hook (Debug builds only): force the arrow-key stepping path.
+        if ProcessInfo.processInfo.environment["SPACESTATION_DEBUG_FORCE_STEP"] != nil { useDirectShortcut = false }
+        #endif
+        if useDirectShortcut, let direct = SystemShortcuts.switchToDesktop(space.index, in: hotkeys) {
+            logger.info("Switching to space \(space.index) with its shortcut")
+            post(direct)
+            return .started
+        }
+
+        guard let order = spaceOrder, let plan = SpaceStepper.plan(order: order, to: space.id) else {
+            logger.warning("Space \(space.index) has no shortcut and can't be stepped to")
             checkKeyboardShortcuts()
-            return false
+            return .unavailable
         }
-
-        logger.info("Switching to space \(index)")
-
-        guard let source = CGEventSource(stateID: .hidSystemState) else {
-            logger.error("Failed to create CGEventSource")
-            return false
+        // Both directions are needed: the first plan may need a correction the other way.
+        guard let left = SystemShortcuts.moveLeftASpace(in: hotkeys),
+              let right = SystemShortcuts.moveRightASpace(in: hotkeys) else {
+            logger.warning("Space \(space.index) has no shortcut and the Move a space shortcuts are off")
+            return .unavailable
         }
+        guard !isStepping else { return .started }
 
-        guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: shortcut.keyCode, keyDown: true),
-              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: shortcut.keyCode, keyDown: false) else {
+        logger.info("Stepping \(plan.steps) to space \(space.index)")
+        step(toDesktop: space.id, firstPlan: plan, moveLeft: left, moveRight: right)
+        return .started
+    }
+
+    /// Seconds between presses when stepping. macOS queues the transitions, so the presses can be
+    /// sent back-to-back rather than waiting for each animation (about 0.6 s) to finish.
+    static var stepInterval: TimeInterval {
+        #if DEBUG
+        if let ms = ProcessInfo.processInfo.environment["SPACESTATION_DEBUG_STEP_INTERVAL_MS"].flatMap(Double.init) {
+            return ms / 1000
+        }
+        #endif
+        return 0.1
+    }
+
+    /// Steps to `desktopID` by sending the move-a-space shortcut, then checks where it ended up
+    /// and corrects (a press that macOS dropped, or a Space that changed meanwhile). Gives up
+    /// after two corrections so it can never loop.
+    private func step(toDesktop desktopID: String, firstPlan: SpaceStepper.Plan, moveLeft: KeyBinding, moveRight: KeyBinding) {
+        isStepping = true
+        Task { @MainActor in
+            defer {
+                isStepping = false
+                updateCurrentSpace()   // record the destination (intermediate Spaces were skipped)
+            }
+            var plan: SpaceStepper.Plan? = firstPlan
+            var attempt = 0
+            while let current = plan, attempt < 3 {
+                let key = current.direction == .right ? moveRight : moveLeft
+                for pressed in 0..<current.steps {
+                    post(key)
+                    if pressed < current.steps - 1 {
+                        try? await Task.sleep(nanoseconds: UInt64(Self.stepInterval * 1_000_000_000))
+                    }
+                }
+                guard await waitUntilSettled(on: desktopID, expectedSteps: current.steps) else {
+                    logger.warning("Stepping stopped: the Space did not change")
+                    return
+                }
+                updateCurrentSpace()
+                guard let order = spaceOrder else { return }
+                plan = SpaceStepper.plan(order: order, to: desktopID)   // nil once we have arrived
+                if plan != nil { logger.info("Stepping: correcting by \(plan!.steps)") }
+                attempt += 1
+            }
+        }
+    }
+
+    /// Waits for the transitions to finish: until we are on `desktopID`, or the Space has stopped
+    /// moving, with an upper bound proportional to the number of steps.
+    private func waitUntilSettled(on desktopID: String, expectedSteps: Int) async -> Bool {
+        let start = spaceOrder?.currentManagedID
+        let deadline = Date().addingTimeInterval(1.0 + 0.7 * Double(expectedSteps))
+        var lastChange = Date()
+        var lastSeen = start
+        var everMoved = false
+        while Date() < deadline {
+            try? await Task.sleep(nanoseconds: 40_000_000)
+            updateCurrentSpace()
+            let now = spaceOrder?.currentManagedID
+            if now != lastSeen { lastSeen = now; lastChange = Date(); everMoved = true }
+            if let order = spaceOrder, let to = order.position(ofDesktop: desktopID), order.currentPosition == to {
+                return true
+            }
+            // Settled somewhere else: no movement for a moment after having moved.
+            if everMoved, Date().timeIntervalSince(lastChange) > 0.9 { return true }
+        }
+        return everMoved
+    }
+
+    /// Posts a key combination to the system: press, a short pause, then release.
+    private func post(_ binding: KeyBinding) {
+        guard let source = CGEventSource(stateID: .hidSystemState),
+              let keyDown = CGEvent(keyboardEventSource: source, virtualKey: binding.keyCode, keyDown: true),
+              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: binding.keyCode, keyDown: false) else {
             logger.error("Failed to create key events")
-            return false
+            return
         }
-        keyDown.flags = shortcut.flags
-        keyUp.flags = shortcut.flags
+        keyDown.flags = binding.flags
+        keyUp.flags = binding.flags
 
         keyDown.post(tap: .cghidEventTap)
         // Small delay between key down and up, without blocking the main thread
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) {
             keyUp.post(tap: .cghidEventTap)
         }
-
-        logger.debug("Key events posted for space \(index)")
-        return true
     }
 }
 

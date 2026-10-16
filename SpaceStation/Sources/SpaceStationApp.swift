@@ -1,4 +1,5 @@
 import SwiftUI
+import os.log
 
 /// Owns the app-wide model objects and finishes startup. Startup work lives here rather than in
 /// SwiftUI view callbacks: `.onAppear` on a menu bar item's label does not reliably run at launch,
@@ -11,6 +12,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         nameManager.migrateLegacyNames(using: spaceTracker.spaces)
         SwitcherController.shared.configure(spaceTracker: spaceTracker, nameManager: nameManager)
+
+        #if DEBUG
+        // Test hook (Debug builds only): SPACESTATION_DEBUG_SWITCH=<n> switches to desktop n shortly
+        // after launch, so switching can be exercised without sending keystrokes.
+        if let value = ProcessInfo.processInfo.environment["SPACESTATION_DEBUG_SWITCH"], let target = Int(value) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [spaceTracker] in
+                guard let space = spaceTracker.spaces.first(where: { $0.index == target }) else { return }
+                let outcome = spaceTracker.switchTo(space)
+                Logger(subsystem: "com.gregorycarter.SpaceStation", category: "DebugHook")
+                    .info("debug switch to \(target): \(String(describing: outcome), privacy: .public)")
+            }
+        }
+        #endif
     }
 }
 
@@ -126,9 +140,10 @@ class SetupWindowController {
     /// Switch to a Space, or walk the user through setup if that isn't possible yet
     /// (no Accessibility permission, or the Desktop shortcut is disabled).
     func switchOrShowSetup(spaceTracker: SpaceTracker, to index: Int) {
-        guard index <= SpaceTracker.maxSwitchableSpace else { return }
-        if !spaceTracker.hasAccessibilityPermission || !spaceTracker.switchToSpace(index) {
-            showSetupWindow(spaceTracker: spaceTracker)
+        guard let space = spaceTracker.spaces.first(where: { $0.index == index }) else { return }
+        switch spaceTracker.switchTo(space) {
+        case .started, .alreadyCurrent: break
+        case .needsAccessibility, .unavailable: showSetupWindow(spaceTracker: spaceTracker)
         }
     }
 
