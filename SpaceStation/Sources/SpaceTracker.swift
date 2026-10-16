@@ -29,6 +29,8 @@ class SpaceTracker: ObservableObject {
     @Published private(set) var isInFullscreenSpace: Bool = false
     @Published private(set) var isTrackingAvailable: Bool = true
     @Published private(set) var hasAccessibilityPermission: Bool = false
+    /// Set when Accessibility isn't granted and the build's signature suggests why.
+    @Published private(set) var accessibilityHint: CodeSigning.AccessibilityHint?
     @Published private(set) var hasKeyboardShortcutsEnabled: Bool = false
 
     /// macOS only provides "Switch to Desktop N" shortcuts for Desktops 1-9.
@@ -44,6 +46,8 @@ class SpaceTracker: ObservableObject {
     // Registered once for the app's lifetime (SpaceTracker is owned by the App), so it is never removed.
     private var spaceChangeObserver: NSObjectProtocol?
     private let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "SpaceTracker")
+    private let signingIdentity = CodeSigning.current()
+    private static let lastTrustedBuildKey = "lastAccessibilityTrustedBuildID"
 
     init() {
         logger.info("SpaceTracker initializing")
@@ -59,8 +63,21 @@ class SpaceTracker: ObservableObject {
         // Use AXIsProcessTrustedWithOptions for a fresh check (not cached)
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: false] as CFDictionary
         let trusted = AXIsProcessTrustedWithOptions(options)
-        hasAccessibilityPermission = trusted
+        updateAccessibilityState(trusted: trusted)
         logger.info("Accessibility permission check: \(trusted)")
+    }
+
+    /// Records the result, and remembers which build was last trusted so a later
+    /// "not trusted" on a different ad-hoc build can be explained.
+    private func updateAccessibilityState(trusted: Bool) {
+        hasAccessibilityPermission = trusted
+        if trusted, let id = signingIdentity?.buildID {
+            UserDefaults.standard.set(id, forKey: Self.lastTrustedBuildKey)
+        }
+        accessibilityHint = CodeSigning.accessibilityHint(
+            isTrusted: trusted,
+            identity: signingIdentity,
+            lastTrustedBuildID: UserDefaults.standard.string(forKey: Self.lastTrustedBuildKey))
     }
 
     func requestAccessibilityPermission() {
@@ -70,7 +87,7 @@ class SpaceTracker: ObservableObject {
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
         let trusted = AXIsProcessTrustedWithOptions(options)
 
-        hasAccessibilityPermission = trusted
+        updateAccessibilityState(trusted: trusted)
         logger.info("Accessibility permission after request: \(trusted)")
     }
 
@@ -115,7 +132,7 @@ class SpaceTracker: ObservableObject {
     private func requestPermissionAndOpenSettings() {
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
         let trusted = AXIsProcessTrustedWithOptions(options)
-        hasAccessibilityPermission = trusted
+        updateAccessibilityState(trusted: trusted)
         logger.info("Permission after reset: \(trusted)")
 
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {

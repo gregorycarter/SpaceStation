@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		2B7385E9D78105E74A578646 /* GlobalHotKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E2618FA4824B1965303C957 /* GlobalHotKey.swift */; };
 		337A0E03B3454A8FC7BD488A /* SwitcherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451F274A0BD283BBA5EF109 /* SwitcherView.swift */; };
+		4697AC837EB4D910B915DFDE /* CodeSigningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC21ECCEB00406EEB12A1907 /* CodeSigningTests.swift */; };
 		4B984A3568A94147F7C795BF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E411A0A1E0AD6BA45B9C27C7 /* Assets.xcassets */; };
 		4C88780C91B8B6D411D368AD /* SpaceTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75349D15412B5C5E40B1A88 /* SpaceTracker.swift */; };
 		4FD5C5BEBDC7C2F0E884DA9C /* SpaceNameManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B039E90847D2400FB43C42C2 /* SpaceNameManagerTests.swift */; };
@@ -21,6 +22,7 @@
 		CC156022CCE824F6DA9CFE0F /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3105A3D97C7705DF3BA9BEEC /* MenuBarView.swift */; };
 		D7E6BFA3088EFA8C3A664AF1 /* SpaceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F4C93E36308B4444C858C9 /* SpaceIcon.swift */; };
 		DB7CD01B14FC22D17BE4BC9E /* SpaceNameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */; };
+		EB33641CC11BAD63C4859138 /* CodeSigning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175450945A925AE639332BBD /* CodeSigning.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		175450945A925AE639332BBD /* CodeSigning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeSigning.swift; sourceTree = "<group>"; };
 		1DE1B73231E0FEB09DC325DF /* SwitcherController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherController.swift; sourceTree = "<group>"; };
 		20F4C93E36308B4444C858C9 /* SpaceIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceIcon.swift; sourceTree = "<group>"; };
 		3105A3D97C7705DF3BA9BEEC /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
@@ -46,6 +49,7 @@
 		A99BC02601C17385D1E67C55 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B039E90847D2400FB43C42C2 /* SpaceNameManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceNameManagerTests.swift; sourceTree = "<group>"; };
 		B451F274A0BD283BBA5EF109 /* SwitcherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherView.swift; sourceTree = "<group>"; };
+		CC21ECCEB00406EEB12A1907 /* CodeSigningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeSigningTests.swift; sourceTree = "<group>"; };
 		D72F874FDBD2AEA4EF84FE6C /* SpaceStationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpaceStationTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D75349D15412B5C5E40B1A88 /* SpaceTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceTracker.swift; sourceTree = "<group>"; };
 		E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceNameManager.swift; sourceTree = "<group>"; };
@@ -73,6 +77,7 @@
 		4305CEE579CEC4FDEE117EC6 /* SpaceStationTests */ = {
 			isa = PBXGroup;
 			children = (
+				CC21ECCEB00406EEB12A1907 /* CodeSigningTests.swift */,
 				4D2531D4116D2A49DDC1B5BF /* DesktopShortcutTests.swift */,
 				4FFCE4D9166BEF62F7532376 /* SpaceIconTests.swift */,
 				B039E90847D2400FB43C42C2 /* SpaceNameManagerTests.swift */,
@@ -84,6 +89,7 @@
 		4D7D418B1033BC52774CB381 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				175450945A925AE639332BBD /* CodeSigning.swift */,
 				6E2618FA4824B1965303C957 /* GlobalHotKey.swift */,
 				3105A3D97C7705DF3BA9BEEC /* MenuBarView.swift */,
 				A99BC02601C17385D1E67C55 /* SettingsView.swift */,
@@ -209,6 +215,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EB33641CC11BAD63C4859138 /* CodeSigning.swift in Sources */,
 				2B7385E9D78105E74A578646 /* GlobalHotKey.swift in Sources */,
 				CC156022CCE824F6DA9CFE0F /* MenuBarView.swift in Sources */,
 				5F0EE27AD81E2C71D688B25E /* SettingsView.swift in Sources */,
@@ -225,6 +232,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4697AC837EB4D910B915DFDE /* CodeSigningTests.swift in Sources */,
 				CBFCEDCFC3C75769C5886D6A /* DesktopShortcutTests.swift in Sources */,
 				7FB5AB242EF8FFEF12BED21D /* SpaceIconTests.swift in Sources */,
 				4FD5C5BEBDC7C2F0E884DA9C /* SpaceNameManagerTests.swift in Sources */,
