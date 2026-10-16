@@ -73,17 +73,8 @@ extension HotCorner {
         guard self != .off else { return false }
         return screens.contains { frame in
             guard frame.insetBy(dx: -1, dy: -1).contains(point) else { return false }
-            let corner = cornerPointForProximity(of: frame)
+            let corner = cornerPoint(of: frame)
             return abs(point.x - corner.x) <= distance && abs(point.y - corner.y) <= distance
-        }
-    }
-
-    private func cornerPointForProximity(of frame: CGRect) -> CGPoint {
-        switch self {
-        case .off, .topLeft: return CGPoint(x: frame.minX, y: frame.maxY)
-        case .topRight: return CGPoint(x: frame.maxX, y: frame.maxY)
-        case .bottomLeft: return CGPoint(x: frame.minX, y: frame.minY)
-        case .bottomRight: return CGPoint(x: frame.maxX, y: frame.minY)
         }
     }
 }

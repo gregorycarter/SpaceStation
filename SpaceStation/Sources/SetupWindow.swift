@@ -49,15 +49,6 @@ struct SetupWindowView: View {
     // Poll while the window is open: the user is switching on a toggle in System Settings.
     private let timer = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 
-    static func hintText(for hint: CodeSigning.AccessibilityHint) -> String {
-        switch hint {
-        case .signatureChanged:
-            return "This build is signed differently from the one you previously allowed. macOS ties the permission to the app's signature, so SpaceStation may look switched on in System Settings but not count. Click “Reset & Try Again”, then allow it again."
-        case .adHocBuild:
-            return "This build isn't signed with a developer certificate, so macOS forgets the permission whenever it is rebuilt or updated. If SpaceStation is already switched on but not detected, click “Reset & Try Again”."
-        }
-    }
-
     var body: some View {
         let granted = spaceTracker.hasAccessibilityPermission
         VStack(spacing: 18) {
@@ -88,7 +79,7 @@ struct SetupWindowView: View {
 
                 if !granted {
                     if let hint = spaceTracker.accessibilityHint {
-                        Text(Self.hintText(for: hint))
+                        Text(hint.explanation)
                             .font(.system(size: 12))
                             .foregroundColor(Color(nsColor: .systemOrange))
                             .fixedSize(horizontal: false, vertical: true)

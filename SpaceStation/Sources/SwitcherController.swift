@@ -107,8 +107,6 @@ private final class SwitcherBackgroundView: NSVisualEffectView {
 /// Shows a floating panel of the user's Spaces and switches to the one picked.
 @MainActor
 final class SwitcherController {
-    static let shared = SwitcherController()
-
     /// What opened the panel; it decides where the panel appears.
     enum Trigger: Equatable {
         case hotkey
@@ -122,10 +120,10 @@ final class SwitcherController {
     private var background: SwitcherBackgroundView?
     private var hotKey: GlobalHotKey?
     private var hotCornerMonitor: HotCornerMonitor?
-    private var spaceTracker: SpaceTracker?
-    private var nameManager: SpaceNameManager?
-    private var preferences: AppPreferences?
-    private var handleOutcome: ((SpaceTracker.SwitchOutcome) -> Void)?
+    private let spaceTracker: SpaceTracker
+    private let nameManager: SpaceNameManager
+    private let preferences: AppPreferences
+    private let handleOutcome: (SpaceTracker.SwitchOutcome) -> Void
     private var subscriptions = Set<AnyCancellable>()
 
     private var typeSelect = TypeSelectBuffer()
@@ -133,13 +131,10 @@ final class SwitcherController {
     private var pointerHasEntered = false
     private var pendingPointerClose: DispatchWorkItem?
 
-    private init() {}
-
     var isVisible: Bool { panel?.isVisible ?? false }
 
-    func configure(spaceTracker: SpaceTracker, nameManager: SpaceNameManager, preferences: AppPreferences,
-                   handleOutcome: @escaping (SpaceTracker.SwitchOutcome) -> Void) {
-        guard self.spaceTracker == nil else { return }
+    init(spaceTracker: SpaceTracker, nameManager: SpaceNameManager, preferences: AppPreferences,
+         handleOutcome: @escaping (SpaceTracker.SwitchOutcome) -> Void) {
         self.spaceTracker = spaceTracker
         self.nameManager = nameManager
         self.preferences = preferences
@@ -147,7 +142,7 @@ final class SwitcherController {
         logger.info("Switcher configured")
 
         // Build the panel now so the first appearance isn't slowed by creating it.
-        if panel == nil { panel = makePanel() }
+        panel = makePanel()
 
         preferences.$switcherShortcut
             .sink { [weak self] binding in self?.registerHotKey(binding) }
@@ -196,13 +191,12 @@ final class SwitcherController {
     // MARK: - Showing and hiding
 
     func show(trigger: Trigger) {
-        guard let spaceTracker, let nameManager, let preferences else { return }
         guard !isVisible else { return }
 
         let panel = self.panel ?? makePanel()
         self.panel = panel
 
-        refreshModel(spaceTracker: spaceTracker, nameManager: nameManager, preferences: preferences)
+        refreshModel()
 
         let screen = Self.screenUnderPointer()
         let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
@@ -262,7 +256,7 @@ final class SwitcherController {
 
     // MARK: - Model
 
-    private func refreshModel(spaceTracker: SpaceTracker, nameManager: SpaceNameManager, preferences: AppPreferences) {
+    private func refreshModel() {
         model.items = spaceTracker.spaces.map { SwitcherItem(space: $0, name: nameManager.name(for: $0), icon: nameManager.icon(for: $0)) }
         model.currentID = spaceTracker.isInFullscreenSpace ? nil : spaceTracker.currentSpace.id
         model.selectedIndex = SwitcherLayout.initialSelection(ids: model.items.map(\.id),
@@ -326,7 +320,7 @@ final class SwitcherController {
     /// With "Close when the pointer leaves" on, close shortly after the pointer exits, but only
     /// if it had entered first (the panel can open with the pointer elsewhere).
     private func pointerExited() {
-        guard preferences?.closeOnPointerExit == true, pointerHasEntered else { return }
+        guard preferences.closeOnPointerExit, pointerHasEntered else { return }
         pendingPointerClose?.cancel()
         let work = DispatchWorkItem { [weak self] in self?.dismiss() }
         pendingPointerClose = work
@@ -382,12 +376,12 @@ final class SwitcherController {
     // MARK: - Picking
 
     private func pick(_ space: SpaceInfo) {
-        guard let spaceTracker else { return }
+        let spaceTracker = self.spaceTracker
         dismiss()
         // The shortcut is a system-wide key press, so send it as the panel fades.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { [weak self] in
             let outcome = spaceTracker.switchTo(space)
-            self?.handleOutcome?(outcome)
+            self?.handleOutcome(outcome)
         }
     }
 }

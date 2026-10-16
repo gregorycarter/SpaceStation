@@ -13,6 +13,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let updateChecker = UpdateChecker()
     private var statusItemController: StatusItemController?
     private var subscriptions = Set<AnyCancellable>()
+    private lazy var switcherController = SwitcherController(
+        spaceTracker: spaceTracker, nameManager: nameManager, preferences: preferences,
+        handleOutcome: { [unowned self] outcome in handle(outcome) })
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Names saved by position (before names followed their Space) migrate once real Spaces are known.
@@ -34,7 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                             fallback: { showSettings(tab: .spaces) })
                     }
                 },
-                showSwitcher: { SwitcherController.shared.show(trigger: .menu) },
+                showSwitcher: { [unowned self] in switcherController.show(trigger: .menu) },
                 showSettings: { [unowned self] in showSettings() },
                 showAbout: { [unowned self] in showSettings(tab: .about) },
                 allowAccessibility: { [unowned self] in
@@ -53,8 +56,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             try? await Task.sleep(nanoseconds: 5_000_000_000)
             await updateChecker.checkAutomaticallyIfDue(enabled: preferences.checkForUpdatesAutomatically)
         }
-        SwitcherController.shared.configure(spaceTracker: spaceTracker, nameManager: nameManager, preferences: preferences,
-                                            handleOutcome: { [unowned self] outcome in handle(outcome) })
+        // Prewarm the panel and register triggers at the same point in startup.
+        _ = switcherController
 
         #if DEBUG
         // Test hook (Debug builds only): SPACESTATION_DEBUG_SWITCH=<n> switches to desktop n shortly

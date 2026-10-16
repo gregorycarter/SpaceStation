@@ -17,13 +17,13 @@ struct RenameDraft: Equatable {
     /// The name that will be saved: trimmed and limited to the maximum length. Empty means "use the
     /// macOS default name".
     var normalizedName: String {
-        String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(SpaceNameManager.maxNameLength))
+        SpaceNameRules.normalize(name)
     }
 
     /// Rename is only enabled once something differs from what was there.
     var isChanged: Bool { normalizedName != originalName || icon != originalIcon }
 
     mutating func setName(_ text: String) {
-        name = String(text.prefix(SpaceNameManager.maxNameLength))
+        name = SpaceNameRules.limitInput(text)
     }
 }

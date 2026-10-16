@@ -136,7 +136,7 @@ final class RenameDraftTests: XCTestCase {
     func testNamesAreLimitedToFortyCharacters() {
         var draft = RenameDraft(name: "", icon: nil)
         draft.setName(String(repeating: "x", count: 100))
-        XCTAssertEqual(draft.name.count, SpaceNameManager.maxNameLength)
-        XCTAssertEqual(draft.normalizedName.count, SpaceNameManager.maxNameLength)
+        XCTAssertEqual(draft.name.count, SpaceNameRules.maxLength)
+        XCTAssertEqual(draft.normalizedName.count, SpaceNameRules.maxLength)
     }
 }

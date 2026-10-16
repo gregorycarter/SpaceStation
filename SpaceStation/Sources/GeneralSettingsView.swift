@@ -95,7 +95,7 @@ struct GeneralSettingsView: View {
     private var accessibilityWarning: some View {
         SettingsWarningRow(
             title: "SpaceStation needs Accessibility access",
-            detail: spaceTracker.accessibilityHint.map(SetupWindowView.hintText(for:))
+            detail: spaceTracker.accessibilityHint?.explanation
                 ?? "macOS requires it for an app to send the shortcuts that switch Spaces.") {
             Button("Open Accessibility Settings…") { spaceTracker.openAccessibilitySettings() }
             Button("Reset & Try Again") { spaceTracker.resetAndRequestPermission() }

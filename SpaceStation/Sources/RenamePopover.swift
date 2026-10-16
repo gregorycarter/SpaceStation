@@ -87,11 +87,11 @@ struct RenameView: View {
 
                 VStack(alignment: .trailing, spacing: 4) {
                     SelectingTextField(text: Binding(get: { draft.name }, set: { draft.setName($0) }),
-                                       placeholder: "Desktop \(space.index)",
-                                       maxLength: SpaceNameManager.maxNameLength,
+                                       placeholder: SpaceNameRules.defaultName(index: space.index),
+                                       maxLength: SpaceNameRules.maxLength,
                                        onSubmit: submit, onCancel: onCancel)
                         .frame(height: 22)
-                    Text("\(draft.name.count) / \(SpaceNameManager.maxNameLength)")
+                    Text("\(draft.name.count) / \(SpaceNameRules.maxLength)")
                         .font(.system(size: 11).monospacedDigit())
                         .foregroundColor(Color(nsColor: .tertiaryLabelColor))
                         .fixedSize()

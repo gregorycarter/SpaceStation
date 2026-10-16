@@ -11,9 +11,6 @@ class SpaceNameManager: ObservableObject {
     @Published private var spaceNames: [String: String] = [:]
     @Published private var spaceIcons: [String: String] = [:]
 
-    /// Keeps the menu bar item (which shows the name) from growing without bound.
-    nonisolated static let maxNameLength = 40
-
     private let storageKey = "SpaceStationNamesByID"
     private let iconStorageKey = "SpaceStationIconsByID"
     /// Pre-1.1 storage: names keyed by Space position.
@@ -39,7 +36,7 @@ class SpaceNameManager: ObservableObject {
 
     /// Set a custom name for a space
     func setName(_ name: String, for space: SpaceInfo) {
-        let trimmed = String(name.trimmingCharacters(in: .whitespacesAndNewlines).prefix(Self.maxNameLength))
+        let trimmed = SpaceNameRules.normalize(name)
 
         if trimmed.isEmpty || trimmed == defaultName(for: space) {
             // Remove custom name if empty or matches default
@@ -102,7 +99,7 @@ class SpaceNameManager: ObservableObject {
     }
 
     private func defaultName(for space: SpaceInfo) -> String {
-        "Desktop \(space.index)"
+        SpaceNameRules.defaultName(index: space.index)
     }
 
     // MARK: - Persistence

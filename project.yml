@@ -66,6 +66,10 @@ targets:
     sources:
       - path: Tests/SpaceStationTests
       - path: SpaceStation/Sources/SpaceTracker.swift
+      - path: SpaceStation/Sources/SpaceSnapshot.swift
+      - path: SpaceStation/Sources/AccessibilityController.swift
+      - path: SpaceStation/Sources/SpaceSwitchExecutor.swift
+      - path: SpaceStation/Sources/SpaceNameRules.swift
       - path: SpaceStation/Sources/SpaceNameManager.swift
       - path: SpaceStation/Sources/SpaceIcon.swift
       - path: SpaceStation/Sources/CodeSigning.swift

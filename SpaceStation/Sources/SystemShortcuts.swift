@@ -36,9 +36,6 @@ struct KeyBinding: Equatable {
     }
 }
 
-/// A "Switch to Desktop N" shortcut (kept as an alias; it is just a key binding).
-typealias DesktopShortcut = KeyBinding
-
 /// Names for ANSI virtual key codes.
 enum KeyCodeNames {
     private static let letters: [CGKeyCode: String] = [
@@ -61,6 +58,8 @@ enum KeyCodeNames {
     private static let functionKeys: [CGKeyCode: Int] = [
         122: 1, 120: 2, 99: 3, 118: 4, 96: 5, 97: 6, 98: 7, 100: 8, 101: 9, 109: 10, 103: 11, 111: 12,
     ]
+
+    static func isFunctionKey(_ keyCode: CGKeyCode) -> Bool { functionKeys[keyCode] != nil }
 
     /// How the key is shown in text, e.g. "S", "1", "↑", "Space".
     static func display(for keyCode: CGKeyCode) -> String? {
@@ -120,6 +119,12 @@ enum SystemShortcuts {
         }
         // The stored modifier mask uses the same bit layout as CGEventFlags.
         return KeyBinding(keyCode: CGKeyCode(parameters[1]), flags: CGEventFlags(rawValue: UInt64(parameters[2])))
+    }
+
+    /// Desktops with no direct shortcut, limited to the nine macOS supports.
+    static func missingDesktopShortcuts(spaceCount: Int, in hotkeys: [String: Any]?) -> [Int] {
+        guard spaceCount >= 1 else { return [] }
+        return (1...min(spaceCount, 9)).filter { switchToDesktop($0, in: hotkeys) == nil }
     }
 
     static func switchToDesktop(_ n: Int, in hotkeys: [String: Any]?) -> KeyBinding? {

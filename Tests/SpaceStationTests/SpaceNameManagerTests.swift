@@ -47,7 +47,7 @@ final class SpaceNameManagerTests: XCTestCase {
         manager.setName("  Work  ", for: one)
         XCTAssertEqual(manager.name(for: one), "Work")
         manager.setName(String(repeating: "x", count: 200), for: two)
-        XCTAssertEqual(manager.name(for: two).count, SpaceNameManager.maxNameLength)
+        XCTAssertEqual(manager.name(for: two).count, SpaceNameRules.maxLength)
     }
 
     func testNamesPersistAcrossInstances() {

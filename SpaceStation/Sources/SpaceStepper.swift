@@ -15,23 +15,6 @@ struct SpaceOrder: Equatable {
     let entries: [Entry]
     let currentManagedID: Int
 
-    /// Pure parser for the `CGSCopyManagedDisplaySpaces` result (testable).
-    nonisolated static func parse(displays: [[String: Any]], focusedDisplayUUID: String?) -> SpaceOrder? {
-        guard let display = SpaceTracker.activeDisplay(in: displays, focusedDisplayUUID: focusedDisplayUUID),
-              let current = display["Current Space"] as? [String: Any],
-              let currentID = current["ManagedSpaceID"] as? Int,
-              let spaces = display["Spaces"] as? [[String: Any]] else {
-            return nil
-        }
-        let entries = spaces.compactMap { space -> Entry? in
-            guard let managedID = space["ManagedSpaceID"] as? Int else { return nil }
-            let isDesktop = (space["type"] as? Int ?? 0) == 0
-            return Entry(managedID: managedID, desktopID: isDesktop ? SpaceTracker.stableID(for: space) : nil)
-        }
-        guard !entries.isEmpty else { return nil }
-        return SpaceOrder(entries: entries, currentManagedID: currentID)
-    }
-
     var currentPosition: Int? { entries.firstIndex { $0.managedID == currentManagedID } }
 
     func position(ofDesktop id: String) -> Int? { entries.firstIndex { $0.desktopID == id } }

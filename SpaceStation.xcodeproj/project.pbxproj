@@ -33,6 +33,7 @@
 		4E73CEB6617775C68EEA6ED6 /* SpacesSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB22F89E5B04A810B35801E /* SpacesSettingsView.swift */; };
 		4FD5C5BEBDC7C2F0E884DA9C /* SpaceNameManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B039E90847D2400FB43C42C2 /* SpaceNameManagerTests.swift */; };
 		530468367FC6F6F2E5FE4925 /* CornerMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E83112D6B5983A9174348489 /* CornerMapView.swift */; };
+		554113743E6EB8AB72C15D4A /* AccessibilityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22F71B9789DC4DC3A1A6C80D /* AccessibilityController.swift */; };
 		6563378778D6FBAD35FC5DC7 /* SpaceNameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */; };
 		6C8D7550FEE2241A5714C5D3 /* StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F9A9D8E0CCEABDB4AC94157 /* StatusItemController.swift */; };
 		6F7074807A22B301B656EE15 /* SwitcherController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DE1B73231E0FEB09DC325DF /* SwitcherController.swift */; };
@@ -45,9 +46,11 @@
 		842F1ED5CF0BD5DFBABDE8ED /* SettingsLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2620BDFD3591F136E08DFDB0 /* SettingsLogicTests.swift */; };
 		85AC5042E21D14D10F207B56 /* AboutSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F0B42CEE79B9DC04A201011 /* AboutSettingsView.swift */; };
 		8AF6A5387137B5676CCE2FCE /* KeyRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1C4F4B42ADB812886F8497 /* KeyRecorder.swift */; };
+		8BD6D2DB0D80FDF0330467D9 /* SpaceSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D3A0F1B0B1571F1B814D757 /* SpaceSnapshot.swift */; };
 		8E9B8DC01B620643846C3B3F /* SwitcherLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 540826D4F1C3EE53BD6BE415 /* SwitcherLayout.swift */; };
 		909E51F9ED4E7A596F3BB730 /* SpaceStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15667B16A76A1270BA4F4BE /* SpaceStepper.swift */; };
 		92B783D311EEDD511A9B3FBE /* MenuBarFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E65B33E9F0B5DC9F88D82E0 /* MenuBarFormat.swift */; };
+		92FE2845CFF35B426C1182F6 /* SpaceSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D3A0F1B0B1571F1B814D757 /* SpaceSnapshot.swift */; };
 		959B21B422DEDEDBCF6B8095 /* SystemSettingsLinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF248B2DBAEBBC0362B7899 /* SystemSettingsLinks.swift */; };
 		A1C4A0E144A01EB7D6329C5A /* CodeSigning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175450945A925AE639332BBD /* CodeSigning.swift */; };
 		A2FCFBE0F9C28F7EFF2AA329 /* SwitcherSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D40959751104DE1F47300A /* SwitcherSettingsView.swift */; };
@@ -56,23 +59,31 @@
 		AEEA9C238F5C94851CAB2F4E /* SettingsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 996812236321D1D612334824 /* SettingsModel.swift */; };
 		AF5C9E1026248F0BFB3D9A3E /* StatusItemBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A27C2007AD582CCA96A5024 /* StatusItemBadge.swift */; };
 		B30740E6E94255026FEECC35 /* SystemShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EF59BDFACABB84D02308038 /* SystemShortcuts.swift */; };
+		B38B1DC9BCEF5EE142BA2908 /* SpaceSwitchExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63CE1F01819D74091200F0FF /* SpaceSwitchExecutor.swift */; };
 		B8A3A330DC878C31ADAA6E9E /* StatusItemBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A27C2007AD582CCA96A5024 /* StatusItemBadge.swift */; };
 		B9D273703C8735342293FA14 /* StatusItemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F9A9D8E0CCEABDB4AC94157 /* StatusItemController.swift */; };
+		BCFC1033FDA868432015824A /* AccessibilityControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A769C8EB1F07EC973738519A /* AccessibilityControllerTests.swift */; };
+		BE654059345D78F9BA48112E /* SpaceSwitchExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63CE1F01819D74091200F0FF /* SpaceSwitchExecutor.swift */; };
 		C07DD84D5E5FF4EA5682CEA3 /* SpaceTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75349D15412B5C5E40B1A88 /* SpaceTracker.swift */; };
 		CA54BBC251B21C5083754B61 /* SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84241F3C489D605A4488A972 /* SettingsComponents.swift */; };
 		CBFCEDCFC3C75769C5886D6A /* DesktopShortcutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2531D4116D2A49DDC1B5BF /* DesktopShortcutTests.swift */; };
 		D0707879B4D705D20F1676BF /* UpdateCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27DE39DE15952A4169622117 /* UpdateCheckerTests.swift */; };
 		D7E6BFA3088EFA8C3A664AF1 /* SpaceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F4C93E36308B4444C858C9 /* SpaceIcon.swift */; };
+		DB127BC62E5401BE9D70B576 /* AccessibilityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22F71B9789DC4DC3A1A6C80D /* AccessibilityController.swift */; };
 		DB7CD01B14FC22D17BE4BC9E /* SpaceNameManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */; };
 		DD1EA0640E91F2F0155C3186 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4754788611E4AF2A5789E64 /* AppPreferences.swift */; };
 		DD749910BB9E055DFEAF1327 /* RenamePopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60E7C2BD49106D6D8C01085A /* RenamePopover.swift */; };
+		DD7BA15B082E3F8C40FC64A2 /* SpaceSwitchExecutorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A48E21DF823C34AE365955 /* SpaceSwitchExecutorTests.swift */; };
+		E1B555E5674738B98ABAFA30 /* SpaceNameRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F356FE796E0646E9E8AB97E6 /* SpaceNameRulesTests.swift */; };
 		E48B2444C02D3F8F65E9041B /* HotCorner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067A0142533E62D423C1F86D /* HotCorner.swift */; };
 		E5C962BB8479F1D50B4975AE /* SpaceIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F4C93E36308B4444C858C9 /* SpaceIcon.swift */; };
 		E6AFEC6220EFA0BE9CEC910B /* SpaceIconImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F3D6D6FE01364223980D1E5 /* SpaceIconImage.swift */; };
+		E8510B97530DA90E70385E1C /* SpaceNameRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E19D91208E739A01329379 /* SpaceNameRules.swift */; };
 		E9941B91AD7BA5A2A0AF371C /* SpaceIconImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F3D6D6FE01364223980D1E5 /* SpaceIconImage.swift */; };
 		EAB20EFA94D0A8DF65B21C6D /* GlobalHotKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E2618FA4824B1965303C957 /* GlobalHotKey.swift */; };
 		EB33641CC11BAD63C4859138 /* CodeSigning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 175450945A925AE639332BBD /* CodeSigning.swift */; };
 		F057B2BA50E4BD28A95DD3BF /* HotCorner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 067A0142533E62D423C1F86D /* HotCorner.swift */; };
+		F0C777C799C9CBEE537B4398 /* SpaceNameRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50E19D91208E739A01329379 /* SpaceNameRules.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -83,8 +94,11 @@
 		1A2847901D92E3DEF0BC5C65 /* GeneralSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralSettingsView.swift; sourceTree = "<group>"; };
 		1DE1B73231E0FEB09DC325DF /* SwitcherController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherController.swift; sourceTree = "<group>"; };
 		20F4C93E36308B4444C858C9 /* SpaceIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceIcon.swift; sourceTree = "<group>"; };
+		22F71B9789DC4DC3A1A6C80D /* AccessibilityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityController.swift; sourceTree = "<group>"; };
 		2620BDFD3591F136E08DFDB0 /* SettingsLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsLogicTests.swift; sourceTree = "<group>"; };
 		27DE39DE15952A4169622117 /* UpdateCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckerTests.swift; sourceTree = "<group>"; };
+		29A48E21DF823C34AE365955 /* SpaceSwitchExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceSwitchExecutorTests.swift; sourceTree = "<group>"; };
+		2D3A0F1B0B1571F1B814D757 /* SpaceSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceSnapshot.swift; sourceTree = "<group>"; };
 		3F3D6D6FE01364223980D1E5 /* SpaceIconImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceIconImage.swift; sourceTree = "<group>"; };
 		3FFD759C5584136EFF923B40 /* IconPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPickerView.swift; sourceTree = "<group>"; };
 		41965DA232156EBF30C711FC /* RenderGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderGallery.swift; sourceTree = "<group>"; };
@@ -94,11 +108,13 @@
 		4EB22F89E5B04A810B35801E /* SpacesSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacesSettingsView.swift; sourceTree = "<group>"; };
 		4F9A9D8E0CCEABDB4AC94157 /* StatusItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemController.swift; sourceTree = "<group>"; };
 		4FFCE4D9166BEF62F7532376 /* SpaceIconTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceIconTests.swift; sourceTree = "<group>"; };
+		50E19D91208E739A01329379 /* SpaceNameRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceNameRules.swift; sourceTree = "<group>"; };
 		540826D4F1C3EE53BD6BE415 /* SwitcherLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherLayout.swift; sourceTree = "<group>"; };
 		56D40959751104DE1F47300A /* SwitcherSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherSettingsView.swift; sourceTree = "<group>"; };
 		5A27C2007AD582CCA96A5024 /* StatusItemBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemBadge.swift; sourceTree = "<group>"; };
 		5E65B33E9F0B5DC9F88D82E0 /* MenuBarFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarFormat.swift; sourceTree = "<group>"; };
 		60E7C2BD49106D6D8C01085A /* RenamePopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenamePopover.swift; sourceTree = "<group>"; };
+		63CE1F01819D74091200F0FF /* SpaceSwitchExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceSwitchExecutor.swift; sourceTree = "<group>"; };
 		6AF248B2DBAEBBC0362B7899 /* SystemSettingsLinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemSettingsLinks.swift; sourceTree = "<group>"; };
 		6B6E1ADAA6C1F0B83E1CBBC2 /* StatusItemMenuTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemMenuTests.swift; sourceTree = "<group>"; };
 		6E2618FA4824B1965303C957 /* GlobalHotKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalHotKey.swift; sourceTree = "<group>"; };
@@ -115,6 +131,7 @@
 		996812236321D1D612334824 /* SettingsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsModel.swift; sourceTree = "<group>"; };
 		9EF59BDFACABB84D02308038 /* SystemShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemShortcuts.swift; sourceTree = "<group>"; };
 		9F0B42CEE79B9DC04A201011 /* AboutSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutSettingsView.swift; sourceTree = "<group>"; };
+		A769C8EB1F07EC973738519A /* AccessibilityControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityControllerTests.swift; sourceTree = "<group>"; };
 		B039E90847D2400FB43C42C2 /* SpaceNameManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceNameManagerTests.swift; sourceTree = "<group>"; };
 		B451F274A0BD283BBA5EF109 /* SwitcherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitcherView.swift; sourceTree = "<group>"; };
 		C15667B16A76A1270BA4F4BE /* SpaceStepper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceStepper.swift; sourceTree = "<group>"; };
@@ -128,6 +145,7 @@
 		E411A0A1E0AD6BA45B9C27C7 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E83112D6B5983A9174348489 /* CornerMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CornerMapView.swift; sourceTree = "<group>"; };
 		F04530EC133698DF350F2130 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
+		F356FE796E0646E9E8AB97E6 /* SpaceNameRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceNameRulesTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -151,6 +169,7 @@
 		4305CEE579CEC4FDEE117EC6 /* SpaceStationTests */ = {
 			isa = PBXGroup;
 			children = (
+				A769C8EB1F07EC973738519A /* AccessibilityControllerTests.swift */,
 				0FE4B1AE1295FF676FF4C405 /* AppPreferencesTests.swift */,
 				CC21ECCEB00406EEB12A1907 /* CodeSigningTests.swift */,
 				4D2531D4116D2A49DDC1B5BF /* DesktopShortcutTests.swift */,
@@ -158,8 +177,10 @@
 				2620BDFD3591F136E08DFDB0 /* SettingsLogicTests.swift */,
 				4FFCE4D9166BEF62F7532376 /* SpaceIconTests.swift */,
 				B039E90847D2400FB43C42C2 /* SpaceNameManagerTests.swift */,
+				F356FE796E0646E9E8AB97E6 /* SpaceNameRulesTests.swift */,
 				8A508B5DD8A2A268C79B708B /* SpaceParsingTests.swift */,
 				439CDF01516C77E43C76F3F5 /* SpaceStepperTests.swift */,
+				29A48E21DF823C34AE365955 /* SpaceSwitchExecutorTests.swift */,
 				6B6E1ADAA6C1F0B83E1CBBC2 /* StatusItemMenuTests.swift */,
 				D3125E0C14DC502DDD5148F9 /* SwitcherLayoutTests.swift */,
 				7EC50DA270F32E9814AEF6B6 /* SystemShortcutsTests.swift */,
@@ -172,6 +193,7 @@
 			isa = PBXGroup;
 			children = (
 				9F0B42CEE79B9DC04A201011 /* AboutSettingsView.swift */,
+				22F71B9789DC4DC3A1A6C80D /* AccessibilityController.swift */,
 				C4754788611E4AF2A5789E64 /* AppPreferences.swift */,
 				175450945A925AE639332BBD /* CodeSigning.swift */,
 				E83112D6B5983A9174348489 /* CornerMapView.swift */,
@@ -192,9 +214,12 @@
 				20F4C93E36308B4444C858C9 /* SpaceIcon.swift */,
 				3F3D6D6FE01364223980D1E5 /* SpaceIconImage.swift */,
 				E27CF194E4C2BCA64554DD7C /* SpaceNameManager.swift */,
+				50E19D91208E739A01329379 /* SpaceNameRules.swift */,
+				2D3A0F1B0B1571F1B814D757 /* SpaceSnapshot.swift */,
 				4EB22F89E5B04A810B35801E /* SpacesSettingsView.swift */,
 				6F03E1B76F5A93E6D4409834 /* SpaceStationApp.swift */,
 				C15667B16A76A1270BA4F4BE /* SpaceStepper.swift */,
+				63CE1F01819D74091200F0FF /* SpaceSwitchExecutor.swift */,
 				D75349D15412B5C5E40B1A88 /* SpaceTracker.swift */,
 				5A27C2007AD582CCA96A5024 /* StatusItemBadge.swift */,
 				4F9A9D8E0CCEABDB4AC94157 /* StatusItemController.swift */,
@@ -331,6 +356,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				85AC5042E21D14D10F207B56 /* AboutSettingsView.swift in Sources */,
+				554113743E6EB8AB72C15D4A /* AccessibilityController.swift in Sources */,
 				DD1EA0640E91F2F0155C3186 /* AppPreferences.swift in Sources */,
 				EB33641CC11BAD63C4859138 /* CodeSigning.swift in Sources */,
 				530468367FC6F6F2E5FE4925 /* CornerMapView.swift in Sources */,
@@ -351,8 +377,11 @@
 				D7E6BFA3088EFA8C3A664AF1 /* SpaceIcon.swift in Sources */,
 				E9941B91AD7BA5A2A0AF371C /* SpaceIconImage.swift in Sources */,
 				DB7CD01B14FC22D17BE4BC9E /* SpaceNameManager.swift in Sources */,
+				E8510B97530DA90E70385E1C /* SpaceNameRules.swift in Sources */,
+				92FE2845CFF35B426C1182F6 /* SpaceSnapshot.swift in Sources */,
 				8148C0735E170A45D37DD6C0 /* SpaceStationApp.swift in Sources */,
 				0CF57B37BA0FC007595D0DCE /* SpaceStepper.swift in Sources */,
+				BE654059345D78F9BA48112E /* SpaceSwitchExecutor.swift in Sources */,
 				4C88780C91B8B6D411D368AD /* SpaceTracker.swift in Sources */,
 				4E73CEB6617775C68EEA6ED6 /* SpacesSettingsView.swift in Sources */,
 				B8A3A330DC878C31ADAA6E9E /* StatusItemBadge.swift in Sources */,
@@ -372,6 +401,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DB127BC62E5401BE9D70B576 /* AccessibilityController.swift in Sources */,
+				BCFC1033FDA868432015824A /* AccessibilityControllerTests.swift in Sources */,
 				2E280C55C86522DAB8A5E77D /* AppPreferences.swift in Sources */,
 				2653C7B6B3B09261B6582226 /* AppPreferencesTests.swift in Sources */,
 				A1C4A0E144A01EB7D6329C5A /* CodeSigning.swift in Sources */,
@@ -389,9 +420,14 @@
 				7FB5AB242EF8FFEF12BED21D /* SpaceIconTests.swift in Sources */,
 				6563378778D6FBAD35FC5DC7 /* SpaceNameManager.swift in Sources */,
 				4FD5C5BEBDC7C2F0E884DA9C /* SpaceNameManagerTests.swift in Sources */,
+				F0C777C799C9CBEE537B4398 /* SpaceNameRules.swift in Sources */,
+				E1B555E5674738B98ABAFA30 /* SpaceNameRulesTests.swift in Sources */,
 				A88D18CEFCB56E7A6D4262D4 /* SpaceParsingTests.swift in Sources */,
+				8BD6D2DB0D80FDF0330467D9 /* SpaceSnapshot.swift in Sources */,
 				909E51F9ED4E7A596F3BB730 /* SpaceStepper.swift in Sources */,
 				3B3C4A29DA6C81A54F5FEE38 /* SpaceStepperTests.swift in Sources */,
+				B38B1DC9BCEF5EE142BA2908 /* SpaceSwitchExecutor.swift in Sources */,
+				DD7BA15B082E3F8C40FC64A2 /* SpaceSwitchExecutorTests.swift in Sources */,
 				C07DD84D5E5FF4EA5682CEA3 /* SpaceTracker.swift in Sources */,
 				AF5C9E1026248F0BFB3D9A3E /* StatusItemBadge.swift in Sources */,
 				B9D273703C8735342293FA14 /* StatusItemController.swift in Sources */,

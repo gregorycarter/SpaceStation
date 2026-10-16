@@ -96,8 +96,8 @@ private struct SpaceNameField: View {
         // `prompt` is the placeholder; a plain title would be shown as a row label in a Form.
         TextField("Name", text: Binding(
             get: { draft },
-            set: { draft = String($0.prefix(SpaceNameManager.maxNameLength)) }
-        ), prompt: Text("Desktop \(space.index)"))
+            set: { draft = SpaceNameRules.limitInput($0) }
+        ), prompt: Text(SpaceNameRules.defaultName(index: space.index)))
         .labelsHidden()
         .textFieldStyle(.plain)
         .focused($isFocused)
@@ -114,7 +114,7 @@ private struct SpaceNameField: View {
         )
         .overlay(alignment: .trailing) {
             if isFocused {
-                Text("\(draft.count) / \(SpaceNameManager.maxNameLength)")
+                Text("\(draft.count) / \(SpaceNameRules.maxLength)")
                     .font(.system(size: 11).monospacedDigit())
                     .foregroundColor(Color(nsColor: .tertiaryLabelColor))
                     .fixedSize()

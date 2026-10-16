@@ -1,16 +1,19 @@
 import XCTest
 import AppKit
 
-/// Builds the menu without installing a status item, against the real Space state of the machine
-/// running the tests, so these check structure and invariants rather than particular names.
+/// Builds menus from fixtures; no WindowServer, permission checks, or real preferences are used.
 @MainActor
 final class StatusItemMenuTests: XCTestCase {
     private var suiteName: String!
     private var defaults: UserDefaults!
     private var names: SpaceNameManager!
     private var prefs: AppPreferences!
-    private var tracker: SpaceTracker!
-    private var controller: StatusItemController!
+    private var spaces: [SpaceInfo] = []
+    private var currentIndex = 1
+    private var isFullscreen = false
+    private var hasAccessibility = true
+    private var hotkeys: [String: Any]?
+    private let target = NSObject()
     private var updates: UpdateChecker!
 
     override func setUp() async throws {
@@ -18,17 +21,16 @@ final class StatusItemMenuTests: XCTestCase {
         defaults = UserDefaults(suiteName: suiteName)
         names = SpaceNameManager(defaults: defaults)
         prefs = AppPreferences(defaults: defaults)
-        tracker = SpaceTracker()
+        spaces = [SpaceInfo(id: "first", index: 1), SpaceInfo(id: "second", index: 2), SpaceInfo(id: "third", index: 3)]
+        currentIndex = 2
+        isFullscreen = false
+        hasAccessibility = true
+        hotkeys = nil
         updates = UpdateChecker(currentVersion: "1.0.0", defaults: defaults, fetch: { _ in
             let body = try JSONSerialization.data(withJSONObject: [
                 "tag_name": "v1.5.0", "html_url": "https://github.com/gregorycarter/SpaceStation/releases/tag/v1.5.0"])
             return (body, HTTPURLResponse(url: UpdateChecker.latestReleaseURL, statusCode: 200, httpVersion: nil, headerFields: nil)!)
         })
-        let noop = StatusItemController.Actions(
-            rename: { _ in }, showSwitcher: {}, showSettings: {}, showAbout: {}, allowAccessibility: {},
-            checkForUpdates: {}, openUpdate: { _ in }, handleSwitchOutcome: { _ in })
-        controller = StatusItemController(spaceTracker: tracker, nameManager: names, preferences: prefs,
-                                          updateChecker: updates, actions: noop, installStatusItem: false)
     }
 
     override func tearDown() async throws {
@@ -37,7 +39,16 @@ final class StatusItemMenuTests: XCTestCase {
 
     private func menu() -> NSMenu {
         let menu = NSMenu()
-        controller.populate(menu)
+        let current = spaces.first { $0.index == currentIndex } ?? spaces.first ?? .placeholder
+        let snapshot = StatusMenuSnapshot(
+            items: spaces.map {
+                StatusMenuSnapshot.Item(space: $0, name: names.name(for: $0), icon: names.icon(for: $0),
+                                        shortcut: SystemShortcuts.switchToDesktop($0.index, in: hotkeys))
+            },
+            currentSpace: current, currentName: names.name(for: current), isInFullscreenSpace: isFullscreen,
+            hasAccessibilityPermission: hasAccessibility, switcherShortcut: prefs.switcherShortcut,
+            update: updates.availableUpdate)
+        StatusItemController.populate(menu, snapshot: snapshot, target: target)
         return menu
     }
 
@@ -45,15 +56,15 @@ final class StatusItemMenuTests: XCTestCase {
         let items = menu().items
         let primaries = items.filter { $0.action == NSSelectorFromString("chooseSpace:") }
         let alternates = items.filter { $0.isAlternate }
-        XCTAssertEqual(primaries.count, tracker.spaces.count)
-        XCTAssertEqual(alternates.count, tracker.spaces.count)
+        XCTAssertEqual(primaries.count, spaces.count)
+        XCTAssertEqual(alternates.count, spaces.count)
         for alternate in alternates {
             XCTAssertTrue(alternate.title.hasPrefix("Rename “") && alternate.title.hasSuffix("”…"))
         }
     }
 
     func testRowsShowTheCustomNameAndIcon() throws {
-        let space = try XCTUnwrap(tracker.spaces.first)
+        let space = try XCTUnwrap(spaces.first)
         names.setName("Inbox", for: space)
         names.setIcon(.symbol("tray"), for: space)
         let row = try XCTUnwrap(menu().items.first { $0.title == "Inbox" })
@@ -62,10 +73,23 @@ final class StatusItemMenuTests: XCTestCase {
         XCTAssertTrue(alternate.isAlternate)
     }
 
-    func testAtMostOneRowIsChecked() {
+    func testOnlyTheCurrentDesktopIsChecked() {
         let checked = menu().items.filter { $0.state == .on }
-        XCTAssertLessThanOrEqual(checked.count, 1)
-        XCTAssertEqual(checked.isEmpty, tracker.isInFullscreenSpace)
+        XCTAssertEqual(checked.count, 1)
+        XCTAssertEqual((checked.first?.representedObject as? SpaceInfo)?.id, "second")
+    }
+
+    func testFullscreenHasNoCheckedDesktopAndDisablesRename() throws {
+        isFullscreen = true
+        XCTAssertTrue(menu().items.allSatisfy { $0.state == .off })
+        let rename = try XCTUnwrap(menu().items.first { $0.title == "Rename Space…" })
+        XCTAssertFalse(rename.isEnabled)
+    }
+
+    func testPlaceholderDisablesRename() throws {
+        spaces = [.placeholder]
+        let rename = try XCTUnwrap(menu().items.first { $0.title.hasPrefix("Rename") && !$0.isAlternate })
+        XCTAssertFalse(rename.isEnabled)
     }
 
     func testStructureAroundTheSpaceRows() throws {
@@ -80,14 +104,25 @@ final class StatusItemMenuTests: XCTestCase {
         XCTAssertEqual(items.filter(\.isSeparatorItem).count >= 2, true)
     }
 
-    func testRenameCurrentNamesTheSpaceUnlessFullscreen() throws {
+    func testRenameCurrentUsesTheCurrentName() throws {
+        names.setName("Work", for: spaces[1])
         let rename = try XCTUnwrap(menu().items.first { $0.title.hasPrefix("Rename") && !$0.isAlternate })
-        if tracker.isInFullscreenSpace {
-            XCTAssertEqual(rename.title, "Rename Space…")
-            XCTAssertFalse(rename.isEnabled)
-        } else {
-            XCTAssertEqual(rename.title, "Rename “\(names.name(for: tracker.currentSpace))”…")
-        }
+        XCTAssertEqual(rename.title, "Rename “Work”…")
+        XCTAssertTrue(rename.isEnabled)
+    }
+
+    func testRemappedShortcutAndOptionAlternate() throws {
+        hotkeys = ["AppleSymbolicHotKeys": [
+            "119": ["enabled": 1, "value": ["parameters": [65535, 46, Int(CGEventFlags.maskCommand.rawValue)]]]
+        ]]
+        let items = menu().items
+        let primary = try XCTUnwrap(items.first { ($0.representedObject as? SpaceInfo)?.id == "second" && !$0.isAlternate })
+        let alternate = try XCTUnwrap(items.first { ($0.representedObject as? SpaceInfo)?.id == "second" && $0.isAlternate })
+        XCTAssertEqual(primary.keyEquivalent, "m")
+        XCTAssertEqual(primary.keyEquivalentModifierMask, [.command])
+        XCTAssertEqual(alternate.keyEquivalent, "m")
+        XCTAssertEqual(alternate.keyEquivalentModifierMask, [.command, .option])
+        XCTAssertTrue(primary.target === target)
     }
 
     func testShowSwitcherDisplaysTheRecordedShortcut() throws {
@@ -102,8 +137,9 @@ final class StatusItemMenuTests: XCTestCase {
     }
 
     func testAccessibilityItemAppearsOnlyWhenPermissionIsMissing() {
-        let hasItem = menu().items.contains { $0.title.hasPrefix("Allow Accessibility") }
-        XCTAssertEqual(hasItem, !tracker.hasAccessibilityPermission)
+        XCTAssertFalse(menu().items.contains { $0.title.hasPrefix("Allow Accessibility") })
+        hasAccessibility = false
+        XCTAssertTrue(menu().items.contains { $0.title.hasPrefix("Allow Accessibility") })
     }
 
     func testCheckForUpdatesIsAlwaysInTheMenuButTheUpdateItemOnlyWhenOneExists() async throws {

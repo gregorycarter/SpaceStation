@@ -1,4 +1,4 @@
-import SwiftUI
+import Foundation
 
 /// An icon shown next to a Space's name: either an SF Symbol or a single emoji.
 enum SpaceIcon: Equatable {
@@ -51,24 +51,5 @@ enum SpaceIcon: Equatable {
             if isEmoji { return .emoji(String(character)) }
         }
         return nil
-    }
-}
-
-/// Renders a `SpaceIcon` at a given size.
-struct SpaceIconView: View {
-    let icon: SpaceIcon
-    var size: CGFloat = 24
-
-    var body: some View {
-        switch icon {
-        case .symbol(let name):
-            Image(systemName: name)
-                .font(.system(size: size * 0.8))
-                .frame(width: size, height: size)
-        case .emoji(let text):
-            Text(text)
-                .font(.system(size: size * 0.85))
-                .frame(width: size, height: size)
-        }
     }
 }

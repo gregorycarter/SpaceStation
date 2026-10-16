@@ -37,10 +37,14 @@ SpaceStation/
 ├── SpaceStation/Sources/
 │   ├── SpaceStationApp.swift        # AppKit entry point + AppDelegate (owns models, wires everything)
 │   ├── StatusItemController.swift   # NSStatusItem + native NSMenu (Spaces, ⌥ Rename alternates)
-│   ├── SpaceTracker.swift           # Space detection, switching (shortcut or stepping), permissions
+│   ├── SpaceTracker.swift           # Observes Spaces, coordinates switching, forwards permission state
+│   ├── SpaceSnapshot.swift          # Shared WindowServer parser: desktops and full stepping order
+│   ├── SpaceSwitchExecutor.swift    # Key posting, settling and bounded corrections; injectable time/effects
+│   ├── AccessibilityController.swift # Permission checks, signing history and stale-grant recovery
 │   ├── SpaceStepper.swift           # SpaceOrder, stepping plan, previous-Space history (pure)
 │   ├── SystemShortcuts.swift        # KeyBinding, symbolichotkeys + Dock hot-corner readers (pure)
 │   ├── SpaceNameManager.swift       # Names + icons by Space ID (UserDefaults)
+│   ├── SpaceNameRules.swift         # Editing limits, saved-name normalization and default labels
 │   ├── SpaceIcon.swift / SpaceIconImage.swift  # Icon model; NSImage rendering for menus
 │   ├── AppPreferences.swift         # Typed settings + migration from the old Control+S switch
 │   ├── Switcher*.swift              # Panel controller, SwiftUI cards, pure layout/placement
@@ -66,21 +70,28 @@ SpaceStation/
 - **Status item and menu:** `StatusItemController` builds a real `NSMenu` each time it opens, so it
   always reflects the current Space, names, icons and the user's shortcuts. Option alternates turn
   each Space row into its Rename action. Rename shows an `NSPopover` anchored to the status button.
+  Menu construction takes a `StatusMenuSnapshot`, so tests cover explicit desktop, fullscreen,
+  permission and remapped-shortcut fixtures without consulting the running Mac.
 - **Switching** (`SpaceTracker.switchTo`): use the user's "Switch to Desktop N" shortcut when macOS
   has one enabled (1–9); otherwise step with "Move left/right a space", counting fullscreen Spaces
   in the way (`SpaceOrder`/`SpaceStepper`). Presses are sent back to back (100 ms apart) and the
   result is verified and corrected. It never posts a key that isn't an enabled macOS shortcut.
+  `SpaceSwitchExecutor` owns the sequence; injected key posting, snapshots and time let tests cover
+  arrival, overshoot, timeout, the two-correction limit and suppression of intermediate history.
 - **Switcher panel:** a non-activating, floating, all-Spaces `NSPanel` (this configuration is what
   lets it appear over fullscreen apps and take the hotkey; change it with care) with a rounded
   `NSVisualEffectView` background and SwiftUI cards. Opened by the user-recorded hotkey, the menu, or
   the hot corner. Layout, hit-testing and placement are pure functions in `SwitcherLayout.swift`.
+  `AppDelegate` owns the controller and supplies its dependencies at construction, prewarming it
+  and registering its triggers during startup.
 - **Hot corner:** `HotCornerMonitor` samples `NSEvent.mouseLocation` every 20 ms (no permission, and
   it works for a pointer resting in a corner, which sends no events). `HotCornerTrigger` is a pure
   dwell/re-arm state machine; the user's delay (Instant to Long) is its dwell.
 - **Settings:** an `NSTabViewController` (toolbar style) hosting SwiftUI grouped forms. It is built
   directly because the SwiftUI Settings scene is unreliable for an app with no Dock icon.
-- **Permissions:** Accessibility only. `CodeSigning` notices when the app's signature changed since
-  access was granted (macOS then ignores the old grant while still showing it as enabled).
+- **Permissions:** Accessibility only. `AccessibilityController` owns permission checks and recovery;
+  `CodeSigning` identifies signature changes. `SpaceTracker` forwards published permission state to
+  existing views. Tests inject system operations and isolated defaults rather than touching TCC.
 
 ### Debug-only hooks
 
@@ -255,11 +266,8 @@ Key settings in `project.yml`:
 ## Future Improvements
 
 Potential enhancements not yet implemented:
-1. **Custom keyboard shortcuts** - Let users define their own shortcuts
-2. **Menu bar icon options** - Show icon, text, or both
-3. **Space indicators** - Show dots for each Space
-4. **Auto-naming** - Name Spaces based on active app
-5. **iCloud sync** - Sync names across machines (would require entitlements)
+1. **Auto-naming** - Name Spaces based on active app
+2. **iCloud sync** - Sync names across machines (would require entitlements)
 
 ---
 
@@ -305,4 +313,4 @@ defaults read com.apple.symbolichotkeys AppleSymbolicHotKeys
 
 ---
 
-*Last updated: January 2026*
+*Last updated: October 2026*

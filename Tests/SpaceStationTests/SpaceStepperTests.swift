@@ -16,7 +16,7 @@ final class SpaceStepperTests: XCTestCase {
     private func order(current: Int = 2) -> SpaceOrder {
         var d = display
         d["Current Space"] = ["ManagedSpaceID": current]
-        return SpaceOrder.parse(displays: [d], focusedDisplayUUID: nil)!
+        return SpaceSnapshot.parse(displays: [d], focusedDisplayUUID: nil)!.order!
     }
 
     func testOrderIncludesFullscreenSpaces() {
@@ -51,13 +51,13 @@ final class SpaceStepperTests: XCTestCase {
     func testMultipleDisplaysUseTheFocusedOne() {
         let other: [String: Any] = ["Display Identifier": "Y", "Current Space": ["ManagedSpaceID": 9],
                                     "Spaces": [space(9, uuid: "P"), space(10, uuid: "Q")]]
-        let o = SpaceOrder.parse(displays: [display, other], focusedDisplayUUID: "y")
+        let o = SpaceSnapshot.parse(displays: [display, other], focusedDisplayUUID: "y")?.order
         XCTAssertEqual(o?.entries.compactMap(\.desktopID), ["P", "Q"])
     }
 
     func testUnparseableDataGivesNoOrder() {
-        XCTAssertNil(SpaceOrder.parse(displays: [], focusedDisplayUUID: nil))
-        XCTAssertNil(SpaceOrder.parse(displays: [["Spaces": []]], focusedDisplayUUID: nil))
+        XCTAssertNil(SpaceSnapshot.parse(displays: [], focusedDisplayUUID: nil)?.order)
+        XCTAssertNil(SpaceSnapshot.parse(displays: [["Spaces": []]], focusedDisplayUUID: nil)?.order)
     }
 }
 

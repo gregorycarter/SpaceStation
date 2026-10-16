@@ -101,11 +101,10 @@ extension SystemShortcuts {
     /// The name of an enabled macOS shortcut that uses the same keys as `binding`, if any.
     static func conflict(for binding: KeyBinding, in hotkeys: [String: Any]?) -> String? {
         guard let entries = hotkeys?["AppleSymbolicHotKeys"] as? [String: Any] else { return nil }
-        for (key, value) in entries {
+        for key in entries.keys {
             guard let id = Int(key), let other = SystemShortcuts.binding(id: id, in: hotkeys),
                   other.keyCode == binding.keyCode,
                   other.flags.rawValue & comparedModifiers == binding.flags.rawValue & comparedModifiers else { continue }
-            _ = value
             if (118...126).contains(id) { return "Switch to Desktop \(id - 117)" }
             return knownNames[id] ?? "another macOS shortcut"
         }
@@ -120,11 +119,5 @@ enum ShortcutValidation {
         if KeyCodeNames.isFunctionKey(keyCode) { return true }
         guard KeyCodeNames.display(for: keyCode) != nil else { return false }
         return flags.contains(.maskControl) || flags.contains(.maskAlternate) || flags.contains(.maskCommand)
-    }
-}
-
-extension KeyCodeNames {
-    static func isFunctionKey(_ keyCode: CGKeyCode) -> Bool {
-        [122, 120, 99, 118, 96, 97, 98, 100, 101, 109, 103, 111].contains(keyCode)
     }
 }

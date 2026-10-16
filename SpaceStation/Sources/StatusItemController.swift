@@ -10,7 +10,6 @@ import os.log
 /// for its Rename action.
 @MainActor
 final class StatusItemController: NSObject, NSMenuDelegate {
-    /// Nil when built without installing (unit tests build menus without touching the menu bar).
     private var statusItem: NSStatusItem?
     private var badge: StatusItemBadge?
     private let spaceTracker: SpaceTracker
@@ -34,7 +33,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     }
 
     init(spaceTracker: SpaceTracker, nameManager: SpaceNameManager, preferences: AppPreferences,
-         updateChecker: UpdateChecker, actions: Actions, installStatusItem: Bool = true) {
+         updateChecker: UpdateChecker, actions: Actions) {
         self.spaceTracker = spaceTracker
         self.nameManager = nameManager
         self.preferences = preferences
@@ -42,7 +41,6 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         self.actions = actions
         super.init()
 
-        guard installStatusItem else { return }
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem = item
         let menu = NSMenu()
@@ -125,21 +123,36 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         populate(menu)
     }
 
-    /// Fills `menu` from the current state.
     func populate(_ menu: NSMenu) {
+        let hotkeys = SystemShortcuts.current()
+        let current = spaceTracker.currentSpace
+        let snapshot = StatusMenuSnapshot(
+            items: spaceTracker.spaces.map {
+                StatusMenuSnapshot.Item(space: $0, name: nameManager.name(for: $0), icon: nameManager.icon(for: $0),
+                                        shortcut: SystemShortcuts.switchToDesktop($0.index, in: hotkeys))
+            },
+            currentSpace: current, currentName: nameManager.name(for: current),
+            isInFullscreenSpace: spaceTracker.isInFullscreenSpace,
+            hasAccessibilityPermission: spaceTracker.hasAccessibilityPermission,
+            switcherShortcut: preferences.switcherShortcut, update: updateChecker.availableUpdate)
+        Self.populate(menu, snapshot: snapshot, target: self)
+    }
+
+    /// Builds the same native menu from explicit inputs, without reading system state.
+    static func populate(_ menu: NSMenu, snapshot: StatusMenuSnapshot, target: AnyObject) {
         menu.removeAllItems()
 
-        if let update = updateChecker.availableUpdate {
+        if let update = snapshot.update {
             let item = NSMenuItem(title: "Update Available: SpaceStation \(update.version)…", action: #selector(openUpdate), keyEquivalent: "")
-            item.target = self
+            item.target = target
             item.image = SpaceIconImage.symbol("arrow.down.circle.fill")
             menu.addItem(item)
             menu.addItem(.separator())
         }
 
-        if !spaceTracker.hasAccessibilityPermission {
+        if !snapshot.hasAccessibilityPermission {
             let item = NSMenuItem(title: "Allow Accessibility to Switch Spaces…", action: #selector(allowAccessibility), keyEquivalent: "")
-            item.target = self
+            item.target = target
             item.image = SpaceIconImage.symbol("exclamationmark.triangle.fill")
             menu.addItem(item)
             menu.addItem(.separator())
@@ -150,37 +163,37 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         header.isEnabled = false
         menu.addItem(header)
 
-        let hotkeys = SystemShortcuts.current()
-        for space in spaceTracker.spaces {
-            addSpaceItems(for: space, hotkeys: hotkeys, to: menu)
+        for item in snapshot.items {
+            addSpaceItems(item, current: snapshot.currentSpace, isFullscreen: snapshot.isInFullscreenSpace,
+                          to: menu, target: target)
         }
 
         menu.addItem(.separator())
 
-        let current = spaceTracker.currentSpace
-        let renameTitle = spaceTracker.isInFullscreenSpace ? "Rename Space…" : "Rename “\(nameManager.name(for: current))”…"
+        let current = snapshot.currentSpace
+        let renameTitle = snapshot.isInFullscreenSpace ? "Rename Space…" : "Rename “\(snapshot.currentName)”…"
         let rename = NSMenuItem(title: renameTitle, action: #selector(renameCurrent), keyEquivalent: "")
-        rename.target = self
-        rename.isEnabled = !spaceTracker.isInFullscreenSpace && current.id != SpaceInfo.placeholder.id
+        rename.target = target
+        rename.isEnabled = !snapshot.isInFullscreenSpace && current.id != SpaceInfo.placeholder.id
         menu.addItem(rename)
 
         let switcher = NSMenuItem(title: "Show Switcher", action: #selector(showSwitcher), keyEquivalent: "")
-        switcher.target = self
-        if let binding = preferences.switcherShortcut { Self.apply(binding, to: switcher) }
+        switcher.target = target
+        if let binding = snapshot.switcherShortcut { Self.apply(binding, to: switcher) }
         menu.addItem(switcher)
 
         menu.addItem(.separator())
 
         let settings = NSMenuItem(title: "Settings…", action: #selector(showSettings), keyEquivalent: ",")
-        settings.target = self
+        settings.target = target
         menu.addItem(settings)
 
         let about = NSMenuItem(title: "About SpaceStation", action: #selector(showAbout), keyEquivalent: "")
-        about.target = self
+        about.target = target
         menu.addItem(about)
 
         let updates = NSMenuItem(title: "Check for Updates…", action: #selector(checkForUpdates), keyEquivalent: "")
-        updates.target = self
+        updates.target = target
         menu.addItem(updates)
 
         let quit = NSMenuItem(title: "Quit SpaceStation", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
@@ -189,14 +202,16 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     }
 
     /// One Space row, followed by its hidden Option alternate (Rename).
-    private func addSpaceItems(for space: SpaceInfo, hotkeys: [String: Any]?, to menu: NSMenu) {
-        let name = nameManager.name(for: space)
-        let icon = SpaceIconImage.image(for: nameManager.icon(for: space), index: space.index)
-        let isCurrent = !spaceTracker.isInFullscreenSpace && space.index == spaceTracker.currentSpaceIndex
-        let binding = SystemShortcuts.switchToDesktop(space.index, in: hotkeys)
+    private static func addSpaceItems(_ item: StatusMenuSnapshot.Item, current: SpaceInfo, isFullscreen: Bool,
+                                      to menu: NSMenu, target: AnyObject) {
+        let space = item.space
+        let name = item.name
+        let icon = SpaceIconImage.image(for: item.icon, index: space.index)
+        let isCurrent = !isFullscreen && space.index == current.index
+        let binding = item.shortcut
 
         let switchItem = NSMenuItem(title: name, action: #selector(chooseSpace(_:)), keyEquivalent: "")
-        switchItem.target = self
+        switchItem.target = target
         switchItem.representedObject = space
         switchItem.image = icon
         switchItem.state = isCurrent ? .on : .off
@@ -204,7 +219,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         menu.addItem(switchItem)
 
         let renameItem = NSMenuItem(title: "Rename “\(name)”…", action: #selector(renameSpace(_:)), keyEquivalent: "")
-        renameItem.target = self
+        renameItem.target = target
         renameItem.representedObject = space
         renameItem.image = icon
         renameItem.isAlternate = true
@@ -256,4 +271,22 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     @objc private func openUpdate() {
         if let update = updateChecker.availableUpdate { actions.openUpdate(update) }
     }
+}
+
+/// Everything the native menu displays, captured before construction.
+struct StatusMenuSnapshot {
+    struct Item {
+        let space: SpaceInfo
+        let name: String
+        let icon: SpaceIcon?
+        let shortcut: KeyBinding?
+    }
+
+    let items: [Item]
+    let currentSpace: SpaceInfo
+    let currentName: String
+    let isInFullscreenSpace: Bool
+    let hasAccessibilityPermission: Bool
+    let switcherShortcut: KeyBinding?
+    let update: ReleaseInfo?
 }
