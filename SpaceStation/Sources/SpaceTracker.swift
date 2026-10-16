@@ -51,6 +51,8 @@ class SpaceTracker: ObservableObject {
     private let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "SpaceTracker")
     private let signingIdentity = CodeSigning.current()
     private static let lastTrustedBuildKey = "lastAccessibilityTrustedBuildID"
+    private static let lastAutoResetBuildKey = "lastAccessibilityAutoResetBuildID"
+    private var accessibilityObserver: NSObjectProtocol?
 
     init() {
         logger.info("SpaceTracker initializing")
@@ -58,6 +60,42 @@ class SpaceTracker: ObservableObject {
         checkKeyboardShortcuts()
         setupSpaceChangeObserver()
         updateCurrentSpace()
+        observeAccessibilityChanges()
+        healStaleAccessibilityGrantIfNeeded()
+    }
+
+    /// macOS posts this when any app's Accessibility permission changes, so we notice a
+    /// toggle in System Settings immediately instead of waiting for the next poll.
+    private func observeAccessibilityChanges() {
+        accessibilityObserver = DistributedNotificationCenter.default().addObserver(
+            forName: NSNotification.Name("com.apple.accessibility.api"),
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            // The trust database updates just after the notification arrives.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                Task { @MainActor in self?.checkAccessibilityPermission() }
+            }
+        }
+    }
+
+    /// If this ad-hoc build differs from the one that was granted access, the old grant can't
+    /// apply but still looks enabled in System Settings. Clear our entry once and re-prompt so
+    /// the user only has to switch it on, instead of diagnosing a stale toggle.
+    private func healStaleAccessibilityGrantIfNeeded() {
+        // The unit-test host launches the real app; never touch the user's permissions from tests.
+        guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return }
+
+        let defaults = UserDefaults.standard
+        guard CodeSigning.shouldAutoResetStaleGrant(
+                hint: accessibilityHint,
+                identity: signingIdentity,
+                lastAutoResetBuildID: defaults.string(forKey: Self.lastAutoResetBuildKey)),
+              let buildID = signingIdentity?.buildID else { return }
+
+        defaults.set(buildID, forKey: Self.lastAutoResetBuildKey)
+        logger.info("Stale Accessibility grant for a previous ad-hoc build; resetting it once")
+        resetAndRequestPermission(openSettings: false)
     }
 
     // MARK: - Accessibility Permission
@@ -107,7 +145,7 @@ class SpaceTracker: ObservableObject {
         }
     }
 
-    func resetAndRequestPermission() {
+    func resetAndRequestPermission(openSettings: Bool = true) {
         logger.info("Resetting and requesting accessibility permission")
 
         let bundleID = Bundle.main.bundleIdentifier ?? "com.gregorycarter.SpaceStation"
@@ -128,17 +166,17 @@ class SpaceTracker: ObservableObject {
 
             // Small delay to let TCC process the reset
             try? await Task.sleep(nanoseconds: 500_000_000)
-            await self?.requestPermissionAndOpenSettings()
+            await self?.requestPermissionAndOpenSettings(openSettings: openSettings)
         }
     }
 
-    private func requestPermissionAndOpenSettings() {
+    private func requestPermissionAndOpenSettings(openSettings: Bool) {
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
         let trusted = AXIsProcessTrustedWithOptions(options)
         updateAccessibilityState(trusted: trusted)
         logger.info("Permission after reset: \(trusted)")
 
-        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+        if openSettings, let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
             NSWorkspace.shared.open(url)
         }
     }

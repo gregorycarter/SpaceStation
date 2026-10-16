@@ -34,8 +34,11 @@ Team" is enough):
    Team ID. `Local.xcconfig` is git-ignored.
 3. Rebuild, then grant Accessibility once. It will now survive rebuilds.
 
-If you must run an ad-hoc build, use **Reset & try again** in the setup window after each
-rebuild (it runs `tccutil reset Accessibility com.gregorycarter.SpaceStation`). Also avoid
+If you must run an ad-hoc build, the app detects that the build changed since access was last
+granted and, once per build, automatically clears its own stale entry
+(`tccutil reset Accessibility com.gregorycarter.SpaceStation`) and re-prompts, so you only need
+to switch it back on. You can also trigger this with **Reset & try again** in the setup window.
+This only happens for ad-hoc builds and never when running unit tests. Also avoid
 keeping several copies of the app with the same bundle ID (e.g. one in `/Applications` and one
 in DerivedData); they share a single permission entry and the login item may launch the wrong one.
 

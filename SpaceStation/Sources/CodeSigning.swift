@@ -43,6 +43,16 @@ enum CodeSigning {
                         buildID: unique?.map { String(format: "%02x", $0) }.joined())
     }
 
+    /// Whether to automatically clear a stale Accessibility grant: only for an ad-hoc build
+    /// that differs from the one last trusted (so the old grant provably can't apply), and
+    /// only once per build so a failed attempt can't loop.
+    static func shouldAutoResetStaleGrant(hint: AccessibilityHint?,
+                                          identity: Identity?,
+                                          lastAutoResetBuildID: String?) -> Bool {
+        guard hint == .buildChanged, let buildID = identity?.buildID else { return false }
+        return lastAutoResetBuildID != buildID
+    }
+
     /// Why Accessibility might not be working, when we can tell. Nil when it is granted,
     /// or when the signature gives no reason to suspect a stale grant.
     static func accessibilityHint(isTrusted: Bool,

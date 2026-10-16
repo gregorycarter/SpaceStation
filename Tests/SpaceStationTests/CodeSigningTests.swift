@@ -39,3 +39,22 @@ final class CodeSigningTests: XCTestCase {
         XCTAssertNotNil(identity.buildID)
     }
 }
+
+final class StaleGrantHealingTests: XCTestCase {
+    private let adHoc = CodeSigning.Identity(isAdHoc: true, buildID: "bbbb")
+
+    func testResetsOnceWhenAnAdHocBuildChanged() {
+        XCTAssertTrue(CodeSigning.shouldAutoResetStaleGrant(hint: .buildChanged, identity: adHoc, lastAutoResetBuildID: nil))
+        XCTAssertTrue(CodeSigning.shouldAutoResetStaleGrant(hint: .buildChanged, identity: adHoc, lastAutoResetBuildID: "aaaa"))
+    }
+
+    func testDoesNotRepeatForTheSameBuild() {
+        XCTAssertFalse(CodeSigning.shouldAutoResetStaleGrant(hint: .buildChanged, identity: adHoc, lastAutoResetBuildID: "bbbb"))
+    }
+
+    func testNeverResetsWithoutEvidenceOfAStaleGrant() {
+        XCTAssertFalse(CodeSigning.shouldAutoResetStaleGrant(hint: nil, identity: adHoc, lastAutoResetBuildID: nil))
+        XCTAssertFalse(CodeSigning.shouldAutoResetStaleGrant(hint: .adHocBuild, identity: adHoc, lastAutoResetBuildID: nil))
+        XCTAssertFalse(CodeSigning.shouldAutoResetStaleGrant(hint: .buildChanged, identity: nil, lastAutoResetBuildID: nil))
+    }
+}
