@@ -27,6 +27,7 @@ private final class SwitcherPanel: NSPanel {
 final class SwitcherModel: ObservableObject {
     @Published var spaces: [SpaceInfo] = []
     @Published var names: [String] = []
+    @Published var icons: [SpaceIcon] = []
     @Published var currentIndex: Int?
     @Published var selectedIndex = 0
 }
@@ -121,6 +122,7 @@ final class SwitcherController {
     private func refreshModel(spaceTracker: SpaceTracker, nameManager: SpaceNameManager) {
         model.spaces = spaceTracker.spaces
         model.names = spaceTracker.spaces.map { nameManager.name(for: $0) }
+        model.icons = spaceTracker.spaces.map { nameManager.icon(for: $0) }
         model.currentIndex = spaceTracker.isInFullscreenSpace ? nil : spaceTracker.currentSpaceIndex
         model.selectedIndex = max(0, (model.currentIndex ?? 1) - 1)
     }
@@ -200,6 +202,7 @@ private struct SwitcherRoot: View {
     var body: some View {
         SwitcherView(spaces: model.spaces,
                      names: model.names,
+                     icons: model.icons,
                      currentIndex: model.currentIndex,
                      selectedIndex: model.selectedIndex,
                      onPick: onPick)

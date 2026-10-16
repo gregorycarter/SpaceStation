@@ -4,6 +4,7 @@ import SwiftUI
 struct SwitcherView: View {
     let spaces: [SpaceInfo]
     let names: [String]
+    let icons: [SpaceIcon]
     let currentIndex: Int?     // nil while in a fullscreen Space
     let selectedIndex: Int
     let onPick: (SpaceInfo) -> Void
@@ -12,7 +13,7 @@ struct SwitcherView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
                 ForEach(Array(spaces.enumerated()), id: \.element.id) { offset, space in
-                    card(for: space, name: names[offset], isSelected: offset == selectedIndex)
+                    card(for: space, name: names[offset], icon: icons[offset], isSelected: offset == selectedIndex)
                 }
             }
             .padding(16)
@@ -27,17 +28,14 @@ struct SwitcherView: View {
         )
     }
 
-    private func card(for space: SpaceInfo, name: String, isSelected: Bool) -> some View {
+    private func card(for space: SpaceInfo, name: String, icon: SpaceIcon, isSelected: Bool) -> some View {
         let isCurrent = space.index == currentIndex
         let canSwitch = space.index <= SpaceTracker.maxSwitchableSpace
 
         return Button(action: { onPick(space) }) {
             VStack(spacing: 6) {
-                Text("\(space.index)")
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white)
-                    .frame(width: 20, height: 20)
-                    .background(Circle().fill(isCurrent ? Color.blue : Color.secondary))
+                SpaceIconView(icon: icon, size: 30)
+                    .foregroundColor(isCurrent ? .blue : .primary)
 
                 Text(name)
                     .font(.system(.headline, design: .rounded))
