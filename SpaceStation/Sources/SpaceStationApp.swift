@@ -197,8 +197,6 @@ struct SetupStepCardStandalone: View {
     let isComplete: Bool
     let action: () -> Void
 
-    @State private var isPressed = false
-
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
@@ -243,13 +241,6 @@ struct SetupStepCardStandalone: View {
             }
             .buttonStyle(.bordered)
             .tint(isComplete ? .green : .blue)
-            .scaleEffect(isPressed ? 0.97 : 1.0)
-            .animation(.easeInOut(duration: 0.1), value: isPressed)
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in isPressed = true }
-                    .onEnded { _ in isPressed = false }
-            )
         }
         .padding(16)
         .background(
