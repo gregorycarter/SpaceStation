@@ -47,8 +47,9 @@ SpaceStation/
 ├── project.yml                       # XcodeGen project definition
 ├── README.md
 ├── CONTEXT.md                        # This file
+├── SECURITY.md                       # Security analysis and reporting
 └── docs/
-    └── SECURITY_BRIEFING.md         # Security analysis
+    └── (see SECURITY.md at the repo root)
 ```
 
 ### Key Components
@@ -64,11 +65,14 @@ SpaceStation/
 #### 2. SpaceTracker.swift
 - **Purpose:** Core functionality for Space detection and switching
 - **Key elements:**
-  - `currentSpaceIndex` - Currently active Space (1-based)
+  - `spaces` - Desktop Spaces (`SpaceInfo`: stable `id` + 1-based `index`) on the focused display
+  - `currentSpaceIndex` / `currentSpace` - Active desktop (last known one while in fullscreen)
+  - `isInFullscreenSpace` - True when the active Space is a fullscreen app
   - `totalSpaces` - Number of desktop Spaces
   - `hasAccessibilityPermission` - Permission status
   - `hasKeyboardShortcutsEnabled` - Detects if Control+1-9 shortcuts are enabled
-  - `switchToSpace(_:)` - Switches Spaces via CGEvent keyboard simulation
+  - `switchToSpace(_:)` - Switches Spaces by posting the user's configured Desktop shortcut
+    (read from `com.apple.symbolichotkeys`) via CGEvent; does nothing if that shortcut is disabled
 - **Private APIs used:**
   - `CGSMainConnectionID()` - Gets WindowServer connection
   - `CGSCopyManagedDisplaySpaces()` - Returns Space information
@@ -76,7 +80,10 @@ SpaceStation/
 #### 3. SpaceNameManager.swift
 - **Purpose:** Persists custom Space names
 - **Storage:** UserDefaults with JSON encoding
-- **Key:** `SpaceStationNames` stores `[Int: String]` mapping
+- **Key:** `SpaceStationNamesByID` stores a `[String: String]` mapping of Space ID to name.
+  Space IDs are the Space's `uuid` (falling back to `managed-<ManagedSpaceID>`), so names
+  survive reordering. The old position-keyed `SpaceStationNames` key is migrated once and removed.
+- **Limits:** names are capped at `SpaceNameManager.maxNameLength` (40) characters
 
 #### 4. MenuBarView.swift
 - **Purpose:** Main dropdown menu UI
@@ -143,10 +150,12 @@ Keys 118-126 correspond to "Switch to Desktop 1-9". We read this plist to detect
 
 ### Space Switching Implementation
 
-Switching Spaces is done by simulating the Control+Number keyboard shortcut:
+Switching Spaces is done by simulating the keyboard shortcut the user has configured for
+"Switch to Desktop N" (normally Control+Number). The key code and modifiers come from
+`com.apple.symbolichotkeys`, and nothing is posted if that shortcut is disabled:
 ```swift
-let keyDown = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: true)
-keyDown.flags = .maskControl
+let keyDown = CGEvent(keyboardEventSource: source, virtualKey: shortcut.keyCode, keyDown: true)
+keyDown.flags = shortcut.flags
 keyDown.post(tap: .cghidEventTap)
 ```
 
@@ -182,7 +191,8 @@ This requires:
 
 ### 4. Fullscreen Apps
 **Issue:** Fullscreen apps create their own Spaces
-**Handling:** We filter these out (type != 0) to only show desktop Spaces
+**Handling:** We filter these out (type != 0) to only list desktop Spaces. While a fullscreen
+Space is active the menu bar shows "Full Screen" and no desktop is highlighted.
 
 ---
 
@@ -190,7 +200,7 @@ This requires:
 
 ### Development Build
 ```bash
-cd ~/Developer/SpaceStation
+cd path/to/SpaceStation
 xcodebuild -project SpaceStation.xcodeproj -scheme SpaceStation -configuration Debug build
 ```
 
@@ -212,14 +222,15 @@ rm -rf /tmp/SpaceStation-dmg
 ### Install Locally
 ```bash
 cp -R "$APP_PATH" /Applications/
-xattr -cr /Applications/SpaceStation.app
 ```
+A locally built app carries no quarantine flag, so it launches normally.
 
-### First Launch (Unsigned)
-Users must right-click → Open → Open to bypass Gatekeeper, or run:
-```bash
-xattr -cr /Applications/SpaceStation.app
-```
+### Releases (Developer ID + notarization)
+Hardened Runtime is enabled. For public releases, sign with a Developer ID
+Application certificate, notarize (`xcrun notarytool submit ... --wait`), then staple
+(`xcrun stapler staple SpaceStation.app`) before creating the DMG. Don't tell users to
+strip the quarantine attribute (`xattr -cr`); an unsigned build can be opened with
+right-click → Open, and a notarized one needs nothing.
 
 ---
 
@@ -262,11 +273,11 @@ Potential enhancements not yet implemented:
 
 ## Security Considerations
 
-See `docs/SECURITY_BRIEFING.md` for full security analysis.
+See `SECURITY.md` for the full security analysis and vulnerability reporting.
 
 Summary:
 - No network access
-- No file system access beyond preferences
+- No file system access beyond preferences (plus read-only access to the system's shortcut preferences)
 - No third-party dependencies
 - Local-only data storage
 - Private APIs are read-only
