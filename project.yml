@@ -75,6 +75,8 @@ targets:
       - path: SpaceStation/Sources/MenuBarFormat.swift
       - path: SpaceStation/Sources/AppPreferences.swift
       - path: SpaceStation/Sources/SpaceStepper.swift
+      - path: SpaceStation/Sources/SpaceIconImage.swift
+      - path: SpaceStation/Sources/StatusItemController.swift
     settings:
       base:
         GENERATE_INFOPLIST_FILE: true

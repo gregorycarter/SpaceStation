@@ -1,16 +1,39 @@
 import SwiftUI
+import Combine
 import os.log
 
 /// Owns the app-wide model objects and finishes startup. Startup work lives here rather than in
 /// SwiftUI view callbacks: `.onAppear` on a menu bar item's label does not reliably run at launch,
-/// which left the switcher's hotkey and hot corner unregistered.
+/// which once left the switcher's hotkey and hot corner unregistered.
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let spaceTracker = SpaceTracker()
     let nameManager = SpaceNameManager()
+    let preferences = AppPreferences.shared
+    private var statusItemController: StatusItemController?
+    private var subscriptions = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        nameManager.migrateLegacyNames(using: spaceTracker.spaces)
+        // Names saved by position (before names followed their Space) migrate once real Spaces are known.
+        spaceTracker.$spaces
+            .sink { [nameManager] spaces in nameManager.migrateLegacyNames(using: spaces) }
+            .store(in: &subscriptions)
+
+        statusItemController = StatusItemController(
+            spaceTracker: spaceTracker,
+            nameManager: nameManager,
+            preferences: preferences,
+            actions: StatusItemController.Actions(
+                rename: { [unowned self] _ in showSettings() },   // replaced by the rename popover
+                showSwitcher: { SwitcherController.shared.show() },
+                showSettings: { [unowned self] in showSettings() },
+                showAbout: { [unowned self] in showSettings() },
+                allowAccessibility: { [unowned self] in
+                    SetupWindowController.shared.showSetupWindow(spaceTracker: spaceTracker)
+                },
+                handleSwitchOutcome: { [unowned self] outcome in handle(outcome) }
+            )
+        )
         SwitcherController.shared.configure(spaceTracker: spaceTracker, nameManager: nameManager)
 
         #if DEBUG
@@ -26,37 +49,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         #endif
     }
-}
 
-@main
-struct SpaceStationApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    func showSettings() {
+        SettingsWindowController.shared.show(nameManager: nameManager, spaceTracker: spaceTracker)
+    }
 
-    var body: some Scene {
-        MenuBarExtra {
-            MenuBarView(spaceTracker: appDelegate.spaceTracker, nameManager: appDelegate.nameManager)
-        } label: {
-            MenuBarLabel(spaceTracker: appDelegate.spaceTracker, nameManager: appDelegate.nameManager)
+    /// What to do when a switch couldn't be made: walk the user through setup.
+    func handle(_ outcome: SpaceTracker.SwitchOutcome) {
+        switch outcome {
+        case .started, .alreadyCurrent: break
+        case .needsAccessibility, .unavailable: SetupWindowController.shared.showSetupWindow(spaceTracker: spaceTracker)
         }
-        .menuBarExtraStyle(.window)
     }
 }
 
-/// The current Space's name in the menu bar.
-struct MenuBarLabel: View {
-    @ObservedObject var spaceTracker: SpaceTracker
-    @ObservedObject var nameManager: SpaceNameManager
+/// Entry point. The app is an AppKit status item app; SwiftUI is used for the windows.
+@main
+enum SpaceStationMain {
+    private static var delegate: AppDelegate?
 
-    var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "square.grid.2x2")
-            Text(spaceTracker.isInFullscreenSpace ? "Full Screen" : nameManager.name(for: spaceTracker.currentSpace))
-                .font(.system(.body, design: .rounded))
-                .lineLimit(1)
-        }
-        .onReceive(spaceTracker.$spaces) { spaces in
-            nameManager.migrateLegacyNames(using: spaces)
-        }
+    @MainActor
+    static func main() {
+        let app = NSApplication.shared
+        let delegate = AppDelegate()
+        Self.delegate = delegate   // NSApplication only holds its delegate weakly
+        app.delegate = delegate
+        app.setActivationPolicy(.accessory)
+        app.run()
     }
 }
 
