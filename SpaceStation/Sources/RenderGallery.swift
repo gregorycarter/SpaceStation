@@ -23,6 +23,14 @@ enum RenderGallery {
         prefs.hotCorner = .topRight
         sampleData(tracker: tracker, names: names)
         let model = SettingsModel(spaceTracker: tracker, nameManager: names, preferences: prefs)
+        // A fake update check (no network) that reports a newer release, to render that state.
+        let updates = UpdateChecker(currentVersion: "1.0.0", defaults: defaults, fetch: { _ in
+            let body = try JSONSerialization.data(withJSONObject: [
+                "tag_name": "v1.1.0", "html_url": "https://github.com/gregorycarter/SpaceStation/releases/tag/v1.1.0"])
+            return (body, HTTPURLResponse(url: UpdateChecker.latestReleaseURL, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        })
+        Task { @MainActor in _ = await updates.check() }
+        RunLoop.current.run(until: Date().addingTimeInterval(0.3))
 
         for dark in [false, true] {
             let tag = dark ? "dark" : "light"
@@ -65,7 +73,7 @@ enum RenderGallery {
             // Settings tabs at the heights the window uses.
             let w = SettingsWindowController.width
             render(GeneralSettingsView(model: model, spaceTracker: tracker, preferences: prefs),
-                   size: CGSize(width: w, height: 560), appearance: appearance, background: windowBackground,
+                   size: CGSize(width: w, height: 700), appearance: appearance, background: windowBackground,
                    to: folder.appendingPathComponent("settings-general-\(tag).png"))
             render(SwitcherSettingsView(model: model, preferences: prefs),
                    size: CGSize(width: w, height: 470), appearance: appearance, background: windowBackground,
@@ -74,13 +82,13 @@ enum RenderGallery {
                    size: CGSize(width: w, height: SpacesSettingsView.height(spaceCount: tracker.spaces.count)),
                    appearance: appearance, background: windowBackground,
                    to: folder.appendingPathComponent("settings-spaces-\(tag).png"))
-            render(AboutSettingsView(), size: CGSize(width: w, height: 400), appearance: appearance, background: windowBackground,
+            render(AboutSettingsView(updateChecker: updates), size: CGSize(width: w, height: 440), appearance: appearance, background: windowBackground,
                    to: folder.appendingPathComponent("settings-about-\(tag).png"))
         }
         // Smoke test of the real Settings window (this is the code path that once crashed on
         // building the tab controller): open every tab, check it, and capture the window chrome.
         for tab in SettingsTab.allCases {
-            SettingsWindowController.shared.show(tab: tab, spaceTracker: tracker, nameManager: names, preferences: prefs)
+            SettingsWindowController.shared.show(tab: tab, spaceTracker: tracker, nameManager: names, preferences: prefs, updateChecker: updates)
             RunLoop.current.run(until: Date().addingTimeInterval(0.4))
             guard let window = SettingsWindowController.shared.windowForTesting, let frameView = window.contentView?.superview else {
                 print("FAILED: no Settings window for \(tab.title)")

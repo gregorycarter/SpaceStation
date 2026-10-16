@@ -15,6 +15,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private let spaceTracker: SpaceTracker
     private let nameManager: SpaceNameManager
     private let preferences: AppPreferences
+    private let updateChecker: UpdateChecker
     private let actions: Actions
     private var subscriptions = Set<AnyCancellable>()
     private let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "StatusItem")
@@ -26,14 +27,17 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         var showSettings: () -> Void
         var showAbout: () -> Void
         var allowAccessibility: () -> Void
+        var checkForUpdates: () -> Void
+        var openUpdate: (ReleaseInfo) -> Void
         var handleSwitchOutcome: (SpaceTracker.SwitchOutcome) -> Void
     }
 
     init(spaceTracker: SpaceTracker, nameManager: SpaceNameManager, preferences: AppPreferences,
-         actions: Actions, installStatusItem: Bool = true) {
+         updateChecker: UpdateChecker, actions: Actions, installStatusItem: Bool = true) {
         self.spaceTracker = spaceTracker
         self.nameManager = nameManager
         self.preferences = preferences
+        self.updateChecker = updateChecker
         self.actions = actions
         super.init()
 
@@ -51,6 +55,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         spaceTracker.objectWillChange.sink { refresh() }.store(in: &subscriptions)
         nameManager.objectWillChange.sink { refresh() }.store(in: &subscriptions)
         preferences.objectWillChange.sink { refresh() }.store(in: &subscriptions)
+        updateChecker.objectWillChange.sink { refresh() }.store(in: &subscriptions)
         updateButton()
     }
 
@@ -91,6 +96,14 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     /// Fills `menu` from the current state.
     func populate(_ menu: NSMenu) {
         menu.removeAllItems()
+
+        if let update = updateChecker.availableUpdate {
+            let item = NSMenuItem(title: "Update Available: SpaceStation \(update.version)…", action: #selector(openUpdate), keyEquivalent: "")
+            item.target = self
+            item.image = SpaceIconImage.symbol("arrow.down.circle.fill")
+            menu.addItem(item)
+            menu.addItem(.separator())
+        }
 
         if !spaceTracker.hasAccessibilityPermission {
             let item = NSMenuItem(title: "Allow Accessibility to Switch Spaces…", action: #selector(allowAccessibility), keyEquivalent: "")
@@ -133,6 +146,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         let about = NSMenuItem(title: "About SpaceStation", action: #selector(showAbout), keyEquivalent: "")
         about.target = self
         menu.addItem(about)
+
+        let updates = NSMenuItem(title: "Check for Updates…", action: #selector(checkForUpdates), keyEquivalent: "")
+        updates.target = self
+        menu.addItem(updates)
 
         let quit = NSMenuItem(title: "Quit SpaceStation", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         quit.target = NSApp
@@ -203,4 +220,8 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     @objc private func showSettings() { actions.showSettings() }
     @objc private func showAbout() { actions.showAbout() }
     @objc private func allowAccessibility() { actions.allowAccessibility() }
+    @objc private func checkForUpdates() { actions.checkForUpdates() }
+    @objc private func openUpdate() {
+        if let update = updateChecker.availableUpdate { actions.openUpdate(update) }
+    }
 }

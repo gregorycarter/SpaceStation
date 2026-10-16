@@ -19,7 +19,8 @@ A macOS menu bar app for naming and managing Spaces (virtual desktops).
 - Works with up to 16 Spaces, including ones beyond macOS's ⌃1–⌃9 shortcuts
 - Names and icons follow the Space, even if you reorder or add Spaces in Mission Control
 - Detects macOS shortcuts and Hot Corners that would clash, and says so, instead of leaving you to find out
-- Names stored locally; no network access, no analytics
+- Names stored locally; no analytics. The only network use is an optional check for a newer version
+  on GitHub, when you choose Check for Updates (or turn on the once-a-day check, off by default)
 
 ## Requirements
 

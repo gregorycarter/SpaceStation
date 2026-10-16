@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct AboutSettingsView: View {
+    @ObservedObject var updateChecker: UpdateChecker
+
     static let repositoryURL = URL(string: "https://github.com/gregorycarter/SpaceStation")!
 
     private var versionText: String {
@@ -42,6 +44,29 @@ struct AboutSettingsView: View {
                 .fixedSize()
             }
             .padding(.top, 20)
+
+            VStack(spacing: 6) {
+                HStack(spacing: 8) {
+                    Button("Check for Updates…") { Task { await updateChecker.check() } }
+                        .disabled(updateChecker.isChecking)
+                    if updateChecker.isChecking { ProgressView().controlSize(.small) }
+                }
+                if let status = updateChecker.status {
+                    HStack(spacing: 6) {
+                        Text(status.summary)
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                        if case .available(let release) = status {
+                            Button("View Release") { NSWorkspace.shared.open(release.url) }
+                                .buttonStyle(.link)
+                                .font(.system(size: 12))
+                        }
+                    }
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 360)
+                }
+            }
+            .padding(.top, 16)
 
             HStack(spacing: 4) {
                 Text("Open-source software (MIT) ·")

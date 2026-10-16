@@ -183,3 +183,15 @@ final class UpdateChecker: ObservableObject {
         return try await session.data(for: request)
     }
 }
+
+extension UpdateStatus {
+    /// One line for the About tab.
+    var summary: String {
+        switch self {
+        case .upToDate(let version): return "SpaceStation \(version) is up to date."
+        case .available(let release): return "Version \(release.version) is available."
+        case .noReleases: return "No releases have been published yet."
+        case .failed(let message): return message
+        }
+    }
+}

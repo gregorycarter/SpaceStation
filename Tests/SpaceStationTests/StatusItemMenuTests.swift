@@ -11,6 +11,7 @@ final class StatusItemMenuTests: XCTestCase {
     private var prefs: AppPreferences!
     private var tracker: SpaceTracker!
     private var controller: StatusItemController!
+    private var updates: UpdateChecker!
 
     override func setUp() async throws {
         suiteName = "SpaceStationMenuTests-\(UUID().uuidString)"
@@ -18,10 +19,16 @@ final class StatusItemMenuTests: XCTestCase {
         names = SpaceNameManager(defaults: defaults)
         prefs = AppPreferences(defaults: defaults)
         tracker = SpaceTracker()
+        updates = UpdateChecker(currentVersion: "1.0.0", defaults: defaults, fetch: { _ in
+            let body = try JSONSerialization.data(withJSONObject: [
+                "tag_name": "v1.5.0", "html_url": "https://github.com/gregorycarter/SpaceStation/releases/tag/v1.5.0"])
+            return (body, HTTPURLResponse(url: UpdateChecker.latestReleaseURL, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        })
         let noop = StatusItemController.Actions(
-            rename: { _ in }, showSwitcher: {}, showSettings: {}, showAbout: {}, allowAccessibility: {}, handleSwitchOutcome: { _ in })
+            rename: { _ in }, showSwitcher: {}, showSettings: {}, showAbout: {}, allowAccessibility: {},
+            checkForUpdates: {}, openUpdate: { _ in }, handleSwitchOutcome: { _ in })
         controller = StatusItemController(spaceTracker: tracker, nameManager: names, preferences: prefs,
-                                          actions: noop, installStatusItem: false)
+                                          updateChecker: updates, actions: noop, installStatusItem: false)
     }
 
     override func tearDown() async throws {
@@ -97,6 +104,16 @@ final class StatusItemMenuTests: XCTestCase {
     func testAccessibilityItemAppearsOnlyWhenPermissionIsMissing() {
         let hasItem = menu().items.contains { $0.title.hasPrefix("Allow Accessibility") }
         XCTAssertEqual(hasItem, !tracker.hasAccessibilityPermission)
+    }
+
+    func testCheckForUpdatesIsAlwaysInTheMenuButTheUpdateItemOnlyWhenOneExists() async throws {
+        XCTAssertNotNil(menu().items.first { $0.title == "Check for Updates…" })
+        XCTAssertNil(menu().items.first { $0.title.hasPrefix("Update Available") })
+
+        _ = await updates.check()
+        let item = try XCTUnwrap(menu().items.first { $0.title.hasPrefix("Update Available") })
+        XCTAssertEqual(item.title, "Update Available: SpaceStation 1.5.0…")
+        XCTAssertEqual(menu().items.first?.title, item.title, "the update notice leads the menu")
     }
 
     func testModifierMaskConversion() {

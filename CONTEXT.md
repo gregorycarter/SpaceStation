@@ -48,6 +48,7 @@ SpaceStation/
 │   ├── Settings*.swift, *SettingsView.swift  # Toolbar-tab Settings window + tabs, shared logic
 │   ├── RenamePopover.swift, RenameDraft.swift, IconPickerView.swift
 │   ├── SetupWindow.swift            # First-run / Accessibility window
+│   ├── UpdateChecker.swift, UpdatePresenter.swift  # Optional "Check for Updates" (GitHub releases API)
 │   ├── CodeSigning.swift            # Detects stale permission after a signature change
 │   └── RenderGallery.swift          # DEBUG only: renders views to PNG offscreen
 ├── Tests/SpaceStationTests/         # Host-less unit tests of the pure logic and menu structure
@@ -278,7 +279,7 @@ Potential enhancements not yet implemented:
 See `SECURITY.md` for the full security analysis and vulnerability reporting.
 
 Summary:
-- No network access
+- No network access except the opt-in update check (one anonymous GET to GitHub's releases API; never downloads or installs)
 - No file system access beyond preferences (plus read-only access to the system's shortcut preferences)
 - No third-party dependencies
 - Local-only data storage

@@ -63,6 +63,16 @@ re-allowed after each update.
 
 ## Updates
 
-SpaceStation does not update itself. Users download the new `.dmg` from the Releases page and replace
-the app. A signed build keeps the Accessibility permission across that replacement; an unsigned one
-does not.
+SpaceStation does not update itself. **Check for Updates…** (menu and About tab, plus an optional
+once-a-day check that is off by default) asks GitHub for the repository's latest release and, if its
+tag is newer than the running version, offers a link to the release page. Users then download the new
+`.dmg` and replace the app. A signed build keeps the Accessibility permission across that replacement;
+an unsigned one does not.
+
+For this to work when you publish:
+- Tag the release `vMAJOR.MINOR.PATCH` (for example `v1.1.0`) and make sure it matches
+  `MARKETING_VERSION` in `project.yml`. The app compares the numbers, so `v1.10.0` correctly beats `v1.9.0`.
+- Publish it as a normal GitHub release. Drafts and releases marked "pre-release" are ignored, so use
+  "pre-release" for betas that shouldn't be offered to everyone.
+- The first release you publish is what existing 1.0.0 builds will find; until one exists the check
+  reports "No releases have been published yet".

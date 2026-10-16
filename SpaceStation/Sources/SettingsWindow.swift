@@ -55,9 +55,10 @@ final class SettingsWindowController: NSObject {
     var windowForTesting: NSWindow? { window }
     #endif
 
-    func show(tab: SettingsTab = .general, spaceTracker: SpaceTracker, nameManager: SpaceNameManager, preferences: AppPreferences) {
+    func show(tab: SettingsTab = .general, spaceTracker: SpaceTracker, nameManager: SpaceNameManager,
+              preferences: AppPreferences, updateChecker: UpdateChecker) {
         if window == nil {
-            build(spaceTracker: spaceTracker, nameManager: nameManager, preferences: preferences)
+            build(spaceTracker: spaceTracker, nameManager: nameManager, preferences: preferences, updateChecker: updateChecker)
         }
         guard let window, let tabController else { return }
         model?.refresh()
@@ -69,7 +70,8 @@ final class SettingsWindowController: NSObject {
         NSApp.activate(ignoringOtherApps: true)
     }
 
-    private func build(spaceTracker: SpaceTracker, nameManager: SpaceNameManager, preferences: AppPreferences) {
+    private func build(spaceTracker: SpaceTracker, nameManager: SpaceNameManager, preferences: AppPreferences,
+                       updateChecker: UpdateChecker) {
         let model = SettingsModel(spaceTracker: spaceTracker, nameManager: nameManager, preferences: preferences)
         self.model = model
 
@@ -87,7 +89,7 @@ final class SettingsWindowController: NSObject {
         tabController.addTabViewItem(item(.general, GeneralSettingsView(model: model, spaceTracker: spaceTracker, preferences: preferences)))
         tabController.addTabViewItem(item(.switcher, SwitcherSettingsView(model: model, preferences: preferences)))
         tabController.addTabViewItem(item(.spaces, SpacesSettingsView(nameManager: nameManager, spaceTracker: spaceTracker)))
-        tabController.addTabViewItem(item(.about, AboutSettingsView()))
+        tabController.addTabViewItem(item(.about, AboutSettingsView(updateChecker: updateChecker)))
         tabController.onSelectTab = { [weak self] tab in
             self?.resizeWindow(for: tab, animated: self?.window?.isVisible == true)
         }
@@ -112,7 +114,7 @@ final class SettingsWindowController: NSObject {
                                               shortcutWarnings: warnings, launchError: false)
         case .switcher: return 470
         case .spaces: return SpacesSettingsView.height(spaceCount: model.spaceTracker.spaces.count)
-        case .about: return 400
+        case .about: return 440
         }
     }
 

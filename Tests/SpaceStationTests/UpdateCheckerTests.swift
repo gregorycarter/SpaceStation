@@ -119,11 +119,11 @@ final class UpdateCheckerTests: XCTestCase {
 
     private func checker(current: String = "1.0.0", now: @escaping () -> Date = Date.init,
                          respond: @escaping () throws -> (Data, URLResponse)) -> UpdateChecker {
-        UpdateChecker(currentVersion: current, defaults: defaults, now: now) { [unowned self] request in
+        UpdateChecker(currentVersion: current, defaults: defaults, now: now, fetch: { [unowned self] request in
             calls += 1
             requests.append(request)
             return try respond()
-        }
+        })
     }
 
     func testANewerReleaseIsAvailable() async throws {
@@ -226,5 +226,15 @@ final class UpdateCheckerTests: XCTestCase {
         fail = false
         await c.checkAutomaticallyIfDue(enabled: true)
         XCTAssertEqual(calls, 2, "a failed check doesn't start the 24-hour wait")
+    }
+}
+
+final class UpdateStatusSummaryTests: XCTestCase {
+    func testSummaries() {
+        XCTAssertEqual(UpdateStatus.upToDate(currentVersion: "1.0.0").summary, "SpaceStation 1.0.0 is up to date.")
+        let release = ReleaseInfo(tag: "v1.1.0", version: "1.1.0", name: "n", url: UpdateChecker.releasesPage)
+        XCTAssertEqual(UpdateStatus.available(release).summary, "Version 1.1.0 is available.")
+        XCTAssertEqual(UpdateStatus.noReleases.summary, "No releases have been published yet.")
+        XCTAssertEqual(UpdateStatus.failed("Nope").summary, "Nope")
     }
 }

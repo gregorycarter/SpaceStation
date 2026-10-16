@@ -23,6 +23,7 @@
 		337A0E03B3454A8FC7BD488A /* SwitcherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B451F274A0BD283BBA5EF109 /* SwitcherView.swift */; };
 		37D426812E9F1BA5F57373DD /* SystemShortcutsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EC50DA270F32E9814AEF6B6 /* SystemShortcutsTests.swift */; };
 		3B3C4A29DA6C81A54F5FEE38 /* SpaceStepperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 439CDF01516C77E43C76F3F5 /* SpaceStepperTests.swift */; };
+		3B9BD72843347CB0854C7ECE /* UpdatePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C00EAC8994045ECC9CECA70 /* UpdatePresenter.swift */; };
 		43F58A00C12F798B124C1D1F /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8494B5BB17EB29A9733ADA89 /* SettingsWindow.swift */; };
 		45325DDB3B8426EE7C8633D1 /* IconPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FFD759C5584136EFF923B40 /* IconPickerView.swift */; };
 		4697AC837EB4D910B915DFDE /* CodeSigningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC21ECCEB00406EEB12A1907 /* CodeSigningTests.swift */; };
@@ -86,6 +87,7 @@
 		3FFD759C5584136EFF923B40 /* IconPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconPickerView.swift; sourceTree = "<group>"; };
 		41965DA232156EBF30C711FC /* RenderGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderGallery.swift; sourceTree = "<group>"; };
 		439CDF01516C77E43C76F3F5 /* SpaceStepperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceStepperTests.swift; sourceTree = "<group>"; };
+		4C00EAC8994045ECC9CECA70 /* UpdatePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePresenter.swift; sourceTree = "<group>"; };
 		4D2531D4116D2A49DDC1B5BF /* DesktopShortcutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopShortcutTests.swift; sourceTree = "<group>"; };
 		4EB22F89E5B04A810B35801E /* SpacesSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacesSettingsView.swift; sourceTree = "<group>"; };
 		4F9A9D8E0CCEABDB4AC94157 /* StatusItemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusItemController.swift; sourceTree = "<group>"; };
@@ -199,6 +201,7 @@
 				6AF248B2DBAEBBC0362B7899 /* SystemSettingsLinks.swift */,
 				9EF59BDFACABB84D02308038 /* SystemShortcuts.swift */,
 				7C05D4469EC3F39A7512F602 /* UpdateChecker.swift */,
+				4C00EAC8994045ECC9CECA70 /* UpdatePresenter.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -356,6 +359,7 @@
 				959B21B422DEDEDBCF6B8095 /* SystemSettingsLinks.swift in Sources */,
 				B30740E6E94255026FEECC35 /* SystemShortcuts.swift in Sources */,
 				1D01FB3EC46FB2B663DD7112 /* UpdateChecker.swift in Sources */,
+				3B9BD72843347CB0854C7ECE /* UpdatePresenter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -10,6 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let spaceTracker = SpaceTracker()
     let nameManager = SpaceNameManager()
     let preferences = AppPreferences.shared
+    let updateChecker = UpdateChecker()
     private var statusItemController: StatusItemController?
     private var subscriptions = Set<AnyCancellable>()
 
@@ -23,6 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             spaceTracker: spaceTracker,
             nameManager: nameManager,
             preferences: preferences,
+            updateChecker: updateChecker,
             actions: StatusItemController.Actions(
                 rename: { [unowned self] space in
                     // The menu has just closed; show the popover under the menu bar item.
@@ -38,9 +40,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 allowAccessibility: { [unowned self] in
                     SetupWindowController.shared.showSetupWindow(spaceTracker: spaceTracker)
                 },
+                checkForUpdates: { [unowned self] in
+                    Task { @MainActor in UpdatePresenter.present(await updateChecker.check()) }
+                },
+                openUpdate: { NSWorkspace.shared.open($0.url) },
                 handleSwitchOutcome: { [unowned self] outcome in handle(outcome) }
             )
         )
+
+        // Optional (off by default): look for a new release at launch, at most once a day.
+        Task { @MainActor [updateChecker, preferences] in
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
+            await updateChecker.checkAutomaticallyIfDue(enabled: preferences.checkForUpdatesAutomatically)
+        }
         SwitcherController.shared.configure(spaceTracker: spaceTracker, nameManager: nameManager, preferences: preferences,
                                             handleOutcome: { [unowned self] outcome in handle(outcome) })
 
@@ -59,7 +71,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func showSettings(tab: SettingsTab = .general) {
-        SettingsWindowController.shared.show(tab: tab, spaceTracker: spaceTracker, nameManager: nameManager, preferences: preferences)
+        SettingsWindowController.shared.show(tab: tab, spaceTracker: spaceTracker, nameManager: nameManager,
+                                             preferences: preferences, updateChecker: updateChecker)
     }
 
     /// What to do when a switch couldn't be made: walk the user through setup.

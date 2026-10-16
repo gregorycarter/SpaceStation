@@ -68,7 +68,7 @@ pure functions so it can be tested without a live WindowServer.
 ## Guidelines
 
 - Keep it dependency-free: Apple system frameworks only.
-- Don't add network access, telemetry or file access. See [SECURITY.md](SECURITY.md).
+- Don't add telemetry, file access or network access beyond the existing update check. See [SECURITY.md](SECURITY.md).
 - Any new use of a private API or a new permission/entitlement needs a
   justification in the pull request and an update to `SECURITY.md`.
 - Keep commits focused; add or update tests for logic changes.

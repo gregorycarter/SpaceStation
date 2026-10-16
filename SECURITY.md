@@ -39,11 +39,22 @@ rather than opening a public issue.
   first to know which shortcuts are enabled, the second to warn when a hot corner is already used
   by macOS.
 
+- **Checks for updates** (the app's only network use). When you choose Check for Updates, or if you
+  turn on "Check for updates automatically" in Settings (off by default; then at most once every
+  24 hours at launch), it makes one anonymous HTTPS GET to GitHub's public
+  `api.github.com/repos/gregorycarter/SpaceStation/releases/latest` and compares the release's tag
+  with its own version. The request carries only a generic user agent (`SpaceStation/<version>`):
+  no identifier, no cookies, no account and nothing stored between checks. GitHub, like any website,
+  can see your IP address. It never downloads or installs anything: if a newer release exists it
+  offers a link to its release page, and it only follows links that are `https://github.com/` pages
+  of this repository (anything else falls back to the repository's Releases page).
+
 ## What the app does not do
 
-- No network access: no `URLSession`, sockets or analytics. The only URL it can
-  open is a link to the author's website (About tab, opened in your browser) and
-  System Settings deep links.
+- No analytics, telemetry, accounts or background network traffic. The single network feature
+  is the update check described above: off unless you click Check for Updates or turn on
+  automatic checks. The only URLs it opens are pages on this repository's GitHub (in your
+  browser) and System Settings deep links.
 - No file access beyond its own preferences: no `FileManager`, open/save panels
   or document handling.
 - No event taps or keystroke capture. It only *posts* key events; it never
@@ -96,7 +107,8 @@ quarantine attribute (`xattr -cr`) from downloads of unknown origin.
 ## Verifying these claims
 
 ```bash
-grep -rnE "URLSession|Network|http|socket" SpaceStation/Sources/    # only the About link
+grep -rnE "URLSession|Network|socket" SpaceStation/Sources/          # only UpdateChecker.swift
+grep -rn "api.github.com" SpaceStation/Sources/                       # the one endpoint it contacts
 grep -rnE "FileManager|NSOpenPanel|NSSavePanel" SpaceStation/Sources/ # none
 grep -rnE "Process\(|NSTask|/bin/" SpaceStation/Sources/              # tccutil only
 grep -rnE "dlopen|performSelector|NSAppleScript" SpaceStation/Sources/ # none
