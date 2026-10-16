@@ -1,4 +1,5 @@
 import XCTest
+import AppKit
 
 @MainActor
 final class SpaceIconTests: XCTestCase {
@@ -18,7 +19,7 @@ final class SpaceIconTests: XCTestCase {
     }
 
     func testStorageRoundTrip() {
-        for icon in [SpaceIcon.symbol("briefcase"), .emoji("🔥"), .default] {
+        for icon in [SpaceIcon.symbol("briefcase"), .emoji("🔥"), .symbol("desktopcomputer")] {
             XCTAssertEqual(SpaceIcon(storageValue: icon.storageValue), icon)
         }
     }
@@ -43,9 +44,9 @@ final class SpaceIconTests: XCTestCase {
         XCTAssertNil(SpaceIcon.emoji(from: ""))
     }
 
-    func testDefaultIconWhenNoneChosen() {
+    func testNoIconByDefault() {
         let manager = SpaceNameManager(defaults: defaults)
-        XCTAssertEqual(manager.icon(for: space), .default)
+        XCTAssertNil(manager.icon(for: space))
         XCTAssertFalse(manager.hasCustomIcon(for: space))
     }
 
@@ -61,13 +62,40 @@ final class SpaceIconTests: XCTestCase {
         XCTAssertEqual(reloaded.icon(for: space), .emoji("🎧"))
         reloaded.setIcon(nil, for: space)
         XCTAssertFalse(reloaded.hasCustomIcon(for: space))
-        XCTAssertEqual(SpaceNameManager(defaults: defaults).icon(for: space), .default)
+        XCTAssertNil(SpaceNameManager(defaults: defaults).icon(for: space))
     }
 
-    func testChoosingTheDefaultIconClearsTheCustomOne() {
+    func testDesktopcomputerIsJustAnotherSymbolNow() {
         let manager = SpaceNameManager(defaults: defaults)
-        manager.setIcon(.symbol("star"), for: space)
-        manager.setIcon(.default, for: space)
-        XCTAssertFalse(manager.hasCustomIcon(for: space))
+        manager.setIcon(.symbol("desktopcomputer"), for: space)
+        XCTAssertEqual(manager.icon(for: space), .symbol("desktopcomputer"))
+    }
+
+    func testSuggestedSymbolsExistOnThisSystem() {
+        for name in SpaceIcon.symbolChoices {
+            XCTAssertNotNil(NSImage(systemSymbolName: name, accessibilityDescription: nil), "missing symbol \(name)")
+        }
+        XCTAssertEqual(SpaceIcon.symbolChoices.count, 16)
+        XCTAssertEqual(Set(SpaceIcon.symbolChoices).count, 16)
+    }
+
+    func testNumberSymbolsExistForEverySupportedSpace() {
+        for index in 1...16 {
+            XCTAssertNotNil(NSImage(systemSymbolName: SpaceIcon.numberSymbol(for: index), accessibilityDescription: nil))
+        }
+    }
+
+    func testResetAllClearsNamesIconsAndLegacyData() throws {
+        defaults.set(try JSONEncoder().encode([1: "Old"]), forKey: "SpaceStationNames")
+        let manager = SpaceNameManager(defaults: defaults)
+        manager.setName("Mail", for: space)
+        manager.setIcon(.emoji("📬"), for: space)
+        manager.resetAll()
+        XCTAssertFalse(manager.hasCustomName(for: space))
+        XCTAssertNil(manager.icon(for: space))
+        XCTAssertNil(defaults.data(forKey: "SpaceStationNames"))
+        let reloaded = SpaceNameManager(defaults: defaults)
+        XCTAssertFalse(reloaded.hasCustomName(for: space))
+        XCTAssertNil(reloaded.icon(for: space))
     }
 }

@@ -64,23 +64,33 @@ class SpaceNameManager: ObservableObject {
 
     // MARK: - Icons
 
-    /// The icon chosen for a space, or the generic desktop icon.
-    func icon(for space: SpaceInfo) -> SpaceIcon {
-        spaceIcons[space.id].flatMap(SpaceIcon.init(storageValue:)) ?? .default
+    /// The icon chosen for a space, or nil if it has none (the UI then shows its number).
+    func icon(for space: SpaceInfo) -> SpaceIcon? {
+        spaceIcons[space.id].flatMap(SpaceIcon.init(storageValue:))
     }
 
     func hasCustomIcon(for space: SpaceInfo) -> Bool {
         spaceIcons[space.id] != nil
     }
 
-    /// Set a space's icon. Passing nil, or the default icon, reverts to the default.
+    /// Set a space's icon. Passing nil removes it.
     func setIcon(_ icon: SpaceIcon?, for space: SpaceInfo) {
-        if let icon, icon != .default {
+        if let icon {
             spaceIcons[space.id] = icon.storageValue
         } else {
             spaceIcons.removeValue(forKey: space.id)
         }
         saveIcons()
+    }
+
+    /// Forget every custom name and icon (Settings > Spaces > Reset All).
+    func resetAll() {
+        spaceNames.removeAll()
+        spaceIcons.removeAll()
+        defaults.removeObject(forKey: legacyStorageKey)
+        saveNames()
+        saveIcons()
+        logger.info("Reset all space names and icons")
     }
 
     private func saveIcons() {

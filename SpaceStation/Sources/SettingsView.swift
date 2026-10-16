@@ -168,7 +168,7 @@ struct SpaceNamesSettingsView: View {
                 ForEach(spaceTracker.spaces) { space in
                     HStack {
                         Button(action: { iconPickerSpaceID = space.id }) {
-                            SpaceIconView(icon: nameManager.icon(for: space), size: 22)
+                            SpaceIconView(icon: nameManager.icon(for: space) ?? .symbol("desktopcomputer"), size: 22)
                         }
                         .buttonStyle(.plain)
                         .help("Choose an icon")
@@ -176,7 +176,7 @@ struct SpaceNamesSettingsView: View {
                             get: { iconPickerSpaceID == space.id },
                             set: { if !$0 { iconPickerSpaceID = nil } }
                         )) {
-                            IconPickerView(current: nameManager.icon(for: space)) { icon in
+                            IconPickerView(current: nameManager.icon(for: space) ?? .symbol("desktopcomputer")) { icon in
                                 nameManager.setIcon(icon, for: space)
                                 iconPickerSpaceID = nil
                             }

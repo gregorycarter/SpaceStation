@@ -5,15 +5,18 @@ enum SpaceIcon: Equatable {
     case symbol(String)
     case emoji(String)
 
-    static let `default` = SpaceIcon.symbol("desktopcomputer")
-
-    /// SF Symbols offered in the picker (all available on macOS 13).
+    /// SF Symbols offered in the picker (all available on macOS 13). A Space with no icon shows
+    /// its number instead, so there is no default symbol.
     static let symbolChoices: [String] = [
-        "desktopcomputer", "briefcase", "hammer", "terminal", "envelope", "message",
-        "calendar", "doc.text", "book", "globe", "music.note", "gamecontroller",
-        "camera", "paintbrush", "chart.bar", "cart", "graduationcap", "house",
-        "heart", "star", "bolt", "cloud", "folder", "lightbulb",
+        "tray", "terminal", "briefcase", "chevron.left.forwardslash.chevron.right",
+        "envelope", "calendar", "creditcard", "person.2",
+        "paintpalette", "book", "music.note", "camera",
+        "bubble.left", "graduationcap", "house", "flag",
     ]
+
+    /// The symbol shown in the menu bar and menus for a Space with no icon, e.g. "3.square".
+    /// (SF Symbols has number squares for 0 through 50.)
+    static func numberSymbol(for index: Int) -> String { "\(index).square" }
 
     // MARK: Storage
 

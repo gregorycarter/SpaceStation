@@ -149,7 +149,7 @@ final class SwitcherController {
     private func refreshModel(spaceTracker: SpaceTracker, nameManager: SpaceNameManager) {
         model.spaces = spaceTracker.spaces
         model.names = spaceTracker.spaces.map { nameManager.name(for: $0) }
-        model.icons = spaceTracker.spaces.map { nameManager.icon(for: $0) }
+        model.icons = spaceTracker.spaces.map { nameManager.icon(for: $0) ?? .symbol("desktopcomputer") }
         model.currentIndex = spaceTracker.isInFullscreenSpace ? nil : spaceTracker.currentSpaceIndex
         model.selectedIndex = max(0, (model.currentIndex ?? 1) - 1)
     }
