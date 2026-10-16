@@ -86,28 +86,31 @@ class SpaceTracker: ObservableObject {
     // MARK: - Keyboard Shortcuts Check
 
     func checkKeyboardShortcuts() {
-        // Check if "Switch to Desktop N" shortcuts are enabled in System Preferences
-        // These are stored in com.apple.symbolichotkeys, keys 118-126 (Desktop 1-9)
-        guard let hotkeys = UserDefaults.standard.persistentDomain(forName: "com.apple.symbolichotkeys"),
-              let symbolicHotkeys = hotkeys["AppleSymbolicHotKeys"] as? [String: Any] else {
-            logger.info("Could not read symbolic hotkeys")
-            hasKeyboardShortcutsEnabled = false
-            return
-        }
-
-        // Check if at least Desktop 1 shortcut (key 118) is enabled
-        // Key 118 = Switch to Desktop 1, 119 = Desktop 2, etc.
-        var enabledCount = 0
-        for key in 118...126 {
-            if let shortcut = symbolicHotkeys[String(key)] as? [String: Any],
-               let enabled = shortcut["enabled"] as? Int,
-               enabled == 1 {
-                enabledCount += 1
-            }
-        }
-
+        // "Switch to Desktop N" shortcuts live in com.apple.symbolichotkeys,
+        // keys 118-126 (Desktop 1-9).
+        let enabledCount = (1...9).filter { desktopShortcut(for: $0) != nil }.count
         hasKeyboardShortcutsEnabled = enabledCount >= 1
         logger.info("Keyboard shortcuts enabled: \(self.hasKeyboardShortcutsEnabled) (\(enabledCount)/9 shortcuts)")
+    }
+
+    /// The key and modifiers the user has configured for "Switch to Desktop N",
+    /// or nil if that shortcut is disabled or can't be read.
+    private func desktopShortcut(for index: Int) -> (keyCode: CGKeyCode, flags: CGEventFlags)? {
+        guard (1...9).contains(index),
+              let hotkeys = UserDefaults.standard.persistentDomain(forName: "com.apple.symbolichotkeys"),
+              let symbolicHotkeys = hotkeys["AppleSymbolicHotKeys"] as? [String: Any],
+              let entry = symbolicHotkeys[String(117 + index)] as? [String: Any],
+              (entry["enabled"] as? Int) == 1,
+              let value = entry["value"] as? [String: Any],
+              let parameters = value["parameters"] as? [Int],
+              parameters.count >= 3,
+              // 65535 means "no key assigned"
+              (0..<65535).contains(parameters[1]),
+              parameters[2] >= 0 else {
+            return nil
+        }
+        // The stored modifier mask uses the same bit layout as CGEventFlags.
+        return (CGKeyCode(parameters[1]), CGEventFlags(rawValue: UInt64(parameters[2])))
     }
 
     // MARK: - Space Change Observer
@@ -202,45 +205,36 @@ class SpaceTracker: ObservableObject {
             return false
         }
 
-        logger.info("Switching to space \(index)")
+        // Post exactly the shortcut the user configured. If it's disabled we
+        // must not post anything, or the keystroke would land in the frontmost app.
+        guard let shortcut = desktopShortcut(for: index) else {
+            logger.warning("Shortcut for space \(index) is not enabled; not switching")
+            checkKeyboardShortcuts()
+            return false
+        }
 
-        // Use keyboard shortcut simulation to switch spaces
-        // Control + [number] is the macOS shortcut (must be enabled in System Settings)
-        let keyCode = keyCodeForNumber(index)
+        logger.info("Switching to space \(index)")
 
         guard let source = CGEventSource(stateID: .hidSystemState) else {
             logger.error("Failed to create CGEventSource")
             return false
         }
 
-        // Key down with Control modifier
-        guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: true) else {
-            logger.error("Failed to create key down event")
+        guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: shortcut.keyCode, keyDown: true),
+              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: shortcut.keyCode, keyDown: false) else {
+            logger.error("Failed to create key events")
             return false
         }
-        keyDown.flags = .maskControl
-        keyDown.post(tap: .cghidEventTap)
+        keyDown.flags = shortcut.flags
+        keyUp.flags = shortcut.flags
 
+        keyDown.post(tap: .cghidEventTap)
         // Small delay between key down and up
         usleep(20000) // 20ms
-
-        // Key up with Control modifier
-        guard let keyUp = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false) else {
-            logger.error("Failed to create key up event")
-            return false
-        }
-        keyUp.flags = .maskControl
         keyUp.post(tap: .cghidEventTap)
 
         logger.debug("Key events posted for space \(index)")
         return true
-    }
-
-    private func keyCodeForNumber(_ number: Int) -> CGKeyCode {
-        // Key codes for number keys 1-9 on US keyboard
-        let keyCodes: [CGKeyCode] = [18, 19, 20, 21, 23, 22, 26, 28, 25]
-        guard number >= 1 && number <= 9 else { return 18 }
-        return keyCodes[number - 1]
     }
 
     func cleanup() {
