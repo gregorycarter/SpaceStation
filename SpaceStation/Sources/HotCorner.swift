@@ -93,13 +93,17 @@ extension HotCorner {
 /// moved `rearmDistance` away. Pure state machine, fed samples, so it is easy to test.
 struct HotCornerTrigger {
     let corner: HotCorner
-    var dwell: TimeInterval = 0.15
-    var rearmDistance: CGFloat = 40
+    var dwell: TimeInterval
+    var rearmDistance: CGFloat
+
+    /// Short enough to feel immediate, but long enough (two consecutive samples; this is deliberately a little under the 20 ms poll interval so the second sample always qualifies) that the pointer must
+    /// actually arrive in the corner rather than graze a single pixel on the way past.
+    static let defaultDwell: TimeInterval = 0.015
 
     private var enteredAt: TimeInterval?
     private var armed = true
 
-    init(corner: HotCorner, dwell: TimeInterval = 0.15, rearmDistance: CGFloat = 40) {
+    init(corner: HotCorner, dwell: TimeInterval = HotCornerTrigger.defaultDwell, rearmDistance: CGFloat = 40) {
         self.corner = corner
         self.dwell = dwell
         self.rearmDistance = rearmDistance
@@ -138,7 +142,7 @@ final class HotCornerMonitor {
     private let onTrigger: () -> Void
     private var timer: Timer?
 
-    private static let interval: TimeInterval = 0.05
+    private static let interval: TimeInterval = 0.02
 
     init(corner: HotCorner, onTrigger: @escaping () -> Void) {
         self.trigger = HotCornerTrigger(corner: corner)
@@ -146,7 +150,7 @@ final class HotCornerMonitor {
         let timer = Timer(timeInterval: Self.interval, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
         }
-        timer.tolerance = 0.02
+        timer.tolerance = 0.005
         RunLoop.main.add(timer, forMode: .common)
         self.timer = timer
     }

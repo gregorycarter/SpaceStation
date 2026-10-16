@@ -65,6 +65,8 @@ final class SwitcherController {
         self.spaceTracker = spaceTracker
         self.nameManager = nameManager
         logger.info("Switcher configured")
+        // Build the panel now so the first appearance isn't slowed by creating it.
+        if panel == nil { panel = makePanel() }
         UserDefaults.standard.register(defaults: [Self.hotKeyEnabledKey: true,
                                                   Self.hotCornerKey: HotCorner.off.rawValue])
         applyHotKeyPreference()
