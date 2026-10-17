@@ -59,6 +59,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // Prewarm the panel and register triggers at the same point in startup.
         _ = switcherController
 
+        // Started by "Reset & Try Again": this fresh process can still be added to the Accessibility list.
+        if CommandLine.arguments.contains(AccessibilityController.requestOnLaunchArgument) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [spaceTracker] in
+                spaceTracker.openAccessibilitySettings()
+            }
+        }
+
         #if DEBUG
         // Test hook (Debug builds only): SPACESTATION_DEBUG_SWITCH=<n> switches to desktop n shortly
         // after launch, so switching can be exercised without sending keystrokes.

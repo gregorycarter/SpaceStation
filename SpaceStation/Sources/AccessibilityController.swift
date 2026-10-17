@@ -12,6 +12,8 @@ final class AccessibilityController: ObservableObject {
         var reset: @MainActor () async throws -> Void
         var sleep: @MainActor (UInt64) async -> Void
         var openSettings: @MainActor () -> Void
+        /// Starts a fresh copy of the app that asks for permission, then quits this one.
+        var relaunchToRequest: @MainActor () -> Void = {}
 
         static let live = System(
             identity: CodeSigning.current,
@@ -35,8 +37,21 @@ final class AccessibilityController: ObservableObject {
                 if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
                     NSWorkspace.shared.open(url)
                 }
+            },
+            relaunchToRequest: {
+                let configuration = NSWorkspace.OpenConfiguration()
+                configuration.createsNewApplicationInstance = true
+                configuration.arguments = [AccessibilityController.requestOnLaunchArgument]
+                NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: configuration) { _, error in
+                    // Only quit once the new copy is running, or a failed launch would leave no app at all.
+                    guard error == nil else { return }
+                    DispatchQueue.main.async { NSApp.terminate(nil) }
+                }
             })
     }
+
+    /// Launch argument telling a fresh copy of the app to ask for Accessibility straight away.
+    static let requestOnLaunchArgument = "--request-accessibility"
 
     @Published private(set) var isTrusted = false
     @Published private(set) var hint: CodeSigning.AccessibilityHint?
@@ -45,6 +60,8 @@ final class AccessibilityController: ObservableObject {
     private let system: System
     private let identity: CodeSigning.Identity?
     private var observer: NSObjectProtocol?
+    /// Whether this process has already asked macOS to list it under Accessibility.
+    private var hasPrompted = false
     private let logger = Logger(subsystem: "com.gregorycarter.SpaceStation", category: "Accessibility")
     static let lastTrustedRequirementKey = "lastAccessibilityTrustedRequirement"
     static let lastAutoResetRequirementKey = "lastAccessibilityAutoResetRequirement"
@@ -91,12 +108,14 @@ final class AccessibilityController: ObservableObject {
     }
 
     func request() {
+        hasPrompted = true
         update(trusted: system.isTrusted(true))
         logger.info("Accessibility permission after request: \(self.isTrusted)")
     }
 
     func openSettings() {
         // Prompt to add the app to the list; the existing flow refreshes state on its next check.
+        hasPrompted = true
         _ = system.isTrusted(true)
         system.openSettings()
     }
@@ -110,6 +129,12 @@ final class AccessibilityController: ObservableObject {
             catch { logger.error("tccutil failed: \(error.localizedDescription)") }
             await system.sleep(500_000_000)
             guard let self else { return }
+            // macOS lists an app only for the first prompt a process makes. After a reset that
+            // process can't be listed again, so a fresh copy has to ask (and open Settings).
+            if self.hasPrompted {
+                system.relaunchToRequest()
+                return
+            }
             self.request()
             if openSettings { system.openSettings() }
         }

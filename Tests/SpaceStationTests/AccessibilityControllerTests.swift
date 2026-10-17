@@ -50,6 +50,18 @@ final class AccessibilityControllerTests: XCTestCase {
         XCTAssertTrue(controller.isTrusted)
     }
 
+    func testResetAfterAlreadyPromptingRelaunchesInsteadOfPromptingAgain() async {
+        var events: [String] = []
+        let controller = AccessibilityController(defaults: defaults, system: .init(
+            identity: { nil }, isTrusted: { events.append("prompt:\($0)"); return false },
+            reset: { events.append("reset") }, sleep: { _ in }, openSettings: { events.append("settings") },
+            relaunchToRequest: { events.append("relaunch") }))
+        controller.request()
+        await controller.resetAndRequest().value
+        XCTAssertEqual(events, ["prompt:true", "reset", "relaunch"],
+                       "macOS only lists an app for a process's first prompt, so a reset needs a fresh process")
+    }
+
     func testAutomaticRecoveryIsRecordedOnceAndDoesNotOpenSettings() async {
         defaults.set("previous", forKey: AccessibilityController.lastTrustedRequirementKey)
         var resets = 0
