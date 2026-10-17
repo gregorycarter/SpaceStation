@@ -100,6 +100,18 @@ notarize() { # <file> : submit, wait, and fail with Apple's log if not accepted
   fi
 }
 
+if [[ "$MODE" == "unsigned" ]]; then
+  # CODE_SIGNING_ALLOWED=NO leaves only the linker's stub signature: no bundle identifier, no bound
+  # Info.plist and no sealed resources. macOS 27 can't attach an Accessibility grant to that, so the
+  # app can't be allowed at all. A proper ad-hoc signature fixes that (the permission is still
+  # forgotten on each update, because an ad-hoc requirement is the build's hash).
+  step "Ad-hoc signing the app"
+  codesign --force --deep --sign - --options runtime \
+    --identifier "$(defaults read "$PWD/$APP/Contents/Info" CFBundleIdentifier)" \
+    --entitlements SpaceStation/SpaceStation.entitlements "$APP"
+  codesign --verify --deep --strict --verbose=2 "$APP"
+fi
+
 if [[ "$MODE" == "signed" ]]; then
   step "Verifying the signature"
   codesign --verify --deep --strict --verbose=2 "$APP"
