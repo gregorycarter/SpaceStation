@@ -44,6 +44,23 @@ If you only want a number or a coloured badge for the current Space, one of the 
 - Names stored locally; no analytics. The only network use is an optional check for a newer version
   on GitHub, when you choose Check for Updates (or turn on the once-a-day check, off by default)
 
+<p align="center">
+  <img src="docs/images/switcher.png" alt="The SpaceStation switcher: a floating panel listing every Space by name and icon, with keyboard hints underneath" width="100%">
+</p>
+
+### Gallery
+
+<table>
+  <tr>
+    <td align="center" width="50%"><img src="docs/images/menu.png" alt="The menu bar menu listing every Space with its shortcut" width="100%"><br><sub><b>Menu bar menu.</b> Every Space one click away; hold ⌥ to rename.</sub></td>
+    <td align="center" width="50%"><img src="docs/images/settings-spaces.png" alt="Settings, Spaces tab: renaming a Space and choosing an icon" width="100%"><br><sub><b>Spaces.</b> Name each Space and pick a symbol or emoji.</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/images/settings-switcher.png" alt="Settings, Switcher tab: shortcut, hot corner, delay and placement" width="100%"><br><sub><b>Switcher.</b> Choose the shortcut, hot corner and placement.</sub></td>
+    <td align="center"><img src="docs/images/settings-general.png" alt="Settings, General tab: launch at login, menu bar display and updates" width="100%"><br><sub><b>General.</b> Launch at login, what the menu bar shows, updates.</sub></td>
+  </tr>
+</table>
+
 ## Requirements
 
 - macOS 13.0 or later
@@ -65,36 +82,30 @@ SpaceStation to Applications and launch it. It runs in the menu bar only (no Doc
 
 SpaceStation needs one permission, and walks you through it on first use:
 
-- **Accessibility** (System Settings → Privacy & Security → Accessibility). macOS requires this for
-  an app to send the keyboard shortcuts that switch Spaces. SpaceStation only sends macOS's own
-  Space shortcuts, only when you pick a Space, and never reads your keystrokes.
+1. **Follow the setup window.** It opens the first time you try to switch Spaces and shows what is still
+   needed.
 
-Optional, for **instant** switching: turn on "Switch to Desktop N" in System Settings → Keyboard →
-Keyboard Shortcuts → Mission Control. Without it SpaceStation still reaches every Space by stepping
-with "Move left/right a space" (⌃← ⌃→), which takes about a second for a far Space instead of being
-immediate. Settings → General shows which Spaces have a shortcut.
+   <p align="center"><img src="docs/images/setup-window.png" alt="The SpaceStation Setup window, asking to allow Accessibility" width="360"></p>
+
+2. **Open System Settings when macOS asks.** Click **Open System Settings** in the prompt (on macOS 27 the
+   pane is called "Device Control and Data Access").
+
+   <p align="center"><img src="docs/images/setup-permission-prompt.png" alt="The macOS prompt: SpaceStation would like to control this Mac and access your data" width="520"></p>
+
+3. **Switch SpaceStation on under Accessibility** (System Settings → Privacy & Security → Accessibility).
+   macOS requires this for an app to send the keyboard shortcuts that switch Spaces. SpaceStation only
+   sends macOS's own Space shortcuts, only when you pick a Space, and never reads your keystrokes.
+
+   <p align="center"><img src="docs/images/setup-accessibility.png" alt="System Settings, Accessibility list with SpaceStation switched on" width="640"></p>
+
+4. **Optional, for instant switching:** turn on "Switch to Desktop N" in System Settings → Keyboard →
+   Keyboard Shortcuts → Mission Control. Without it SpaceStation still reaches every Space by stepping
+   with "Move left/right a space" (⌃← ⌃→), which takes about a second for a far Space instead of being
+   immediate. Settings → General shows which Spaces have a shortcut.
+
+   <p align="center"><img src="docs/images/setup-keyboard-shortcuts.png" alt="System Settings, Keyboard Shortcuts, Mission Control, with Switch to Desktop shortcuts ticked" width="640"></p>
 
 Naming Spaces and showing the current name work without any permission.
-
-## FAQ
-
-**Picking a Space in the switcher does nothing, or only ⌃1 works.**
-SpaceStation switches Spaces by pressing macOS's own "Switch to Desktop N" shortcuts, so it can only
-work if those work. Try pressing ⌃2 yourself. If nothing happens, macOS has not loaded the shortcuts
-(this can happen after a macOS update or after turning them on). Restart the Dock to make it reload them:
-
-```bash
-killall Dock
-```
-
-The Dock relaunches in a second and your windows and Spaces are untouched. If it keeps happening, turn
-the "Switch to Desktop N" shortcuts off and on again in System Settings → Keyboard → Keyboard Shortcuts →
-Mission Control, then run the command again.
-
-**SpaceStation is missing from the Accessibility list, or is switched on but doesn't work.**
-Click **Reset & Try Again** in SpaceStation's setup window (or Settings → General). The app clears its old
-entry and restarts so macOS lists it again, then allow it. Unsigned builds need this after every update,
-because macOS ties the permission to the app's signature.
 
 ## Build from source
 
