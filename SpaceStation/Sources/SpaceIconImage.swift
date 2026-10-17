@@ -22,8 +22,15 @@ enum SpaceIconImage {
     static func symbol(_ name: String, size: CGFloat = 16, accessibilityDescription: String? = nil) -> NSImage? {
         guard let base = NSImage(systemSymbolName: name, accessibilityDescription: accessibilityDescription) else { return nil }
         let configuration = NSImage.SymbolConfiguration(pointSize: size * 0.82, weight: .regular, scale: .medium)
-        let image = base.withSymbolConfiguration(configuration) ?? base
+        let symbol = base.withSymbolConfiguration(configuration) ?? base
+        // macOS 27 no longer draws symbol-backed images in NSMenuItems (only bitmaps show), so
+        // rasterise into a template bitmap. It still tints with the menu bar and highlight.
+        let image = NSImage(size: symbol.size, flipped: false) { rect in
+            symbol.draw(in: rect)
+            return true
+        }
         image.isTemplate = true
+        image.accessibilityDescription = accessibilityDescription
         return image
     }
 

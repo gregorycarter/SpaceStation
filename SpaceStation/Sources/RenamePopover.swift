@@ -153,7 +153,12 @@ final class RenamePopoverController: NSObject, NSPopoverDelegate {
                 popover?.behavior = .applicationDefined
                 NSApp.orderFrontCharacterPalette(nil)
             })
-        popover.contentViewController = NSHostingController(rootView: view)
+        let host = NSHostingController(rootView: view)
+        // Size the popover before it is shown. Letting SwiftUI resize it afterwards leaves it
+        // detached from the menu bar item on macOS 27.
+        host.view.layoutSubtreeIfNeeded()
+        popover.contentSize = host.view.fittingSize
+        popover.contentViewController = host
         self.popover = popover
 
         NSApp.activate(ignoringOtherApps: true)

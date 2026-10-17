@@ -1,9 +1,9 @@
 name: SpaceStation
 options:
   bundleIdPrefix: com.gregorycarter
-  # Marks the project as checked against Xcode 26.3's recommended settings
+  # Marks the project as checked against Xcode 27.1's recommended settings
   # (otherwise Xcode keeps offering "Update to recommended settings").
-  xcodeVersion: "2630"
+  xcodeVersion: "2710"
   deploymentTarget:
     macOS: "13.0"
   createIntermediateGroups: true
