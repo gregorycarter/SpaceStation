@@ -76,6 +76,26 @@ immediate. Settings → General shows which Spaces have a shortcut.
 
 Naming Spaces and showing the current name work without any permission.
 
+## FAQ
+
+**Picking a Space in the switcher does nothing, or only ⌃1 works.**
+SpaceStation switches Spaces by pressing macOS's own "Switch to Desktop N" shortcuts, so it can only
+work if those work. Try pressing ⌃2 yourself. If nothing happens, macOS has not loaded the shortcuts
+(this can happen after a macOS update or after turning them on). Restart the Dock to make it reload them:
+
+```bash
+killall Dock
+```
+
+The Dock relaunches in a second and your windows and Spaces are untouched. If it keeps happening, turn
+the "Switch to Desktop N" shortcuts off and on again in System Settings → Keyboard → Keyboard Shortcuts →
+Mission Control, then run the command again.
+
+**SpaceStation is missing from the Accessibility list, or is switched on but doesn't work.**
+Click **Reset & Try Again** in SpaceStation's setup window (or Settings → General). The app clears its old
+entry and restarts so macOS lists it again, then allow it. Unsigned builds need this after every update,
+because macOS ties the permission to the app's signature.
+
 ## Build from source
 
 ```bash
