@@ -6,10 +6,8 @@ struct AboutSettingsView: View {
     static let repositoryURL = URL(string: "https://github.com/gregorycarter/SpaceStation")!
 
     private var versionText: String {
-        let info = Bundle.main.infoDictionary
-        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
-        let build = info?["CFBundleVersion"] as? String ?? "?"
-        return "Version \(version) (\(build))"
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        return "Version \(version)"
     }
 
     var body: some View {
