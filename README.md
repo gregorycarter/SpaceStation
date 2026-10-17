@@ -59,6 +59,10 @@ If you only want a number or a coloured badge for the current Space, one of the 
     <td align="center"><img src="docs/images/settings-switcher.png" alt="Settings, Switcher tab: shortcut, hot corner, delay and placement" width="100%"><br><sub><b>Switcher.</b> Choose the shortcut, hot corner and placement.</sub></td>
     <td align="center"><img src="docs/images/settings-general.png" alt="Settings, General tab: launch at login, menu bar display and updates" width="100%"><br><sub><b>General.</b> Launch at login, what the menu bar shows, updates.</sub></td>
   </tr>
+  <tr>
+    <td align="center"><img src="docs/images/settings-about.png" alt="Settings, About tab: version, links and Check for Updates" width="100%"><br><sub><b>About.</b> Version, links and Check for Updates.</sub></td>
+    <td></td>
+  </tr>
 </table>
 
 ## Requirements
