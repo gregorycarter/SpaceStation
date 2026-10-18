@@ -38,6 +38,23 @@ final class SpaceSwitchExecutor {
 
     func post(_ binding: KeyBinding) { system.post(binding) }
 
+    /// How long a direct "Switch to Desktop N" shortcut gets to take effect. macOS starts the
+    /// transition almost at once, so a Space that hasn't changed by now is not going to.
+    static let directConfirmationTimeout: TimeInterval = 0.8
+
+    /// Posts a direct shortcut and reports whether the Space actually changed to the destination.
+    /// macOS silently ignores the shortcut when the Dock's copy of the shortcuts is stale.
+    func postAndConfirm(_ binding: KeyBinding, isDestination: () -> Bool, refresh: () -> Void) async -> Bool {
+        post(binding)
+        let deadline = system.now().addingTimeInterval(Self.directConfirmationTimeout)
+        while system.now() < deadline {
+            await system.sleep(0.04)
+            refresh()
+            if isDestination() { return true }
+        }
+        return false
+    }
+
     @discardableResult
     func start(to desktopID: String, firstPlan: SpaceStepper.Plan, moveLeft: KeyBinding, moveRight: KeyBinding,
                currentOrder: @escaping () -> SpaceOrder?, refresh: @escaping () -> Void) -> Task<Void, Never>? {

@@ -25,6 +25,7 @@ final class AppPreferencesTests: XCTestCase {
         XCTAssertTrue(prefs.showKeyboardHints)
         XCTAssertFalse(prefs.closeOnPointerExit)
         XCTAssertFalse(prefs.checkForUpdatesAutomatically, "no network use unless the user asks")
+        XCTAssertFalse(prefs.restartDockAutomatically, "the Dock is only restarted for the user if they opt in")
         XCTAssertEqual(prefs.switcherShortcut?.display, "⌃⌥S")
     }
 
@@ -38,6 +39,7 @@ final class AppPreferencesTests: XCTestCase {
         prefs.showKeyboardHints = false
         prefs.closeOnPointerExit = true
         prefs.checkForUpdatesAutomatically = true
+        prefs.restartDockAutomatically = true
         prefs.switcherShortcut = KeyBinding(keyCode: 46, flags: .maskCommand)
 
         let reloaded = AppPreferences(defaults: defaults)
@@ -49,6 +51,7 @@ final class AppPreferencesTests: XCTestCase {
         XCTAssertFalse(reloaded.showKeyboardHints)
         XCTAssertTrue(reloaded.closeOnPointerExit)
         XCTAssertTrue(reloaded.checkForUpdatesAutomatically)
+        XCTAssertTrue(reloaded.restartDockAutomatically)
         XCTAssertEqual(reloaded.switcherShortcut?.display, "⌘M")
     }
 

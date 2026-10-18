@@ -125,4 +125,12 @@ final class CarbonModifierTests: XCTestCase {
         let flags = CGEventFlags(rawValue: CGEventFlags.maskControl.rawValue | CGEventFlags.maskSecondaryFn.rawValue)
         XCTAssertEqual(KeyBinding(keyCode: 126, flags: flags).carbonModifiers, 4096)
     }
+
+    func testDockIsOnlyRestartedAutomaticallyWhenAllowedAndOutsideTheCooldown() {
+        let now = Date(timeIntervalSince1970: 10_000)
+        XCTAssertFalse(DockRestartPolicy.shouldRestart(enabled: false, now: now, lastRestart: nil))
+        XCTAssertTrue(DockRestartPolicy.shouldRestart(enabled: true, now: now, lastRestart: nil))
+        XCTAssertFalse(DockRestartPolicy.shouldRestart(enabled: true, now: now, lastRestart: now.addingTimeInterval(-60)))
+        XCTAssertTrue(DockRestartPolicy.shouldRestart(enabled: true, now: now, lastRestart: now.addingTimeInterval(-DockRestartPolicy.cooldown)))
+    }
 }

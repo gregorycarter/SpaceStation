@@ -203,7 +203,16 @@ certificate (see CONTRIBUTING.md) to avoid it entirely
 **Handling:** Those Spaces (and all beyond 9) are reached by stepping with the "Move left/right a space"
 shortcuts, which is slower. If those are off too, the Space can't be switched to and Settings says so.
 
-### 4. Fullscreen Apps
+### 4. macOS ignores "Switch to Desktop N"
+**Issue:** Sometimes the Dock stops honouring some or all of the enabled shortcuts (Ctrl+3 does nothing though
+`com.apple.symbolichotkeys` is correct). Reported in Apple Community threads since Ventura and widely on macOS 27;
+Apple has not acknowledged it. `killall Dock` fixes it until it recurs.
+**Handling:** `SpaceTracker` confirms each direct switch (`SpaceSwitchExecutor.postAndConfirm`, 0.8 s). If the
+Space didn't change it steps with the arrow shortcuts instead and records the desktop in `staleShortcutDesktops`.
+Settings → General shows a "Restart Dock" button, and the opt-in "Restart the Dock automatically" preference
+does it by itself (at most once per 5 minutes, `DockRestartPolicy`).
+
+### 5. Fullscreen Apps
 **Issue:** Fullscreen apps create their own Spaces
 **Handling:** We filter these out (type != 0) to only list desktop Spaces. While a fullscreen
 Space is active the menu bar shows "Full Screen" and no desktop is highlighted.

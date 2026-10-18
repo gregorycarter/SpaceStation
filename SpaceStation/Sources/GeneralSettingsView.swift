@@ -16,7 +16,7 @@ struct GeneralSettingsView: View {
 
     /// The window height for this tab's current content (the tab controller resizes to it).
     static func height(needsAccessibility: Bool, shortcutWarnings: Int, launchError: Bool) -> CGFloat {
-        var height: CGFloat = 650   // launch, menu bar, updates and shortcuts sections
+        var height: CGFloat = 690   // launch, menu bar, updates and shortcuts sections
         if needsAccessibility { height += 96 }
         height += CGFloat(shortcutWarnings) * 76
         if launchError { height += 20 }
@@ -78,6 +78,7 @@ struct GeneralSettingsView: View {
         let summary = model.summary
         return Section {
             if !spaceTracker.hasAccessibilityPermission { accessibilityWarning }
+            if !spaceTracker.staleShortcutDesktops.isEmpty { staleShortcutWarning }
             shortcutWarning(summary)
             LabeledContent(summary.switchRowLabel) {
                 Text(summary.switchRowValue).foregroundColor(.secondary)
@@ -85,6 +86,8 @@ struct GeneralSettingsView: View {
             LabeledContent("Mission Control") {
                 Text(summary.missionControl?.display ?? "Off").foregroundColor(.secondary)
             }
+            Toggle("Restart the Dock automatically if macOS ignores a shortcut",
+                   isOn: $preferences.restartDockAutomatically)
         } header: {
             Text("Keyboard Shortcuts")
         } footer: {
@@ -99,6 +102,14 @@ struct GeneralSettingsView: View {
                 ?? "macOS requires it for an app to send the shortcuts that switch Spaces.") {
             Button("Open Accessibility Settings…") { spaceTracker.openAccessibilitySettings() }
             Button("Reset & Try Again") { spaceTracker.resetAndRequestPermission() }
+        }
+    }
+
+    private var staleShortcutWarning: some View {
+        SettingsWarningRow(
+            title: "macOS ignored the \(SpaceListFormat.describe(Array(spaceTracker.staleShortcutDesktops).sorted())) shortcut",
+            detail: "The Dock is holding an out-of-date copy of the “Switch to Desktop” shortcuts. SpaceStation steps to those Spaces instead, which is slower. Restarting the Dock fixes it; it relaunches in a second, or turn on the option below to have SpaceStation do it for you.") {
+            Button("Restart Dock") { spaceTracker.restartDock() }
         }
     }
 

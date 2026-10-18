@@ -106,4 +106,25 @@ final class SpaceSwitchExecutorTests: XCTestCase {
         XCTAssertFalse(s.executor.isStepping)
         XCTAssertEqual(s.steppingDuringRefresh.last, false)
     }
+
+    func testDirectShortcutIsConfirmedWhenTheSpaceChanges() async {
+        let s = Simulation()
+        let direct = KeyBinding(keyCode: 20, flags: .maskControl)
+        let arrived = await s.executor.postAndConfirm(direct, isDestination: { s.currentID == 4 }, refresh: {
+            if s.keys.count == 1 { s.currentID = 4 }
+        })
+        XCTAssertTrue(arrived)
+        XCTAssertEqual(s.keys, [direct])
+        XCTAssertLessThan(s.clock.timeIntervalSince1970, 0.2)
+    }
+
+    func testIgnoredDirectShortcutIsReportedAfterTheTimeout() async {
+        let s = Simulation()
+        let direct = KeyBinding(keyCode: 20, flags: .maskControl)
+        let arrived = await s.executor.postAndConfirm(direct, isDestination: { s.currentID == 4 }, refresh: {})
+        XCTAssertFalse(arrived)
+        XCTAssertEqual(s.keys, [direct], "the shortcut is sent once, never repeated")
+        XCTAssertGreaterThanOrEqual(s.clock.timeIntervalSince1970, SpaceSwitchExecutor.directConfirmationTimeout)
+        XCTAssertLessThan(s.clock.timeIntervalSince1970, 1.0)
+    }
 }

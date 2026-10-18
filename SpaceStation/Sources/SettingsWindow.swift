@@ -109,7 +109,8 @@ final class SettingsWindowController: NSObject {
         switch tab {
         case .general:
             let summary = model.summary
-            let warnings = (summary.hasUnreachableSpaces || !summary.missingDesktops.isEmpty) ? 1 : 0
+            let warnings = ((summary.hasUnreachableSpaces || !summary.missingDesktops.isEmpty) ? 1 : 0)
+                + (model.spaceTracker.staleShortcutDesktops.isEmpty ? 0 : 1)
             return GeneralSettingsView.height(needsAccessibility: !model.spaceTracker.hasAccessibilityPermission,
                                               shortcutWarnings: warnings, launchError: false)
         case .switcher: return 470

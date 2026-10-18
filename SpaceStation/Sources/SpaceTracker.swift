@@ -24,6 +24,10 @@ class SpaceTracker: ObservableObject {
     @Published private(set) var hasKeyboardShortcutsEnabled: Bool = false
     /// Desktops (1-based, up to 9) whose "Switch to Desktop N" shortcut is not enabled.
     @Published private(set) var missingShortcuts: [Int] = []
+    /// Desktops (1-based) whose "Switch to Desktop N" shortcut is enabled in the preferences but
+    /// that macOS did not act on when it was sent, which means the Dock's copy of the shortcuts is
+    /// stale. Switching to these steps with the arrow shortcuts instead until the Dock is restarted.
+    @Published private(set) var staleShortcutDesktops: Set<Int> = []
 
     /// The current desktop Space (never empty; falls back to a placeholder).
     var currentSpace: SpaceInfo {
@@ -189,17 +193,39 @@ class SpaceTracker: ObservableObject {
         }
 
         let hotkeys = SystemShortcuts.current()
-        var useDirectShortcut = true
+        var useDirectShortcut = !staleShortcutDesktops.contains(space.index)
         #if DEBUG
         // Test hook (Debug builds only): force the arrow-key stepping path.
         if ProcessInfo.processInfo.environment["SPACESTATION_DEBUG_FORCE_STEP"] != nil { useDirectShortcut = false }
         #endif
         if useDirectShortcut, let direct = SystemShortcuts.switchToDesktop(space.index, in: hotkeys) {
             logger.info("Switching to space \(space.index) with its shortcut")
-            switchExecutor.post(direct)
+            confirmDirectSwitch(direct, to: space)
             return .started
         }
+        return step(to: space, hotkeys: hotkeys)
+    }
 
+    /// Sends the direct shortcut and checks that it worked. If macOS ignored it, remember that
+    /// and reach the Space by stepping, so the switch still happens.
+    private func confirmDirectSwitch(_ binding: KeyBinding, to space: SpaceInfo) {
+        Task { @MainActor [self] in
+            let arrived = await switchExecutor.postAndConfirm(
+                binding,
+                isDestination: { !isInFullscreenSpace && currentSpaceIndex == space.index },
+                refresh: { updateCurrentSpace() })
+            guard !arrived else {
+                if staleShortcutDesktops.remove(space.index) != nil { logger.info("Shortcut for space \(space.index) works again") }
+                return
+            }
+            logger.warning("Shortcut for space \(space.index) was ignored; the Dock's shortcuts look stale")
+            staleShortcutDesktops.insert(space.index)
+            _ = step(to: space, hotkeys: SystemShortcuts.current())
+        }
+    }
+
+    /// Steps to `space` with the "Move left/right a space" shortcuts.
+    private func step(to space: SpaceInfo, hotkeys: [String: Any]?) -> SwitchOutcome {
         guard let order = spaceOrder, let plan = SpaceStepper.plan(order: order, to: space.id) else {
             logger.warning("Space \(space.index) has no shortcut and can't be stepped to")
             checkKeyboardShortcuts()
@@ -217,6 +243,23 @@ class SpaceTracker: ObservableObject {
         switchExecutor.start(to: space.id, firstPlan: plan, moveLeft: left, moveRight: right,
                              currentOrder: { [self] in spaceOrder }, refresh: { [self] in updateCurrentSpace() })
         return .started
+    }
+
+    // MARK: - Repairing stale shortcuts
+
+    /// Restarts the Dock, which reloads the "Switch to Desktop N" shortcuts. It relaunches by
+    /// itself within a second and needs no permission.
+    func restartDock() {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
+        process.arguments = ["Dock"]
+        do {
+            try process.run()
+            logger.info("Restarted the Dock to reload the Switch to Desktop shortcuts")
+            staleShortcutDesktops = []   // Try the direct shortcuts again.
+        } catch {
+            logger.error("Could not restart the Dock: \(error.localizedDescription)")
+        }
     }
 }
 

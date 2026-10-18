@@ -31,6 +31,7 @@ final class AppPreferences: ObservableObject {
         static let showKeyboardHints = "showKeyboardHints"
         static let closeOnPointerExit = "closeOnPointerExit"
         static let checkForUpdatesAutomatically = "checkForUpdatesAutomatically"
+        static let restartDockAutomatically = "restartDockAutomatically"
         /// Pre-redesign on/off switch for the hardcoded Control+S hotkey.
         static let legacyHotKeyEnabled = "switcherHotKeyEnabled"
     }
@@ -65,6 +66,9 @@ final class AppPreferences: ObservableObject {
     @Published var closeOnPointerExit: Bool { didSet { defaults.set(closeOnPointerExit, forKey: Key.closeOnPointerExit) } }
     /// Off by default: SpaceStation only contacts GitHub when asked, unless this is turned on.
     @Published var checkForUpdatesAutomatically: Bool { didSet { defaults.set(checkForUpdatesAutomatically, forKey: Key.checkForUpdatesAutomatically) } }
+    /// Off by default: restarting the Dock flickers the screen for about a second. When on, SpaceStation
+    /// does it by itself the first time macOS ignores a "Switch to Desktop" shortcut.
+    @Published var restartDockAutomatically: Bool { didSet { defaults.set(restartDockAutomatically, forKey: Key.restartDockAutomatically) } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -79,6 +83,7 @@ final class AppPreferences: ObservableObject {
         showKeyboardHints = defaults.object(forKey: Key.showKeyboardHints) as? Bool ?? true
         closeOnPointerExit = defaults.object(forKey: Key.closeOnPointerExit) as? Bool ?? false
         checkForUpdatesAutomatically = defaults.object(forKey: Key.checkForUpdatesAutomatically) as? Bool ?? false
+        restartDockAutomatically = defaults.object(forKey: Key.restartDockAutomatically) as? Bool ?? false
     }
 
     /// The saved shortcut, migrating the pre-redesign on/off switch the first time: an install

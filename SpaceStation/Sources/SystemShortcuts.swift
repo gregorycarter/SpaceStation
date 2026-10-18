@@ -196,3 +196,15 @@ enum DockHotCorners {
         inUse(in: UserDefaults.standard.persistentDomain(forName: "com.apple.dock"))
     }
 }
+
+/// When SpaceStation may restart the Dock by itself. The cooldown keeps a Dock that stays stale
+/// after a restart from being restarted over and over.
+enum DockRestartPolicy {
+    static let cooldown: TimeInterval = 300
+
+    static func shouldRestart(enabled: Bool, now: Date, lastRestart: Date?) -> Bool {
+        guard enabled else { return false }
+        guard let lastRestart else { return true }
+        return now.timeIntervalSince(lastRestart) >= cooldown
+    }
+}

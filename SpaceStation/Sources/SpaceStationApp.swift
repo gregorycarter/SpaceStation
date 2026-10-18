@@ -23,6 +23,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             .sink { [nameManager] spaces in nameManager.migrateLegacyNames(using: spaces) }
             .store(in: &subscriptions)
 
+        // macOS sometimes ignores "Switch to Desktop N"; the tracker steps instead. If the user allows
+        // it, also fix the cause by restarting the Dock. Otherwise Settings > General shows a button.
+        spaceTracker.$staleShortcutDesktops
+            .filter { !$0.isEmpty }
+            .sink { [unowned self] _ in restartDockIfAllowed() }
+            .store(in: &subscriptions)
+
         statusItemController = StatusItemController(
             spaceTracker: spaceTracker,
             nameManager: nameManager,
@@ -78,6 +85,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
         #endif
+    }
+
+    private var lastAutomaticDockRestart: Date?
+
+    private func restartDockIfAllowed() {
+        guard DockRestartPolicy.shouldRestart(enabled: preferences.restartDockAutomatically,
+                                              now: Date(), lastRestart: lastAutomaticDockRestart) else { return }
+        lastAutomaticDockRestart = Date()
+        spaceTracker.restartDock()
     }
 
     func showSettings(tab: SettingsTab = .general) {
