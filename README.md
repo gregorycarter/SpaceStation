@@ -135,6 +135,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [CONTEXT.md](CONTEXT.md) for the arch
 - **Not on the Mac App Store.** Those APIs, and the lack of sandboxing, rule it out.
 - Spaces beyond 9 (and any without a "Switch to Desktop" shortcut) are reached by stepping, which is slower, and needs the "Move left/right a space" shortcuts left on in macOS.
 - Fullscreen apps are separate Spaces and are shown as "Full Screen".
+- macOS (notably 27) sometimes stops honouring "Switch to Desktop N" until the Dock is restarted. SpaceStation notices, steps to the Space instead, and offers **Restart Dock** in Settings → General (or can do it automatically if you turn that option on). The manual fix is `killall Dock`.
 
 ## Security
 
